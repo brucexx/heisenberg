@@ -26,7 +26,7 @@ import com.baidu.hsb.parser.ast.fragment.OrderBy;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DMLSelectUnionStatement extends DMLQueryStatement {
     /** might be {@link LinkedList} */

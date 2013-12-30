@@ -23,7 +23,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * used as right oprand for assignment of INSERT and REPLACE
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DefaultValue extends PrimaryExpression {
 

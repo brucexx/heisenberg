@@ -26,7 +26,7 @@ import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 import com.baidu.hsb.parser.visitor.MySQLOutputASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class DMLStatement implements SQLStatement {
     @SuppressWarnings({ "rawtypes", "unchecked" })

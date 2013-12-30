@@ -21,7 +21,7 @@ package com.baidu.hsb.parser.ast.fragment.tableref;
 import com.baidu.hsb.parser.ast.ASTNode;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface TableReference extends ASTNode {
     int PRECEDENCE_REFS = 0;

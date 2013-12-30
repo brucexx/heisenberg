@@ -25,7 +25,7 @@ import java.util.List;
 import com.baidu.hsb.config.model.rule.RuleAlgorithm;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class RuleConfig {
     private final List<String> columns;

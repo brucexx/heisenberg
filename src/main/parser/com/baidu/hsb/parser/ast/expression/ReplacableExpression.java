@@ -21,7 +21,7 @@ package com.baidu.hsb.parser.ast.expression;
 import com.baidu.hsb.parser.ast.expression.primary.literal.LiteralBoolean;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface ReplacableExpression extends Expression {
     LiteralBoolean BOOL_FALSE = new LiteralBoolean(false);

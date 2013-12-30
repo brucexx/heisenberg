@@ -24,7 +24,7 @@ import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.ast.expression.misc.QueryExpression;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class DMLQueryStatement extends DMLStatement implements QueryExpression {
     @Override

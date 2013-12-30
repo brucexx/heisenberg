@@ -22,7 +22,7 @@ import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DALSetNamesStatement implements SQLStatement {
     private final String charsetName;

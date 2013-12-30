@@ -40,7 +40,7 @@ import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.session.BlockingSession;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DefaultCommitExecutor extends NodeExecutor {
     private static final Logger LOGGER = Logger.getLogger(DefaultCommitExecutor.class);

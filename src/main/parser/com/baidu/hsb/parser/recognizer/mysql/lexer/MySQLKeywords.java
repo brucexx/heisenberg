@@ -35,7 +35,7 @@ import java.util.Map;
 import com.baidu.hsb.parser.recognizer.mysql.MySQLToken;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 class MySQLKeywords {
     public static final MySQLKeywords DEFAULT_KEYWORDS = new MySQLKeywords();

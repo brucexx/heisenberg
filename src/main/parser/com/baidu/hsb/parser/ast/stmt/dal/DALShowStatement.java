@@ -21,7 +21,7 @@ package com.baidu.hsb.parser.ast.stmt.dal;
 import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class DALShowStatement implements SQLStatement {
 }

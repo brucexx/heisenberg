@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 import com.baidu.hsb.parser.ast.expression.primary.RowExpression;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class DMLInsertReplaceStatement extends DMLStatement {
     protected final Identifier table;

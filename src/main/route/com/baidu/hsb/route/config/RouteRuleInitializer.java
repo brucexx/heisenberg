@@ -37,7 +37,7 @@ import com.baidu.hsb.parser.recognizer.mysql.syntax.MySQLParser;
 import com.baidu.hsb.route.function.ExpressionAdapter;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class RouteRuleInitializer {
 //    public static void initRouteRule(SchemaLoader loader) throws SQLSyntaxErrorException {

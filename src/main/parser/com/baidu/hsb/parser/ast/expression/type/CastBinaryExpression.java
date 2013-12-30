@@ -24,7 +24,7 @@ import com.baidu.hsb.parser.ast.expression.UnaryOperatorExpression;
 /**
  * <code>'BINARY' higherExpr</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class CastBinaryExpression extends UnaryOperatorExpression {
     public CastBinaryExpression(Expression operand) {

@@ -203,7 +203,7 @@ import com.baidu.hsb.parser.ast.expression.primary.function.xml.Extractvalue;
 import com.baidu.hsb.parser.ast.expression.primary.function.xml.Updatexml;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLFunctionManager {
     public static enum FunctionParsingStrategy {

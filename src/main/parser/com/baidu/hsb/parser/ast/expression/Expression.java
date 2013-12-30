@@ -23,7 +23,7 @@ import java.util.Map;
 import com.baidu.hsb.parser.ast.ASTNode;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface Expression extends ASTNode {
     int PRECEDENCE_QUERY = 0;

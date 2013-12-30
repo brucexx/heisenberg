@@ -24,7 +24,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>'EXISTS' '(' subquery ')'</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ExistsPrimary extends PrimaryExpression {
     private final QueryExpression subquery;

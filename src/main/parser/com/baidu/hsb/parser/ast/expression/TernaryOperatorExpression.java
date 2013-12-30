@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * an operator with arity of 3
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class TernaryOperatorExpression extends AbstractExpression {
     private final Expression first;

@@ -30,7 +30,7 @@ import com.baidu.hsb.parser.util.PairUtil;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class PartitionByString extends PartitionFunction implements RuleAlgorithm {
     public PartitionByString(String functionName) {

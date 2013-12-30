@@ -26,7 +26,7 @@ import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class InnerJoin implements TableReference {
     private static List<String> ensureListType(List<String> list) {

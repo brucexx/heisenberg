@@ -30,7 +30,7 @@ import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 /**
  * adapt Java's expression rule into MySQL's
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ExprEvalUtils {
     private static final int CLASS_MAP_DOUBLE = 1;

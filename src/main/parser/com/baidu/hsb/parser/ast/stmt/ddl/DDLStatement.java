@@ -23,7 +23,7 @@ import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 /**
  * NOT FULL AST
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface DDLStatement extends SQLStatement {
     //QS_TODO ddl regenerate sql by router

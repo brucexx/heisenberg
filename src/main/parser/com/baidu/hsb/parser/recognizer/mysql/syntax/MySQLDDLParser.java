@@ -79,7 +79,7 @@ import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 import com.baidu.hsb.parser.util.Pair;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLDDLParser extends MySQLParser {
     protected MySQLExprParser exprParser;

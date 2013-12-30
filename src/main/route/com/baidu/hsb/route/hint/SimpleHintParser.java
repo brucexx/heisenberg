@@ -25,7 +25,7 @@ import java.util.Map;
 import com.baidu.hsb.config.util.ParameterMapping;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class SimpleHintParser extends HintParser {
 

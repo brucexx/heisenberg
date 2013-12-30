@@ -40,7 +40,7 @@ import com.baidu.hsb.parser.recognizer.mysql.syntax.MySQLMTSParser;
 import com.baidu.hsb.parser.recognizer.mysql.syntax.MySQLParser;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class SQLParserDelegate {
     private static enum SpecialIdentifier {

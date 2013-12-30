@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>higherPreExpr 'SOUNDS' 'LIKE' higherPreExpr</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class SoundsLikeExpression extends BinaryOperatorExpression {
     public SoundsLikeExpression(Expression leftOprand, Expression rightOprand) {

@@ -23,7 +23,7 @@ import java.util.Map;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class LiteralNull extends Literal {
     @Override

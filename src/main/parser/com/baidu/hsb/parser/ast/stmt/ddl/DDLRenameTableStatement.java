@@ -27,7 +27,7 @@ import com.baidu.hsb.parser.util.Pair;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DDLRenameTableStatement implements DDLStatement {
     private final List<Pair<Identifier, Identifier>> list;

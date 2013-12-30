@@ -27,7 +27,7 @@ import com.baidu.hsb.route.util.PartitionUtil;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class PartitionFunction extends FunctionExpression {
     public PartitionFunction(String functionName, List<Expression> arguments) {

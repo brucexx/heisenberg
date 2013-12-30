@@ -38,7 +38,7 @@ import com.baidu.hsb.parser.ast.stmt.dml.DMLReplaceStatement;
 import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLDMLReplaceParser extends MySQLDMLInsertReplaceParser {
     public MySQLDMLReplaceParser(MySQLLexer lexer, MySQLExprParser exprParser) {

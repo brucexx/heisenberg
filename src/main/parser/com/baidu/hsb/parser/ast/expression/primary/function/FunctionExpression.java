@@ -27,7 +27,7 @@ import com.baidu.hsb.parser.ast.expression.primary.PrimaryExpression;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class FunctionExpression extends PrimaryExpression {
     protected static List<Expression> wrapList(Expression expr) {

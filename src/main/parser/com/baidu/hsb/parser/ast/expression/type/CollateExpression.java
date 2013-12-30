@@ -28,7 +28,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>higherExpr 'COLLATE' collateName</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class CollateExpression extends AbstractExpression {
     private final String collateName;

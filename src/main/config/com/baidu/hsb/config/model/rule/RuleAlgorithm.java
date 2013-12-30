@@ -21,7 +21,7 @@ package com.baidu.hsb.config.model.rule;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface RuleAlgorithm {
 

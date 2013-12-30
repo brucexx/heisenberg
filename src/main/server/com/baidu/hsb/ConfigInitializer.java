@@ -40,7 +40,7 @@ import com.baidu.hsb.route.config.RouteRuleInitializer;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ConfigInitializer {
     private volatile SystemConfig system;

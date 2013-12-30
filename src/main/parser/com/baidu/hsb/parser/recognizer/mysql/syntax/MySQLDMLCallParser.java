@@ -34,7 +34,7 @@ import com.baidu.hsb.parser.ast.stmt.dml.DMLCallStatement;
 import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLDMLCallParser extends MySQLDMLParser {
     public MySQLDMLCallParser(MySQLLexer lexer, MySQLExprParser exprParser) {

@@ -28,7 +28,7 @@ import com.baidu.hsb.parser.util.CharTypes;
 /**
  * support MySQL 5.5 token
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLLexer {
     private static int C_STYLE_COMMENT_VERSION = 50599;

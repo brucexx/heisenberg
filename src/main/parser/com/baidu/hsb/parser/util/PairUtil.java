@@ -16,7 +16,7 @@
 package com.baidu.hsb.parser.util;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class PairUtil {
     private static final int DEFAULT_INDEX = -1;

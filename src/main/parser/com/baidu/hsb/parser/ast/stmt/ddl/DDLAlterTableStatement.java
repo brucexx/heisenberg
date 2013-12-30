@@ -33,7 +33,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * NOT FULL AST: partition options, foreign key, ORDER BY not supported
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DDLAlterTableStatement implements DDLStatement {
     public static interface AlterSpecification extends ASTNode {

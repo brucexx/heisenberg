@@ -23,7 +23,7 @@ import java.sql.SQLSyntaxErrorException;
 /**
  * Stateless
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class HintParser {
     protected static boolean isDigit(char c) {

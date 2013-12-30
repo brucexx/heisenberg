@@ -28,7 +28,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>'CASE' value? ('WHEN' condition 'THEN' result)+ ('ELSE' result)? 'END' </code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class CaseWhenOperatorExpression extends PrimaryExpression {
     private final Expression comparee;

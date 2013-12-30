@@ -23,7 +23,7 @@ import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ShowTableStatus extends DALShowStatement {
     private Identifier database;

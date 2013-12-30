@@ -35,7 +35,7 @@ import com.baidu.hsb.parser.recognizer.mysql.MySQLToken;
 import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class MySQLParser {
     public static final String DEFAULT_CHARSET = "utf-8";

@@ -26,7 +26,7 @@ import com.baidu.hsb.config.model.RealTableCache;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class TableConfig {
     private final String          name;

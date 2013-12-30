@@ -24,7 +24,7 @@ import com.baidu.hsb.parser.util.Pair;
 import com.baidu.hsb.route.RouteResultsetNode;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class DataNodeHintParser extends HintParser {
 

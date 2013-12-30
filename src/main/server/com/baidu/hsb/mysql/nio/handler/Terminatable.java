@@ -19,7 +19,7 @@
 package com.baidu.hsb.mysql.nio.handler;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface Terminatable {
     void terminate(Runnable runnable);

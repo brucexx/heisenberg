@@ -26,7 +26,7 @@ import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MatchExpression extends PrimaryExpression {
     public static enum Modifier {

@@ -39,7 +39,7 @@ import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ExplainHandler {
 

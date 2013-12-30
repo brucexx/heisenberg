@@ -27,7 +27,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * used in <code>FROM</code> fragment
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class TableReferences implements TableReference {
     protected static List<TableReference> ensureListType(List<TableReference> list) {

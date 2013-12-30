@@ -31,7 +31,7 @@ import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.session.NonBlockingSession;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class CommitNodeHandler extends MultiNodeHandler {
     private static final Logger logger = Logger.getLogger(CommitNodeHandler.class);

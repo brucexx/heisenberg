@@ -27,7 +27,7 @@ import com.baidu.hsb.parser.ast.fragment.Limit;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ShowProfile extends DALShowStatement {
     /** enum name must equals to real sql while ' ' is replaced with '_' */

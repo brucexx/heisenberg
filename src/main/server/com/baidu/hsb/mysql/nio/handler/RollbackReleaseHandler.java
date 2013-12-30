@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class RollbackReleaseHandler implements ResponseHandler {
     private static final Logger logger = Logger.getLogger(RollbackReleaseHandler.class);

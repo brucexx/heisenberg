@@ -24,7 +24,7 @@ import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.ast.expression.primary.function.FunctionExpression;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class FoundRows extends FunctionExpression {
     public FoundRows(List<Expression> arguments) {

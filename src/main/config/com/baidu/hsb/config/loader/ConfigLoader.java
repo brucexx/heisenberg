@@ -32,7 +32,7 @@ import com.baidu.hsb.config.model.config.UserConfig;
 import com.baidu.hsb.config.model.rule.RuleAlgorithm;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface ConfigLoader {
     //    Map<String, RuleAlgorithm> getRuleFunction();

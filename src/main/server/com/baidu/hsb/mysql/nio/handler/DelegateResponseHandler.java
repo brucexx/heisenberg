@@ -23,7 +23,7 @@ import java.util.List;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DelegateResponseHandler implements ResponseHandler {
     private final ResponseHandler target;

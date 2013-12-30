@@ -146,7 +146,7 @@ import com.baidu.hsb.parser.ast.stmt.mts.MTSSetTransactionStatement;
 import com.baidu.hsb.parser.util.Pair;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class EmptySQLASTVisitor implements SQLASTVisitor {
 

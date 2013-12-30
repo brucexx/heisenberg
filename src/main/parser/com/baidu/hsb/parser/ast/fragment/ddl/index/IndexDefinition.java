@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.ast.ASTNode;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class IndexDefinition implements ASTNode {
     public static enum IndexType {

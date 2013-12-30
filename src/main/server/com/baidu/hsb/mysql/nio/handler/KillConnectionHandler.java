@@ -31,7 +31,7 @@ import com.baidu.hsb.net.mysql.MySQLPacket;
 import com.baidu.hsb.server.session.NonBlockingSession;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class KillConnectionHandler implements ResponseHandler {
     private static final Logger LOGGER = Logger.getLogger(KillConnectionHandler.class);

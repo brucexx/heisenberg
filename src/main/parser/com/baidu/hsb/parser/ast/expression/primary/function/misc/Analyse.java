@@ -26,7 +26,7 @@ import com.baidu.hsb.parser.ast.expression.primary.function.FunctionExpression;
 /**
  * MySQL extending function
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class Analyse extends FunctionExpression {
     public Analyse(List<Expression> arguments) {

@@ -36,7 +36,7 @@ import com.baidu.hsb.server.session.NonBlockingSession;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class SingleNodeHandler implements ResponseHandler, Terminatable {
     private final RouteResultsetNode route;

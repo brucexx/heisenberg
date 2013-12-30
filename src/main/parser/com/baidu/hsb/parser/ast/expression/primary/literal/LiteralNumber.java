@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * literal date is also possible
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class LiteralNumber extends Literal {
     private final Number number;

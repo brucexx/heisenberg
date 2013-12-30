@@ -28,7 +28,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>spatial data type</code> for MyISAM is not supported
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class DataType implements ASTNode {
     public static enum DataTypeName {

@@ -23,7 +23,7 @@ import com.baidu.hsb.parser.ast.stmt.ddl.DDLStatement;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ExtDDLDropPolicy implements DDLStatement {
     private final Identifier policyName;

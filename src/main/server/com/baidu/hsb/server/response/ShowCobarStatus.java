@@ -33,7 +33,7 @@ import com.baidu.hsb.server.ServerConnection;
 /**
  * 加入了offline状态推送，用于心跳语句。
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  * @author xianmao.hexm
  */
 public class ShowCobarStatus {

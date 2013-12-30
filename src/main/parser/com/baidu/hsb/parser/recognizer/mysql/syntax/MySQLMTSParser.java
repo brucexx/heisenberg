@@ -33,7 +33,7 @@ import com.baidu.hsb.parser.ast.stmt.mts.MTSSavepointStatement;
 import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class MySQLMTSParser extends MySQLParser {
     private static enum SpecialIdentifier {

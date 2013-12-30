@@ -41,7 +41,7 @@ import com.baidu.hsb.config.util.ParameterMapping;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 @SuppressWarnings("unchecked")
 public class XMLServerLoader {

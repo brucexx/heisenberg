@@ -24,7 +24,7 @@ import com.baidu.hsb.config.model.rule.RuleAlgorithm;
 import com.baidu.hsb.parser.ast.expression.Expression;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ExpressionAdapter implements RuleAlgorithm {
     private final Expression expr;

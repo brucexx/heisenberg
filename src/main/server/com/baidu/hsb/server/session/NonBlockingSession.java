@@ -49,7 +49,7 @@ import com.baidu.hsb.server.parser.ServerParse;
 
 /**
  * @author xianmao.hexm 2012-4-12
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class NonBlockingSession implements Session {
     private static final Logger LOGGER = Logger.getLogger(NonBlockingSession.class);

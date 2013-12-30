@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>higherPreExpr 'NOT'? ('REGEXP'|'RLIKE') higherPreExp</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class RegexpExpression extends BinaryOperatorExpression {
     private final boolean not;

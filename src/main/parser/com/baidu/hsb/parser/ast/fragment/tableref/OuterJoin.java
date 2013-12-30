@@ -28,7 +28,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * left or right join
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class OuterJoin implements TableReference {
     private static List<String> ensureListType(List<String> list) {

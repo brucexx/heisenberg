@@ -23,7 +23,7 @@ import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.net.mysql.OkPacket;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class Online {
 

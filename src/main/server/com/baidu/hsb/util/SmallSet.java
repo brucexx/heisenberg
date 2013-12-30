@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * usually one element
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class SmallSet<E> extends AbstractSet<E> implements Set<E>, Cloneable, Serializable {
 

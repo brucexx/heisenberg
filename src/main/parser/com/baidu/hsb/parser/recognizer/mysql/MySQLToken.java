@@ -16,7 +16,7 @@
 package com.baidu.hsb.parser.recognizer.mysql;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public enum MySQLToken {
     EOF,

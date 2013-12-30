@@ -21,7 +21,7 @@ package com.baidu.hsb.parser.ast.stmt;
 import com.baidu.hsb.parser.ast.ASTNode;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface SQLStatement extends ASTNode {
     public static enum StmtType {

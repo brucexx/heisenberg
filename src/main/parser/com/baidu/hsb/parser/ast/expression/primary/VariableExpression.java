@@ -19,7 +19,7 @@
 package com.baidu.hsb.parser.ast.expression.primary;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class VariableExpression extends PrimaryExpression {
 }

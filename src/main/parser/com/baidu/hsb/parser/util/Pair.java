@@ -18,7 +18,7 @@ package com.baidu.hsb.parser.util;
 /**
  * (created at 2010-7-21)
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class Pair<K, V> {
 

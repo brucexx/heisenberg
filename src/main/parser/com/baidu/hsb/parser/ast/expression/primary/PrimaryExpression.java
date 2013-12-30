@@ -23,7 +23,7 @@ import java.util.Map;
 import com.baidu.hsb.parser.ast.expression.AbstractExpression;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class PrimaryExpression extends AbstractExpression {
     @Override

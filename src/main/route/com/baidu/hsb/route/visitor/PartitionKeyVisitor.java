@@ -166,7 +166,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 import com.baidu.hsb.util.SmallSet;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class PartitionKeyVisitor implements SQLASTVisitor {
 

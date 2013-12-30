@@ -163,7 +163,7 @@ import com.baidu.hsb.parser.ast.stmt.mts.MTSSetTransactionStatement;
 import com.baidu.hsb.parser.util.Pair;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class MySQLOutputASTVisitor implements SQLASTVisitor {
     private static final Object[] EMPTY_OBJ_ARRAY = new Object[0];

@@ -21,7 +21,7 @@ package com.baidu.hsb.parser.ast;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public interface ASTNode {
     void accept(SQLASTVisitor visitor);

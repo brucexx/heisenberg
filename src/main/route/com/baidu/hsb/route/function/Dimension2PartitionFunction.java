@@ -32,7 +32,7 @@ import com.baidu.hsb.util.SplitUtil;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public final class Dimension2PartitionFunction extends FunctionExpression implements RuleAlgorithm {
     public Dimension2PartitionFunction(String functionName) {

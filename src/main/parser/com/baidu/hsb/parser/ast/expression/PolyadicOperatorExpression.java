@@ -27,7 +27,7 @@ import java.util.Map;
  * associative and commutative<br/>
  * non-polyadic operator with same precedence is not exist
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public abstract class PolyadicOperatorExpression extends AbstractExpression {
     protected List<Expression> operands;

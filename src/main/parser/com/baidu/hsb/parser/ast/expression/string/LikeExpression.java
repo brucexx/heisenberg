@@ -25,7 +25,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * <code>higherPreExpr 'NOT'? 'LIKE' higherPreExpr ('ESCAPE' higherPreExpr)?</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class LikeExpression extends TernaryOperatorExpression {
     private final boolean not;

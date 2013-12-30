@@ -23,7 +23,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * stand for <code>*</code>
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class Wildcard extends Identifier {
     public Wildcard(Identifier parent) {

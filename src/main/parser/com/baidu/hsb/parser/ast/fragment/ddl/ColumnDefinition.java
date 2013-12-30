@@ -27,7 +27,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * NOT FULL AST
  * 
- * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
+ * @author xiongzhao@baidu.com
  */
 public class ColumnDefinition implements ASTNode {
     public static enum SpecialIndex {
