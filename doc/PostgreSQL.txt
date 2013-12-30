@@ -1,0 +1,52 @@
+﻿identifier
+  不能数字开头
+  ", 中间如何转义？
+  U&"d!0061t!+000061" UESCAPE ’!’
+  不能以$开头
+string
+  无"
+  'hell' 'o'中间只能由一个separator
+  U&’d!0061t!+000061’ UESCAPE ’!’
+  'ab''c'意义未定义
+  转义异同
+  $tag2$abc$tag2$
+
+cast函数
+  4.1.2.7
+    type 'string'
+    'string'::type  pg的历史语法
+    CAST ( ’string’ AS type ) 
+  4.2.9
+    typename ( ’string’ )
+
+comment
+  /**/可嵌套
+  无 # 开头的注释
+  /*!无特殊语义，只是comment而已
+
+keyword
+  reserved 可用在as之后，其他地方不能用
+  non-reserved
+
+expression
+  OVERLAPS
+  similar, ilike
+  自定义operator
+  array
+  (mytable.compositecol).somefield
+
+function
+  SELECT array_agg(a ORDER BY b DESC) FROM table;
+  function_name ( * ) OVER ( window_definition )
+  $1 表示function的第一个实参
+
+dml
+  [ WITH [ RECURSIVE ] with_query [, ...] ]
+  DELETE FROM [ ONLY ] table [ [ AS ] alias ]
+  [ USING using_list ]
+  [ WHERE condition | WHERE CURRENT OF cursor_name ]
+  [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
+
+  INSERT INTO products VALUES (1, ’Cheese’);可以没有columns
+  INSERT INTO products DEFAULT VALUES;
+
