@@ -18,7 +18,7 @@ package com.baidu.hsb.config;
 /**
  * 字段类型及标识定义
  * 
- * @author xianmao.hexm
+ * @author xiongzhao@baidu.com
  */
 public interface Fields {
 

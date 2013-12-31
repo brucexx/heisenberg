@@ -123,7 +123,7 @@ public final class NIOConnector extends Thread {
     /**
      * 后端连接ID生成器
      * 
-     * @author xianmao.hexm
+     * @author xiongzhao@baidu.com
      */
     private static class ConnectIdGenerator {
 

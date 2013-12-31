@@ -18,7 +18,7 @@ package com.baidu.hsb.config;
 /**
  * 处理能力标识定义
  * 
- * @author xianmao.hexm
+ * @author xiongzhao@baidu.com
  */
 public interface Capabilities {
 

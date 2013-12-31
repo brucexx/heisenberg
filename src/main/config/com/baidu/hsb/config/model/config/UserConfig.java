@@ -1,24 +1,16 @@
-/*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Baidu.com,Inc.
+ * Copyright (c) 2000-2013 All Rights Reserved.
  */
 package com.baidu.hsb.config.model.config;
 
 import java.util.Set;
 
 /**
- * @author xianmao.hexm 2011-1-11 下午02:26:09
+ * 
+ * 
+ * @author xiongzhao@baidu.com
+ * @version $Id: UserConfig.java, v 0.1 2013年12月31日 上午10:50:22 HI:brucest0078 Exp $
  */
 public class UserConfig {
 

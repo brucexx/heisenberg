@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.config.model.config.TableConfig;
 import com.baidu.hsb.config.model.config.TableRuleConfig;
@@ -40,8 +38,6 @@ import com.baidu.hsb.route.visitor.PartitionKeyVisitor;
  * @version $Id: MyServerRouter.java, v 0.1 2013年12月22日 下午1:01:32 HI:brucest0078 Exp $
  */
 public class HServerRouter {
-
-    private static final Logger LOGGER = Logger.getLogger(HServerRouter.class);
 
     public static RouteResultset route(SchemaConfig schema, String stmt, String charset, Object info)
                                                                                                      throws SQLNonTransientException {

@@ -16,7 +16,7 @@
 package com.baidu.hsb.config;
 
 /**
- * @author xianmao.hexm
+ * @author xiongzhao@baidu.com
  */
 public interface Versions {
 

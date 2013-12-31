@@ -18,7 +18,7 @@ package com.baidu.hsb.config;
 /**
  * Cobar报警关键词定义
  * 
- * @author xianmao.hexm 2012-4-19
+ * @author xiongzhao@baidu.com 2012-4-19
  */
 public interface Alarms {
     /** 默认报警关键词 **/

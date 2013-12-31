@@ -1,20 +1,6 @@
-/*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 /**
- * (created at 2011-7-21)
+ * Baidu.com,Inc.
+ * Copyright (c) 2000-2013 All Rights Reserved.
  */
 package com.baidu.hsb.route.visitor;
 
@@ -28,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.baidu.hsb.config.model.RealTableCache;
 import com.baidu.hsb.config.model.config.TableConfig;
 import com.baidu.hsb.parser.ast.ASTNode;
 import com.baidu.hsb.parser.ast.expression.BinaryOperatorExpression;
@@ -138,6 +123,7 @@ import com.baidu.hsb.parser.ast.stmt.dal.ShowTriggers;
 import com.baidu.hsb.parser.ast.stmt.dal.ShowVariables;
 import com.baidu.hsb.parser.ast.stmt.dal.ShowWarnings;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement;
+import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement.AlterSpecification;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLCreateIndexStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLCreateTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLDropIndexStatement;
@@ -145,7 +131,6 @@ import com.baidu.hsb.parser.ast.stmt.ddl.DDLDropTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLRenameTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLTruncateStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DescTableStatement;
-import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement.AlterSpecification;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLCallStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLDeleteStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLInsertReplaceStatement;

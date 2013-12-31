@@ -18,7 +18,7 @@ package com.baidu.hsb.config;
 /**
  * 事务隔离级别定义
  * 
- * @author xianmao.hexm
+ * @author xiongzhao@baidu.com
  */
 public interface Isolations {
 

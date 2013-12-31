@@ -127,7 +127,7 @@ public final class NIOAcceptor extends Thread {
     /**
      * 前端连接ID生成器
      * 
-     * @author xianmao.hexm
+     * @author xiongzhao@baidu.com
      */
     private static class AcceptIdGenerator {
 

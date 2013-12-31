@@ -16,7 +16,7 @@
 package com.baidu.hsb.config.util;
 
 /**
- * @author xianmao.hexm 2011-1-10 下午07:07:46
+ * @author xiongzhao@baidu.com 2011-1-10 下午07:07:46
  */
 public class ConfigException extends RuntimeException {
     private static final long serialVersionUID = -180146385688342818L;

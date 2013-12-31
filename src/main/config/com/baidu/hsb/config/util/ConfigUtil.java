@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * @author xianmao.hexm 2011-1-10 下午03:35:06
+ * @author xiongzhao@baidu.com 2011-1-10 下午03:35:06
  */
 public class ConfigUtil {
 

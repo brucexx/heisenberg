@@ -1,17 +1,6 @@
-/*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Baidu.com,Inc.
+ * Copyright (c) 2000-2013 All Rights Reserved.
  */
 package com.baidu.hsb.server.response;
 
@@ -25,6 +14,12 @@ import com.baidu.hsb.net.mysql.OkPacket;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.util.TimeUtil;
 
+/**
+ * 
+ * 
+ * @author xiongzhao@baidu.com
+ * @version $Id: Heartbeat.java, v 0.1 2013年12月31日 下午1:33:43 HI:brucest0078 Exp $
+ */
 public class Heartbeat {
 
     private static final Logger HEARTBEAT = Logger.getLogger("heartbeat");
@@ -54,9 +49,9 @@ public class Heartbeat {
     }
 
     private static String responseMessage(String action, ServerConnection c, long id) {
-        return new StringBuilder("RESPONSE:").append(action).append(", id=").append(id).append(", host=")
-                .append(c.getHost()).append(", port=").append(c.getPort()).append(", time=")
-                .append(TimeUtil.currentTimeMillis()).toString();
+        return new StringBuilder("RESPONSE:").append(action).append(", id=").append(id)
+            .append(", host=").append(c.getHost()).append(", port=").append(c.getPort())
+            .append(", time=").append(TimeUtil.currentTimeMillis()).toString();
     }
 
 }

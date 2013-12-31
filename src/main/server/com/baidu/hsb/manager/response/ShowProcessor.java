@@ -1,17 +1,6 @@
-/*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Baidu.com,Inc.
+ * Copyright (c) 2000-2013 All Rights Reserved.
  */
 package com.baidu.hsb.manager.response;
 
@@ -32,7 +21,7 @@ import com.baidu.hsb.util.LongUtil;
 /**
  * 查看处理器状态
  * 
- * @author xianmao.hexm 2010-1-25 下午01:11:00
+ * @author xiongzhao@baidu.com 2010-1-25 下午01:11:00
  * @author wenfeng.cenwf 2011-4-25
  */
 public final class ShowProcessor {
