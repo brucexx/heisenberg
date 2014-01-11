@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
@@ -266,7 +266,7 @@ public class NonBlockingSession implements Session {
         if (hooked) {
             for (Entry<RouteResultsetNode, MySQLConnection> en : killees.entrySet()) {
                 KillConnectionHandler kill = new KillConnectionHandler(en.getValue(), this, run, count);
-                CobarConfig conf = CobarServer.getInstance().getConfig();
+                HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
                 MySQLDataNode dn = conf.getDataNodes().get(en.getKey().getName());
                 try {
                     dn.getConnection(kill, en.getKey());

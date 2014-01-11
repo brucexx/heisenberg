@@ -7,7 +7,7 @@ package com.baidu.hsb.mysql.nio;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
 import com.baidu.hsb.net.factory.BackendConnectionFactory;
@@ -28,7 +28,7 @@ public class MySQLConnectionFactory extends BackendConnectionFactory {
         c.setSchema(dsc.getDatabase());
         c.setHandler(new MySQLConnectionAuthenticator(c, handler));
         c.setPool(pool);
-        postConnect(c, CobarServer.getInstance().getConnector());
+        postConnect(c, HeisenbergServer.getInstance().getConnector());
         return c;
     }
 

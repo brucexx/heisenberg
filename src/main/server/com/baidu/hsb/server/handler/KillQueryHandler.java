@@ -4,7 +4,7 @@
  */
 package com.baidu.hsb.server.handler;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.net.NIOProcessor;
@@ -38,7 +38,7 @@ public class KillQueryHandler {
 
             // get the connection and kill query
             FrontendConnection fc = null;
-            NIOProcessor[] processors = CobarServer.getInstance().getProcessors();
+            NIOProcessor[] processors = HeisenbergServer.getInstance().getProcessors();
             for (NIOProcessor p : processors) {
                 if ((fc = p.getFrontends().get(value)) != null) {
                     break;

@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.heartbeat.CobarDetector;
 import com.baidu.hsb.heartbeat.CobarHeartbeat;
@@ -80,7 +80,7 @@ public class ShowBackend {
         buffer = eof.write(buffer, c);
         byte packetId = eof.packetId;
         String charset = c.getCharset();
-        for (NIOProcessor p : CobarServer.getInstance().getProcessors()) {
+        for (NIOProcessor p : HeisenbergServer.getInstance().getProcessors()) {
             for (BackendConnection bc : p.getBackends().values()) {
                 if (bc != null) {
                     RowDataPacket row = getRow(bc, charset);

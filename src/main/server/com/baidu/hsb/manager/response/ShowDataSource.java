@@ -11,8 +11,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.manager.ManagerConnection;
@@ -79,7 +79,7 @@ public final class ShowDataSource {
 
         // write rows
         byte packetId = eof.packetId;
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         Map<String, DataSourceConfig> dataSources = conf.getDataSources();
         List<String> keys = new ArrayList<String>();
         if (null != name) {

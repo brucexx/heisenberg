@@ -28,7 +28,7 @@ import com.baidu.hsb.util.SplitUtil;
  */
 public class ConfigInitializer {
     private volatile SystemConfig system;
-    private volatile CobarCluster cluster;
+    private volatile HeisenbergCluster cluster;
     private volatile QuarantineConfig quarantine;
     private volatile Map<String, UserConfig> users;
     private volatile Map<String, SchemaConfig> schemas;
@@ -89,7 +89,7 @@ public class ConfigInitializer {
         return system;
     }
 
-    public CobarCluster getCluster() {
+    public HeisenbergCluster getCluster() {
         return cluster;
     }
 
@@ -113,8 +113,8 @@ public class ConfigInitializer {
         return dataSources;
     }
 
-    private CobarCluster initCobarCluster(ConfigLoader configLoader) {
-        return new CobarCluster(configLoader.getClusterConfig());
+    private HeisenbergCluster initCobarCluster(ConfigLoader configLoader) {
+        return new HeisenbergCluster(configLoader.getClusterConfig());
     }
 
     private Map<String, MySQLDataNode> initDataNodes(ConfigLoader configLoader) {

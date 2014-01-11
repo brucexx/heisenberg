@@ -15,8 +15,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.exception.UnknownDataNodeException;
 import com.baidu.hsb.mysql.MySQLDataNode;
@@ -112,7 +112,7 @@ public final class SingleNodeExecutor extends NodeExecutor {
         final ServerConnection sc = ss.getSource();
 
         // 检查数据节点是否存在
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         final MySQLDataNode dn = conf.getDataNodes().get(rrn.getName());
         if (dn == null) {
             LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(),

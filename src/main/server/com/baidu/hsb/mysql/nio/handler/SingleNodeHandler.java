@@ -9,8 +9,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
@@ -90,7 +90,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable {
         }
         final MySQLConnection conn = session.getTarget(route);
         if (conn == null) {
-            CobarConfig conf = CobarServer.getInstance().getConfig();
+            HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
             MySQLDataNode dn = conf.getDataNodes().get(route.getName());
             dn.getConnection(this, null);
         } else {

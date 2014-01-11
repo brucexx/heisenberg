@@ -12,9 +12,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarNode;
+import com.baidu.hsb.HeisenbergNode;
 import com.baidu.hsb.config.Alarms;
-import com.baidu.hsb.config.model.config.CobarNodeConfig;
+import com.baidu.hsb.config.model.config.HeisenbergNodeConfig;
 import com.baidu.hsb.net.mysql.OkPacket;
 import com.baidu.hsb.statistic.HeartbeatRecorder;
 import com.baidu.hsb.util.TimeUtil;
@@ -34,7 +34,7 @@ public class CobarHeartbeat {
     private static final Logger LOGGER = Logger.getLogger(CobarHeartbeat.class);
     private static final Logger HEARTBEAT = Logger.getLogger("heartbeat");
 
-    private final CobarNode node;
+    private final HeisenbergNode node;
     private final AtomicBoolean isStop;
     private final AtomicBoolean isChecking;
     private final CobarDetectorFactory factory;
@@ -46,7 +46,7 @@ public class CobarHeartbeat {
     private CobarDetector detector;
     public final AtomicLong detectCount;
 
-    public CobarHeartbeat(CobarNode node) {
+    public CobarHeartbeat(HeisenbergNode node) {
         this.node = node;
         this.isStop = new AtomicBoolean(false);
         this.isChecking = new AtomicBoolean(false);
@@ -58,7 +58,7 @@ public class CobarHeartbeat {
         this.detectCount = new AtomicLong(0);
     }
 
-    public CobarNode getNode() {
+    public HeisenbergNode getNode() {
         return node;
     }
 
@@ -274,7 +274,7 @@ public class CobarHeartbeat {
      * 报警信息
      */
     private String alarmMessage(String reason) {
-        CobarNodeConfig cnc = node.getConfig();
+        HeisenbergNodeConfig cnc = node.getConfig();
         return new StringBuilder().append(Alarms.DEFAULT).append("[name=").append(cnc.getName()).append(",host=")
                 .append(cnc.getHost()).append(",port=").append(cnc.getPort()).append(",reason=").append(reason)
                 .append(']').toString();

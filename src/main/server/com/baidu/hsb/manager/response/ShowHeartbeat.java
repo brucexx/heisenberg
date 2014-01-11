@@ -12,9 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarNode;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergNode;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.heartbeat.CobarHeartbeat;
 import com.baidu.hsb.heartbeat.MySQLHeartbeat;
@@ -112,15 +112,15 @@ public class ShowHeartbeat {
 
     private static List<RowDataPacket> getRows() {
         List<RowDataPacket> list = new LinkedList<RowDataPacket>();
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
 
         // cobar nodes
-        Map<String, CobarNode> cobarNodes = conf.getCluster().getNodes();
+        Map<String, HeisenbergNode> cobarNodes = conf.getCluster().getNodes();
         List<String> cobarNodeKeys = new ArrayList<String>(cobarNodes.size());
         cobarNodeKeys.addAll(cobarNodes.keySet());
         Collections.sort(cobarNodeKeys);
         for (String key : cobarNodeKeys) {
-            CobarNode node = cobarNodes.get(key);
+            HeisenbergNode node = cobarNodes.get(key);
             if (node != null) {
                 CobarHeartbeat hb = node.getHeartbeat();
                 RowDataPacket row = new RowDataPacket(FIELD_COUNT);

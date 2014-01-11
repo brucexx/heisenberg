@@ -1,22 +1,12 @@
 #!/bin/sh
-##
-# Copyright 1999-2012 Alibaba Group.
-#  
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#  
-#      http://www.apache.org/licenses/LICENSE-2.0
-#  
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-##
+echo Baidu.com,Inc.                                  
+echo Copyright (c) 2000-2013 All Rights Reserved.                                                                         
+echo Distributed 
+echo https://github.com/brucexx/heisenberg
+echo brucest0078@gmail.com
 
 #set JAVA_HOME
-#JAVA_HOME=/usr/alibaba/java
+#JAVA_HOME=/home/work/soft/java
 
 #check JAVA_HOME & java
 noJavaHome=false
@@ -58,31 +48,31 @@ JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
 #set HOME
 CURR_DIR=`pwd`
 cd `dirname "$0"`/..
-COBAR_HOME=`pwd`
+HSB_HOME=`pwd`
 cd $CURR_DIR
-if [ -z "$COBAR_HOME" ] ; then
+if [ -z "$HSB_HOME" ] ; then
     echo
-    echo "Error: COBAR_HOME environment variable is not defined correctly."
+    echo "Error: HSB_HOME environment variable is not defined correctly."
     echo
     exit 1
 fi
 #==============================================================================
 
 #set CLASSPATH
-COBAR_CLASSPATH="$COBAR_HOME/conf:$COBAR_HOME/lib/classes"
-for i in "$COBAR_HOME"/lib/*.jar
+HSB_CLASSPATH="$HSB_HOME/conf:$HSB_HOME/lib/classes"
+for i in "$HSB_HOME"/lib/*.jar
 do
-    COBAR_CLASSPATH="$COBAR_CLASSPATH:$i"
+    HSB_CLASSPATH="$HSB_CLASSPATH:$i"
 done
 #==============================================================================
 
 #startup Server
 RUN_CMD="\"$JAVA_HOME/bin/java\""
-RUN_CMD="$RUN_CMD -Dcobar.home=\"$COBAR_HOME\""
-RUN_CMD="$RUN_CMD -classpath \"$COBAR_CLASSPATH\""
+RUN_CMD="$RUN_CMD -Dcobar.home=\"$HSB_HOME\""
+RUN_CMD="$RUN_CMD -classpath \"$HSB_CLASSPATH\""
 RUN_CMD="$RUN_CMD $JAVA_OPTS"
 RUN_CMD="$RUN_CMD com.alibaba.cobar.CobarStartup $@"
-RUN_CMD="$RUN_CMD >> \"$COBAR_HOME/logs/console.log\" 2>&1 &"
+RUN_CMD="$RUN_CMD >> \"$HSB_HOME/logs/console.log\" 2>&1 &"
 echo $RUN_CMD
 eval $RUN_CMD
 #==============================================================================

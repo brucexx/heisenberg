@@ -18,13 +18,13 @@ import com.baidu.hsb.util.TimeUtil;
 /**
  * @author xiongzhao@baidu.com
  */
-public class CobarConfig {
+public class HeisenbergConfig {
     private static final int RELOAD = 1;
     private static final int ROLLBACK = 2;
 
     private volatile SystemConfig system;
-    private volatile CobarCluster cluster;
-    private volatile CobarCluster _cluster;
+    private volatile HeisenbergCluster cluster;
+    private volatile HeisenbergCluster _cluster;
     private volatile QuarantineConfig quarantine;
     private volatile QuarantineConfig _quarantine;
     private volatile Map<String, UserConfig> users;
@@ -40,7 +40,7 @@ public class CobarConfig {
     private int status;
     private final ReentrantLock lock;
 
-    public CobarConfig() {
+    public HeisenbergConfig() {
         ConfigInitializer confInit = new ConfigInitializer();
         this.system = confInit.getSystem();
         this.users = confInit.getUsers();
@@ -92,11 +92,11 @@ public class CobarConfig {
         return _dataSources;
     }
 
-    public CobarCluster getCluster() {
+    public HeisenbergCluster getCluster() {
         return cluster;
     }
 
-    public CobarCluster getBackupCluster() {
+    public HeisenbergCluster getBackupCluster() {
         return _cluster;
     }
 
@@ -121,7 +121,7 @@ public class CobarConfig {
     }
 
     public void reload(Map<String, UserConfig> users, Map<String, SchemaConfig> schemas,
-            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, CobarCluster cluster,
+            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, HeisenbergCluster cluster,
             QuarantineConfig quarantine) {
         apply(users, schemas, dataNodes, dataSources, cluster, quarantine);
         this.reloadTime = TimeUtil.currentTimeMillis();
@@ -138,7 +138,7 @@ public class CobarConfig {
     }
 
     public void rollback(Map<String, UserConfig> users, Map<String, SchemaConfig> schemas,
-            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, CobarCluster cluster,
+            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, HeisenbergCluster cluster,
             QuarantineConfig quarantine) {
         apply(users, schemas, dataNodes, dataSources, cluster, quarantine);
         this.rollbackTime = TimeUtil.currentTimeMillis();
@@ -146,7 +146,7 @@ public class CobarConfig {
     }
 
     private void apply(Map<String, UserConfig> users, Map<String, SchemaConfig> schemas,
-            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, CobarCluster cluster,
+            Map<String, MySQLDataNode> dataNodes, Map<String, DataSourceConfig> dataSources, HeisenbergCluster cluster,
             QuarantineConfig quarantine) {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -161,10 +161,10 @@ public class CobarConfig {
                 }
             }
             // stop cobar heartbeat
-            CobarCluster oldCluster = this.cluster;
+            HeisenbergCluster oldCluster = this.cluster;
             if (oldCluster != null) {
-                Map<String, CobarNode> nodes = oldCluster.getNodes();
-                for (CobarNode n : nodes.values()) {
+                Map<String, HeisenbergNode> nodes = oldCluster.getNodes();
+                for (HeisenbergNode n : nodes.values()) {
                     if (n != null) {
                         n.stopHeartbeat();
                     }
@@ -187,8 +187,8 @@ public class CobarConfig {
             }
             // start cobar heartbeat
             if (cluster != null) {
-                Map<String, CobarNode> nodes = cluster.getNodes();
-                for (CobarNode n : nodes.values()) {
+                Map<String, HeisenbergNode> nodes = cluster.getNodes();
+                for (HeisenbergNode n : nodes.values()) {
                     if (n != null) {
                         n.startHeartbeat();
                     }

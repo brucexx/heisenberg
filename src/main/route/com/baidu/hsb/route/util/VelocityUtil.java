@@ -95,7 +95,6 @@ public class VelocityUtil {
         VelocityContext context = getContext();
 
         for (String tbRule : tbArray) {
-
             try {
                 Set<String> tbPreSet = new HashSet<String>();
                 for (Map.Entry<String, List<Object>> entry : colsVal.entrySet()) {
@@ -118,12 +117,13 @@ public class VelocityUtil {
                 }
 
             } catch (ParseErrorException e) {
+                LOGGER.error(tc.getName() + ":eval " + tbRule + " error..", e);
                 throw e;
             } catch (Exception e) {
-                LOGGER.debug(tc.getName() + ":eval " + tbRule + " error..");
+                LOGGER.error(tc.getName() + ":eval " + tbRule + " error..", e);
             }
         }
-        throw new IllegalArgumentException("bad vm tbRuleList:" + tbArray);
+        return new HashSet<String>();
 
     }
 

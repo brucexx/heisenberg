@@ -10,7 +10,7 @@ import java.sql.SQLNonTransientException;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.net.FrontendConnection;
@@ -123,7 +123,7 @@ public class ServerConnection extends FrontendConnection {
             writeErrMessage(ErrorCode.ER_NO_DB_ERROR, "No database selected");
             return;
         }
-        SchemaConfig schema = CobarServer.getInstance().getConfig().getSchemas().get(db);
+        SchemaConfig schema = HeisenbergServer.getInstance().getConfig().getSchemas().get(db);
         if (schema == null) {
             writeErrMessage(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + db + "'");
             return;

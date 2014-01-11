@@ -5,17 +5,16 @@
 package com.baidu.hsb.config.model.config;
 
 /**
- * @author haiqing.zhuhq 2012-3-21
  * @author xiongzhao@baidu.com
  */
-public final class CobarNodeConfig {
+public final class HeisenbergNodeConfig {
 
     private String name;
     private String host;
     private int port;
     private int weight;
 
-    public CobarNodeConfig(String name, String host, int port, int weight) {
+    public HeisenbergNodeConfig(String name, String host, int port, int weight) {
         this.name = name;
         this.host = host;
         this.port = port;

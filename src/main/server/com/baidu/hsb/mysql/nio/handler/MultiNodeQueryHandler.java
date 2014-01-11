@@ -13,8 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
 import com.baidu.hsb.net.mysql.ErrorPacket;
@@ -85,7 +85,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler {
                     }
                 });
             } else {
-                CobarConfig conf = CobarServer.getInstance().getConfig();
+                HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
                 MySQLDataNode dn = conf.getDataNodes().get(node.getName());
                 dn.getConnection(this, node);
             }

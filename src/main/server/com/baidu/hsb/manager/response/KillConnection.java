@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.net.NIOConnection;
@@ -46,7 +46,7 @@ public final class KillConnection {
         if (ids.length() > 0) {
             String[] idList = SplitUtil.split(ids, ',', true);
             List<FrontendConnection> fcList = new ArrayList<FrontendConnection>(idList.length);
-            NIOProcessor[] processors = CobarServer.getInstance().getProcessors();
+            NIOProcessor[] processors = HeisenbergServer.getInstance().getProcessors();
             for (String id : idList) {
                 long value = 0;
                 try {

@@ -6,20 +6,20 @@ package com.baidu.hsb;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.config.model.config.CobarNodeConfig;
+import com.baidu.hsb.config.model.config.HeisenbergNodeConfig;
 import com.baidu.hsb.heartbeat.CobarHeartbeat;
 
 /**
  * @author xiongzhao@baidu.com
  */
-public class CobarNode {
-    private static final Logger LOGGER = Logger.getLogger(CobarNode.class);
+public class HeisenbergNode {
+    private static final Logger LOGGER = Logger.getLogger(HeisenbergNode.class);
 
     private final String name;
-    private final CobarNodeConfig config;
+    private final HeisenbergNodeConfig config;
     private final CobarHeartbeat heartbeat;
 
-    public CobarNode(CobarNodeConfig config) {
+    public HeisenbergNode(HeisenbergNodeConfig config) {
         this.name = config.getName();
         this.config = config;
         this.heartbeat = new CobarHeartbeat(this);
@@ -29,7 +29,7 @@ public class CobarNode {
         return name;
     }
 
-    public CobarNodeConfig getConfig() {
+    public HeisenbergNodeConfig getConfig() {
         return config;
     }
 

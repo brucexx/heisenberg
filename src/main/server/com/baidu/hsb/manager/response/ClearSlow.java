@@ -6,8 +6,8 @@ package com.baidu.hsb.manager.response;
 
 import java.util.Map;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.manager.ManagerConnection;
@@ -21,7 +21,7 @@ import com.baidu.hsb.net.mysql.OkPacket;
 public class ClearSlow {
 
     public static void dataNode(ManagerConnection c, String name) {
-        MySQLDataNode dn = CobarServer.getInstance().getConfig().getDataNodes().get(name);
+        MySQLDataNode dn = HeisenbergServer.getInstance().getConfig().getDataNodes().get(name);
         MySQLDataSource ds = null;
         if (dn != null && (ds = dn.getSource()) != null) {
             ds.getSqlRecorder().clear();
@@ -32,7 +32,7 @@ public class ClearSlow {
     }
 
     public static void schema(ManagerConnection c, String name) {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         SchemaConfig schema = conf.getSchemas().get(name);
         if (schema != null) {
             Map<String, MySQLDataNode> dataNodes = conf.getDataNodes();

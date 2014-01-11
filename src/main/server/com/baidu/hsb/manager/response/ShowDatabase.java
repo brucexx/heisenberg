@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TreeSet;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.manager.ManagerConnection;
@@ -58,7 +58,7 @@ public final class ShowDatabase {
 
         // write rows
         byte packetId = eof.packetId;
-        Map<String, SchemaConfig> schemas = CobarServer.getInstance().getConfig().getSchemas();
+        Map<String, SchemaConfig> schemas = HeisenbergServer.getInstance().getConfig().getSchemas();
         for (String name : new TreeSet<String>(schemas.keySet())) {
             RowDataPacket row = new RowDataPacket(FIELD_COUNT);
             row.add(StringUtil.encode(name, c.getCharset()));

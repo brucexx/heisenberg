@@ -7,7 +7,7 @@ package com.baidu.hsb.server.response;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.mysql.MySQLDataNode;
@@ -65,7 +65,7 @@ public class ShowDataSources {
 
         // write rows
         byte packetId = eof.packetId;
-        Map<String, MySQLDataNode> nodes = CobarServer.getInstance().getConfig().getDataNodes();
+        Map<String, MySQLDataNode> nodes = HeisenbergServer.getInstance().getConfig().getDataNodes();
         for (MySQLDataNode node : nodes.values()) {
             RowDataPacket row = getRow(node, c.getCharset());
             row.packetId = ++packetId;

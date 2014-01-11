@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -93,7 +93,7 @@ public final class ShowServer {
     }
 
     private static RowDataPacket getRow(String charset) {
-        CobarServer server = CobarServer.getInstance();
+        HeisenbergServer server = HeisenbergServer.getInstance();
         long startupTime = server.getStartupTime();
         long now = TimeUtil.currentTimeMillis();
         long uptime = now - startupTime;
@@ -109,7 +109,7 @@ public final class ShowServer {
         row.add(LongUtil.toBytes(server.getConfig().getReloadTime()));
         row.add(LongUtil.toBytes(server.getConfig().getRollbackTime()));
         row.add(StringUtil.encode(charset, charset));
-        row.add(StringUtil.encode(CobarServer.getInstance().isOnline() ? "ON" : "OFF", charset));
+        row.add(StringUtil.encode(HeisenbergServer.getInstance().isOnline() ? "ON" : "OFF", charset));
         return row;
     }
 

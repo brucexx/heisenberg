@@ -9,7 +9,7 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.util.TimeUtil;
@@ -36,7 +36,7 @@ public class ManagerConnection extends FrontendConnection {
 
     @Override
     public void handle(final byte[] data) {
-        CobarServer.getInstance().getManagerExecutor().execute(new Runnable() {
+        HeisenbergServer.getInstance().getManagerExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 try {

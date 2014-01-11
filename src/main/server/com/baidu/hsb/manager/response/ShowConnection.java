@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -102,7 +102,7 @@ public final class ShowConnection {
         // write rows
         byte packetId = eof.packetId;
         String charset = c.getCharset();
-        for (NIOProcessor p : CobarServer.getInstance().getProcessors()) {
+        for (NIOProcessor p : HeisenbergServer.getInstance().getProcessors()) {
             for (FrontendConnection fc : p.getFrontends().values()) {
                 if (fc != null) {
                     RowDataPacket row = getRow(fc, charset);

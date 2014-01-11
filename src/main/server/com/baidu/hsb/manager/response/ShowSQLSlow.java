@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -76,7 +76,7 @@ public final class ShowSQLSlow {
 
         // write rows
         byte packetId = eof.packetId;
-        SQLRecord[] records = CobarServer.getInstance().getSqlRecorder().getRecords();
+        SQLRecord[] records = HeisenbergServer.getInstance().getSqlRecorder().getRecords();
         for (int i = records.length - 1; i >= 0; i--) {
             if (records[i] != null) {
                 RowDataPacket row = getRow(records[i], c.getCharset());

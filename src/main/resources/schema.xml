@@ -1,30 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- - Copyright 1999-2012 Alibaba Group. - - Licensed under the Apache License, 
-	Version 2.0 (the "License"); - you may not use this file except in compliance 
-	with the License. - You may obtain a copy of the License at - - http://www.apache.org/licenses/LICENSE-2.0 
-	- - Unless required by applicable law or agreed to in writing, software - 
-	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT 
-	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. - See the 
-	License for the specific language governing permissions and - limitations 
-	under the License. -->
-<cobar:schema xmlns:cobar="http://cobar.alibaba.com/">
+
+<heisenberg:schema xmlns:heisenberg="https://github.com/brucexx/heisenberg">
 
 	<!-- schema定义 -->
-	<!-- schema name="db_shard">
-		<table name="tb1" dataNode="dn_shard$0-1" rule="rule1" />
-	</schema-->
-	
+	<!-- schema name="db_shard"> <table name="tb1" dataNode="dn_shard$0-1" rule="rule1" 
+		/> </schema -->
+
 	<schema name="trans_shard">
 		<table name="trans_tb" dataNode="trans_shard$0-9" rule="rule1" />
 	</schema>
 
-	<!--dataNode name="dn_shard">
-		<property name="dataSource">
-			<dataSourceRef>dsMaster$0-1</dataSourceRef>
-		</property>
-		<property name="poolSize">256</property>
-		<property name="heartbeatSQL">select user()</property>
-	</dataNode-->
+	<!--dataNode name="dn_shard"> <property name="dataSource"> <dataSourceRef>dsMaster$0-1</dataSourceRef> 
+		</property> <property name="poolSize">256</property> <property name="heartbeatSQL">select 
+		user()</property> </dataNode -->
 
 	<dataNode name="trans_shard">
 		<property name="dataSource">
@@ -47,14 +35,10 @@
 
 
 	<!-- 数据源定义，数据源是一个具体的后端数据连接的表示。 -->
-	<!-- dataSource name="dsMaster" type="mysql">
-		<property name="location">
-			<location>10.46.188.55:8801/cobar$1-2</location>
-		</property>
-		<property name="user">root</property>
-		<property name="password">st0078</property>
-		<property name="sqlMode">STRICT_TRANS_TABLES</property>
-	</dataSource-->
+	<!-- dataSource name="dsMaster" type="mysql"> <property name="location"> 
+		<location>10.46.188.55:8801/cobar$1-2</location> </property> <property name="user">root</property> 
+		<property name="password">st0078</property> <property name="sqlMode">STRICT_TRANS_TABLES</property> 
+		</dataSource -->
 
 
-</cobar:schema>
+</heisenberg:schema>

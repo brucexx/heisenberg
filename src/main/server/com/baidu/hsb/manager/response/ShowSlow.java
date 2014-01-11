@@ -7,8 +7,8 @@ package com.baidu.hsb.manager.response;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.manager.ManagerConnection;
@@ -81,7 +81,7 @@ public final class ShowSlow {
 
         // write rows
         byte packetId = eof.packetId;
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         MySQLDataNode dn = conf.getDataNodes().get(name);
         MySQLDataSource ds = null;
         if (dn != null && (ds = dn.getSource()) != null) {
@@ -120,7 +120,7 @@ public final class ShowSlow {
 
         // write rows
         byte packetId = eof.packetId;
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         SchemaConfig schema = conf.getSchemas().get(name);
         if (schema != null) {
             SQLRecorder recorder = new SQLRecorder(conf.getSystem().getSqlRecordCount());

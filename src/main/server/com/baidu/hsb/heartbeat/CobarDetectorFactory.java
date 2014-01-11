@@ -7,8 +7,8 @@ package com.baidu.hsb.heartbeat;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import com.baidu.hsb.CobarServer;
-import com.baidu.hsb.config.model.config.CobarNodeConfig;
+import com.baidu.hsb.HeisenbergServer;
+import com.baidu.hsb.config.model.config.HeisenbergNodeConfig;
 import com.baidu.hsb.config.model.config.SystemConfig;
 import com.baidu.hsb.net.factory.BackendConnectionFactory;
 
@@ -23,8 +23,8 @@ public class CobarDetectorFactory extends BackendConnectionFactory {
 
     public CobarDetector make(CobarHeartbeat heartbeat) throws IOException {
         SocketChannel channel = openSocketChannel();
-        CobarNodeConfig cnc = heartbeat.getNode().getConfig();
-        SystemConfig sys = CobarServer.getInstance().getConfig().getSystem();
+        HeisenbergNodeConfig cnc = heartbeat.getNode().getConfig();
+        SystemConfig sys = HeisenbergServer.getInstance().getConfig().getSystem();
         CobarDetector detector = new CobarDetector(channel);
         detector.setHost(cnc.getHost());
         detector.setPort(cnc.getPort());
@@ -32,7 +32,7 @@ public class CobarDetectorFactory extends BackendConnectionFactory {
         detector.setPassword(sys.getClusterHeartbeatPass());
         detector.setHeartbeatTimeout(sys.getClusterHeartbeatTimeout());
         detector.setHeartbeat(heartbeat);
-        postConnect(detector, CobarServer.getInstance().getConnector());
+        postConnect(detector, HeisenbergServer.getInstance().getConnector());
         return detector;
     }
 

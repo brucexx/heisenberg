@@ -34,14 +34,15 @@ import com.baidu.hsb.server.parser.ServerParse;
  * @author xiongzhao@baidu.com
  */
 public class BlockingSession implements Session {
-    private static final Logger LOGGER = Logger.getLogger(BlockingSession.class);
+    private static final Logger                                  LOGGER = Logger
+                                                                            .getLogger(BlockingSession.class);
 
-    private final ServerConnection source;
+    private final ServerConnection                               source;
     private final ConcurrentHashMap<RouteResultsetNode, Channel> target;
-    private final SingleNodeExecutor singleNodeExecutor;
-    private final MultiNodeExecutor multiNodeExecutor;
-    private final DefaultCommitExecutor commitExecutor;
-    private final RollbackExecutor rollbackExecutor;
+    private final SingleNodeExecutor                             singleNodeExecutor;
+    private final MultiNodeExecutor                              multiNodeExecutor;
+    private final DefaultCommitExecutor                          commitExecutor;
+    private final RollbackExecutor                               rollbackExecutor;
 
     public BlockingSession(ServerConnection source) {
         this.source = source;
@@ -80,7 +81,7 @@ public class BlockingSession implements Session {
             return;
         }
 
-//        // 选择执行方式
+        //        // 选择执行方式
 //        if (nodes.length == 1) {
 //            singleNodeExecutor.execute(nodes[0], this, rrs.getFlag());
 //        } else {
@@ -210,14 +211,14 @@ public class BlockingSession implements Session {
             try {
                 BinaryPacket bin = mc.rollback();
                 switch (bin.data[0]) {
-                case OkPacket.FIELD_COUNT:
-                    mc.release();
-                    break;
-                case ErrorPacket.FIELD_COUNT:
-                    mc.close();
-                    break;
-                default:
-                    throw new UnknownPacketException(bin.toString());
+                    case OkPacket.FIELD_COUNT:
+                        mc.release();
+                        break;
+                    case ErrorPacket.FIELD_COUNT:
+                        mc.close();
+                        break;
+                    default:
+                        throw new UnknownPacketException(bin.toString());
                 }
             } catch (IOException e) {
                 StringBuilder s = new StringBuilder();
@@ -248,13 +249,13 @@ public class BlockingSession implements Session {
      */
     private static boolean isModifySQL(int type) {
         switch (type) {
-        case ServerParse.INSERT:
-        case ServerParse.DELETE:
-        case ServerParse.UPDATE:
-        case ServerParse.REPLACE:
-            return true;
-        default:
-            return false;
+            case ServerParse.INSERT:
+            case ServerParse.DELETE:
+            case ServerParse.UPDATE:
+            case ServerParse.REPLACE:
+                return true;
+            default:
+                return false;
         }
     }
 

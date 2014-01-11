@@ -6,7 +6,7 @@ package com.baidu.hsb.server.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.mysql.PacketUtil;
 import com.baidu.hsb.net.mysql.EOFPacket;
@@ -44,7 +44,7 @@ public class ShowCobarStatus {
     }
 
     public static void response(ServerConnection c) {
-        if (CobarServer.getInstance().isOnline()) {
+        if (HeisenbergServer.getInstance().isOnline()) {
             ByteBuffer buffer = c.allocate();
             buffer = header.write(buffer, c);
             for (FieldPacket field : fields) {

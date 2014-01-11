@@ -9,9 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarCluster;
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergCluster;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.config.model.config.QuarantineConfig;
@@ -29,7 +29,7 @@ public final class RollbackConfig {
     private static final Logger LOGGER = Logger.getLogger(RollbackConfig.class);
 
     public static void execute(ManagerConnection c) {
-        final ReentrantLock lock = CobarServer.getInstance().getConfig().getLock();
+        final ReentrantLock lock = HeisenbergServer.getInstance().getConfig().getLock();
         lock.lock();
         try {
             if (rollback()) {
@@ -51,12 +51,12 @@ public final class RollbackConfig {
     }
 
     private static boolean rollback() {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         Map<String, UserConfig> users = conf.getBackupUsers();
         Map<String, SchemaConfig> schemas = conf.getBackupSchemas();
         Map<String, MySQLDataNode> dataNodes = conf.getBackupDataNodes();
         Map<String, DataSourceConfig> dataSources = conf.getBackupDataSources();
-        CobarCluster cluster = conf.getBackupCluster();
+        HeisenbergCluster cluster = conf.getBackupCluster();
         QuarantineConfig quarantine = conf.getBackupQuarantine();
 
         // 检查可回滚状态

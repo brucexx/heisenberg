@@ -31,18 +31,18 @@ import com.baidu.hsb.util.TimeUtil;
 /**
  * @author xiongzhao@baidu.com  
  */
-public class CobarServer {
+public class HeisenbergServer {
     public static final String NAME = "Cobar";
     private static final long LOG_WATCH_DELAY = 60000L;
     private static final long TIME_UPDATE_PERIOD = 20L;
-    private static final CobarServer INSTANCE = new CobarServer();
-    private static final Logger LOGGER = Logger.getLogger(CobarServer.class);
+    private static final HeisenbergServer INSTANCE = new HeisenbergServer();
+    private static final Logger LOGGER = Logger.getLogger(HeisenbergServer.class);
 
-    public static final CobarServer getInstance() {
+    public static final HeisenbergServer getInstance() {
         return INSTANCE;
     }
 
-    private final CobarConfig config;
+    private final HeisenbergConfig config;
     private final Timer timer;
     private final NameableExecutor managerExecutor;
     private final NameableExecutor timerExecutor;
@@ -55,8 +55,8 @@ public class CobarServer {
     private NIOAcceptor manager;
     private NIOAcceptor server;
 
-    private CobarServer() {
-        this.config = new CobarConfig();
+    private HeisenbergServer() {
+        this.config = new HeisenbergConfig();
         SystemConfig system = config.getSystem();
         MySQLLexer.setCStyleCommentVersion(system.getParserCommentVersion());
         this.timer = new Timer(NAME + "Timer", true);
@@ -68,15 +68,15 @@ public class CobarServer {
         this.startupTime = TimeUtil.currentTimeMillis();
     }
 
-    public CobarConfig getConfig() {
+    public HeisenbergConfig getConfig() {
         return config;
     }
 
     public void beforeStart(String dateFormat) {
-        String home = System.getProperty("cobar.home");
+        String home = System.getProperty("hsb.home");
         if (home == null) {
             SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-            LogLog.warn(sdf.format(new Date()) + " [cobar.home] is not set.");
+            LogLog.warn(sdf.format(new Date()) + " [hsb.home] is not set.");
         } else {
             Log4jInitializer.configureAndWatch(home + "/conf/log4j.xml", LOG_WATCH_DELAY);
         }
@@ -255,8 +255,8 @@ public class CobarServer {
                 timerExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        Map<String, CobarNode> nodes = config.getCluster().getNodes();
-                        for (CobarNode node : nodes.values()) {
+                        Map<String, HeisenbergNode> nodes = config.getCluster().getNodes();
+                        for (HeisenbergNode node : nodes.values()) {
                             node.doHeartbeat();
                         }
                     }

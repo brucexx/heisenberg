@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Capabilities;
 import com.baidu.hsb.config.Isolations;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
@@ -171,7 +171,7 @@ public final class MySQLChannel implements Channel {
                 return handshake();
             }
         });
-        CobarServer.getInstance().getInitExecutor().execute(ft);
+        HeisenbergServer.getInstance().getInitExecutor().execute(ft);
         try {
             ft.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

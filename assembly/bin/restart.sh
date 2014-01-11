@@ -1,22 +1,12 @@
 #!/bin/sh
-##
-# Copyright 1999-2012 Alibaba Group.
-#  
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#  
-#      http://www.apache.org/licenses/LICENSE-2.0
-#  
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-##
+echo Baidu.com,Inc.                                  
+echo Copyright (c) 2000-2013 All Rights Reserved.                                                                         
+echo Distributed 
+echo https://github.com/brucexx/heisenberg
+echo brucest0078@gmail.com
 
 #set JAVA_HOME
-#JAVA_HOME=/usr/alibaba/java
+#JAVA_HOME=/home/work/soft/java
 
 #check JAVA_HOME & java
 noJavaHome=false
@@ -35,7 +25,7 @@ fi
 #==============================================================================
 
 #stop Server
-$JAVA_HOME/bin/jps |grep CobarStartup|awk -F ' ' '{print $1}'|while read line
+$JAVA_HOME/bin/jps |grep HeisenbergStartup|awk -F ' ' '{print $1}'|while read line
 do
   eval "kill -9 $line"
 done
@@ -44,19 +34,19 @@ done
 #sleep sometime
 sleep 1
 
-#set COBAR_HOME
+#set HSB_HOME
 CURR_DIR=`pwd`
 cd `dirname "$0"`/..
-COBAR_HOME=`pwd`
+HSB_HOME=`pwd`
 cd $CURR_DIR
-if [ -z "$COBAR_HOME" ] ; then
+if [ -z "$HSB_HOME" ] ; then
     echo
-    echo "Error: COBAR_HOME environment variable is not defined correctly."
+    echo "Error: HSB_HOME environment variable is not defined correctly."
     echo
     exit 1
 fi
 #==============================================================================
 
 #startup Server
-. $COBAR_HOME/bin/startup.sh
+. $HSB_HOME/bin/startup.sh
 #==============================================================================

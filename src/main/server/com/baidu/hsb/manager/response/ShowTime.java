@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.nio.ByteBuffer;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.manager.parser.ManagerParseShow;
@@ -73,7 +73,7 @@ public final class ShowTime {
             row.add(LongUtil.toBytes(System.currentTimeMillis()));
             break;
         case ManagerParseShow.TIME_STARTUP:
-            row.add(LongUtil.toBytes(CobarServer.getInstance().getStartupTime()));
+            row.add(LongUtil.toBytes(HeisenbergServer.getInstance().getStartupTime()));
             break;
         default:
             row.add(LongUtil.toBytes(0L));

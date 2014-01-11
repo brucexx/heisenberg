@@ -9,9 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarCluster;
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergCluster;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.ConfigInitializer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
@@ -30,7 +30,7 @@ public final class ReloadConfig {
     private static final Logger LOGGER = Logger.getLogger(ReloadConfig.class);
 
     public static void execute(ManagerConnection c) {
-        final ReentrantLock lock = CobarServer.getInstance().getConfig().getLock();
+        final ReentrantLock lock = HeisenbergServer.getInstance().getConfig().getLock();
         lock.lock();
         try {
             if (reload()) {
@@ -58,11 +58,11 @@ public final class ReloadConfig {
         Map<String, SchemaConfig> schemas = loader.getSchemas();
         Map<String, MySQLDataNode> dataNodes = loader.getDataNodes();
         Map<String, DataSourceConfig> dataSources = loader.getDataSources();
-        CobarCluster cluster = loader.getCluster();
+        HeisenbergCluster cluster = loader.getCluster();
         QuarantineConfig quarantine = loader.getQuarantine();
 
         // 应用新配置
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
 
         // 如果重载已经存在的数据节点，初始化连接数参考空闲连接数，否则为1。
         boolean reloadStatus = true;

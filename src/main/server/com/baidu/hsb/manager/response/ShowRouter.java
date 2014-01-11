@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -66,7 +66,7 @@ public final class ShowRouter {
 
         // write rows
         byte packetId = eof.packetId;
-        for (NIOProcessor p : CobarServer.getInstance().getProcessors()) {
+        for (NIOProcessor p : HeisenbergServer.getInstance().getProcessors()) {
             RowDataPacket row = getRow(p, c.getCharset());
             row.packetId = ++packetId;
             buffer = row.write(buffer, c);

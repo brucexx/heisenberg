@@ -6,7 +6,7 @@ package com.baidu.hsb.server.response;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.net.mysql.ErrorPacket;
 import com.baidu.hsb.net.mysql.HeartbeatPacket;
@@ -27,7 +27,7 @@ public class Heartbeat {
     public static void response(ServerConnection c, byte[] data) {
         HeartbeatPacket hp = new HeartbeatPacket();
         hp.read(data);
-        if (CobarServer.getInstance().isOnline()) {
+        if (HeisenbergServer.getInstance().isOnline()) {
             OkPacket ok = new OkPacket();
             ok.packetId = 1;
             ok.affectedRows = hp.id;

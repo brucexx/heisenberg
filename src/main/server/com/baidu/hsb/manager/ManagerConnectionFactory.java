@@ -6,7 +6,7 @@ package com.baidu.hsb.manager;
 
 import java.nio.channels.SocketChannel;
 
-import com.baidu.hsb.CobarPrivileges;
+import com.baidu.hsb.HeisenbergPrivileges;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.net.factory.FrontendConnectionFactory;
 
@@ -18,7 +18,7 @@ public class ManagerConnectionFactory extends FrontendConnectionFactory {
     @Override
     protected FrontendConnection getConnection(SocketChannel channel) {
         ManagerConnection c = new ManagerConnection(channel);
-        c.setPrivileges(new CobarPrivileges());
+        c.setPrivileges(new HeisenbergPrivileges());
         c.setQueryHandler(new ManagerQueryHandler(c));
         return c;
     }

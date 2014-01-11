@@ -7,7 +7,7 @@ package com.baidu.hsb.heartbeat;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.model.config.DataNodeConfig;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.net.factory.BackendConnectionFactory;
@@ -33,7 +33,7 @@ public class MySQLDetectorFactory extends BackendConnectionFactory {
         detector.setSchema(dsc.getDatabase());
         detector.setHeartbeatTimeout(dnc.getHeartbeatTimeout());
         detector.setHeartbeat(heartbeat);
-        postConnect(detector, CobarServer.getInstance().getConnector());
+        postConnect(detector, HeisenbergServer.getInstance().getConnector());
         return detector;
     }
 

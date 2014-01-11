@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.manager.parser.ManagerParseStop;
 import com.baidu.hsb.mysql.MySQLDataNode;
@@ -31,7 +31,7 @@ public final class StopHeartbeat {
         Pair<String[], Integer> keys = ManagerParseStop.getPair(stmt);
         if (keys.getKey() != null && keys.getValue() != null) {
             long time = keys.getValue().intValue() * 1000L;
-            Map<String, MySQLDataNode> dns = CobarServer.getInstance().getConfig().getDataNodes();
+            Map<String, MySQLDataNode> dns = HeisenbergServer.getInstance().getConfig().getDataNodes();
             for (String key : keys.getKey()) {
                 MySQLDataNode dn = dns.get(key);
                 if (dn != null) {

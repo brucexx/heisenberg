@@ -16,18 +16,18 @@ import com.baidu.hsb.net.handler.FrontendPrivileges;
 /**
  * @author xiongzhao@baidu.com
  */
-public class CobarPrivileges implements FrontendPrivileges {
+public class HeisenbergPrivileges implements FrontendPrivileges {
     private static final Logger ALARM = Logger.getLogger("alarm");
 
     @Override
     public boolean schemaExists(String schema) {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         return conf.getSchemas().containsKey(schema);
     }
 
     @Override
     public boolean userExists(String user, String host) {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         Map<String, Set<String>> quarantineHosts = conf.getQuarantine().getHosts();
         if (quarantineHosts.containsKey(host)) {
             boolean rs = quarantineHosts.get(host).contains(user);
@@ -47,7 +47,7 @@ public class CobarPrivileges implements FrontendPrivileges {
 
     @Override
     public String getPassword(String user) {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         if (user != null && user.equals(conf.getSystem().getClusterHeartbeatUser())) {
             return conf.getSystem().getClusterHeartbeatPass();
         } else {
@@ -62,7 +62,7 @@ public class CobarPrivileges implements FrontendPrivileges {
 
     @Override
     public Set<String> getUserSchemas(String user) {
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         UserConfig uc = conf.getUsers().get(user);
         if (uc != null) {
             return uc.getSchemas();

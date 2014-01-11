@@ -11,13 +11,13 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.baidu.hsb.CobarCluster;
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarNode;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergCluster;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergNode;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Alarms;
 import com.baidu.hsb.config.Fields;
-import com.baidu.hsb.config.model.config.CobarNodeConfig;
+import com.baidu.hsb.config.model.config.HeisenbergNodeConfig;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.mysql.PacketUtil;
 import com.baidu.hsb.net.mysql.EOFPacket;
@@ -82,15 +82,15 @@ public class ShowCobarCluster {
 
     private static List<RowDataPacket> getRows(ServerConnection c) {
         List<RowDataPacket> rows = new LinkedList<RowDataPacket>();
-        CobarConfig config = CobarServer.getInstance().getConfig();
-        CobarCluster cluster = config.getCluster();
+        HeisenbergConfig config = HeisenbergServer.getInstance().getConfig();
+        HeisenbergCluster cluster = config.getCluster();
         Map<String, SchemaConfig> schemas = config.getSchemas();
         SchemaConfig schema = (c.getSchema() == null) ? null : schemas.get(c.getSchema());
 
         // 如果没有指定schema或者schema为null，则使用全部集群。
         if (schema == null) {
-            Map<String, CobarNode> nodes = cluster.getNodes();
-            for (CobarNode n : nodes.values()) {
+            Map<String, HeisenbergNode> nodes = cluster.getNodes();
+            for (HeisenbergNode n : nodes.values()) {
                 if (n != null && n.isOnline()) {
                     rows.add(getRow(n, c.getCharset()));
                 }
@@ -99,9 +99,9 @@ public class ShowCobarCluster {
             String group = (schema.getGroup() == null) ? "default" : schema.getGroup();
             List<String> nodeList = cluster.getGroups().get(group);
             if (nodeList != null && nodeList.size() > 0) {
-                Map<String, CobarNode> nodes = cluster.getNodes();
+                Map<String, HeisenbergNode> nodes = cluster.getNodes();
                 for (String id : nodeList) {
-                    CobarNode n = nodes.get(id);
+                    HeisenbergNode n = nodes.get(id);
                     if (n != null && n.isOnline()) {
                         rows.add(getRow(n, c.getCharset()));
                     }
@@ -109,8 +109,8 @@ public class ShowCobarCluster {
             }
             // 如果schema对应的group或者默认group都没有有效的节点，则使用全部集群。
             if (rows.size() == 0) {
-                Map<String, CobarNode> nodes = cluster.getNodes();
-                for (CobarNode n : nodes.values()) {
+                Map<String, HeisenbergNode> nodes = cluster.getNodes();
+                for (HeisenbergNode n : nodes.values()) {
                     if (n != null && n.isOnline()) {
                         rows.add(getRow(n, c.getCharset()));
                     }
@@ -125,8 +125,8 @@ public class ShowCobarCluster {
         return rows;
     }
 
-    private static RowDataPacket getRow(CobarNode node, String charset) {
-        CobarNodeConfig conf = node.getConfig();
+    private static RowDataPacket getRow(HeisenbergNode node, String charset) {
+        HeisenbergNodeConfig conf = node.getConfig();
         RowDataPacket row = new RowDataPacket(FIELD_COUNT);
         row.add(StringUtil.encode(conf.getHost(), charset));
         row.add(IntegerUtil.toBytes(conf.getWeight()));

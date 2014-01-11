@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.baidu.hsb.CobarConfig;
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergConfig;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.UserConfig;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -55,7 +55,7 @@ public class ShowDatabases {
 
         // write rows
         byte packetId = eof.packetId;
-        CobarConfig conf = CobarServer.getInstance().getConfig();
+        HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         Map<String, UserConfig> users = conf.getUsers();
         UserConfig user = users == null ? null : users.get(c.getUser());
         if (user != null) {

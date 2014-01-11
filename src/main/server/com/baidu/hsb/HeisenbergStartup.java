@@ -15,14 +15,14 @@ import org.apache.log4j.helpers.LogLog;
  * @author xiongzhao@baidu.com
  * @version $Id: CobarStartup.java, v 0.1 2013年12月31日 下午1:40:32 HI:brucest0078 Exp $
  */
-public final class CobarStartup {
+public final class HeisenbergStartup {
     private static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
 
     public static void main(String[] args) {
         try {
-            System.setProperty("cobar.home", "D:/");
+            System.setProperty("hsb.home", "D:/");
             // init
-            CobarServer server = CobarServer.getInstance();
+            HeisenbergServer server = HeisenbergServer.getInstance();
             server.beforeStart(dateFormat);
 
             // startup

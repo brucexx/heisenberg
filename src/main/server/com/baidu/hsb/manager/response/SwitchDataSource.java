@@ -6,7 +6,7 @@ package com.baidu.hsb.manager.response;
 
 import java.util.Map;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.manager.parser.ManagerParseSwitch;
 import com.baidu.hsb.mysql.MySQLDataNode;
@@ -23,7 +23,7 @@ public final class SwitchDataSource {
     public static void response(String stmt, ManagerConnection c) {
         int count = 0;
         Pair<String[], Integer> pair = ManagerParseSwitch.getPair(stmt);
-        Map<String, MySQLDataNode> dns = CobarServer.getInstance().getConfig().getDataNodes();
+        Map<String, MySQLDataNode> dns = HeisenbergServer.getInstance().getConfig().getDataNodes();
         Integer idx = pair.getValue();
         for (String key : pair.getKey()) {
             MySQLDataNode dn = dns.get(key);

@@ -4,7 +4,7 @@
  */
 package com.baidu.hsb.manager.response;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.net.mysql.OkPacket;
 
@@ -21,7 +21,7 @@ public class Online {
     }
 
     public static void execute(String stmt, ManagerConnection mc) {
-        CobarServer.getInstance().online();
+        HeisenbergServer.getInstance().online();
         ok.write(mc);
     }
 

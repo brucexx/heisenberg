@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.baidu.hsb.CobarServer;
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -107,7 +107,7 @@ public final class ShowThreadPool {
 
     private static List<NameableExecutor> getExecutors() {
         List<NameableExecutor> list = new LinkedList<NameableExecutor>();
-        CobarServer server = CobarServer.getInstance();
+        HeisenbergServer server = HeisenbergServer.getInstance();
         list.add(server.getInitExecutor());
         list.add(server.getTimerExecutor());
         list.add(server.getManagerExecutor());
