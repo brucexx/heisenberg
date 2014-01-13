@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rule>
+	<tableRule name="rule1">
+		<columns>TRANS_ID</columns>
+	<dbRuleList>
+			<dbRule><![CDATA[#set($start=$TRANS_ID.length() - 2)##
+			#set($end=$TRANS_ID.length() - 1)##
+			$stringUtil.substring($TRANS_ID,$start,$end)]]>
+			</dbRule>
+		</dbRuleList>
+		<tbRuleList>
+			<tbRule><![CDATA[#set($start=$TRANS_ID.length() - 2)##
+			 $stringUtil.substring($TRANS_ID,$start)]]></tbRule>
+		</tbRuleList>
+		<!-- 00-99 100个表,每个表属于哪个结点 Map<Integer,Set<String>> -->
+		<tbPrefix>
+				<![CDATA[ 	
+			            def map = [:];
+						for (int i=0; i<10; i++) {
+						   def list = [];
+							for (int j=0; j<10; j++) {
+								list.add(i+""+j);
+							}
+							 map.put(i,list);
+						};
+						return map; 
+				]]>
+		</tbPrefix>
+	</tableRule>
+</rule>
