@@ -28,4 +28,16 @@
 				]]>
 		</tbPrefix>
 	</tableRule>
+	
+	<tableRule name="rule2">
+		<columns>TRANS_ID</columns>
+	    <dbRuleList>
+			<dbRule><![CDATA[#set($start=$TRANS_ID.length() - 2)##
+			#set($end=$TRANS_ID.length() - 1)##
+			$stringUtil.substring($TRANS_ID,$start,$end)]]>
+			</dbRule>
+		</dbRuleList> 
+	</tableRule>
+	
+ 
 </rule>

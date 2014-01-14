@@ -48,9 +48,9 @@ public class TableRuleConfig {
         if (dbRuleArray == null || dbRuleArray.isEmpty()) {
             throw new IllegalArgumentException("dbRuleArray is empty!");
         }
-        if (tbRuleArray == null || tbRuleArray.isEmpty()) {
-            throw new IllegalArgumentException("tbRuleArray is empty!");
-        }
+        //        if (tbRuleArray == null || tbRuleArray.isEmpty()) {
+        //            throw new IllegalArgumentException("tbRuleArray is empty!");
+        //        }
 
         this.columns = Collections.unmodifiableList(Arrays.asList(columns));
         this.dbRuleArray = dbRuleArray;
@@ -82,7 +82,7 @@ public class TableRuleConfig {
     }
 
     public boolean isTbShard() {
-        return !tbMap.isEmpty();
+        return tbMap == null ? false : !tbMap.isEmpty();
     }
 
     /**

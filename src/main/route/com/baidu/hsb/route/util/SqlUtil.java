@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.baidu.hsb.config.model.RealTableCache;
 import com.baidu.hsb.config.model.config.SchemaConfig;
@@ -32,19 +34,25 @@ public class SqlUtil {
     public static String[] scan(SchemaConfig schema, String oSql, Set<String> tbNameSet,
                                 int dnIndex, Map<Integer, List<String>> tbMap) {
 
+        if (tbMap == null) {
+            return new String[] { oSql };
+        }
+
         List<String> prefixSet = tbMap.get(dnIndex);
         if (prefixSet != null && !prefixSet.isEmpty() && StringUtil.isNotEmpty(oSql)) {
 
             List<String> sqlList = new ArrayList<String>();
             for (int i = 0; i < prefixSet.size(); i++) {
                 String tbPrefix = prefixSet.get(i);
+                String tmpSql = oSql;
                 for (String tbName : tbNameSet) {
                     String rTb = RealTableCache.getRealByUp(tbName);
                     TableConfig tc = schema.getTables().get(tbName);
                     if (tc != null && tc.getRule().isTbShard()) {
-                        sqlList.add(oSql.replaceAll(rTb, rTb + tbPrefix));
+                        tmpSql = replaceSqlTb(tmpSql, rTb, rTb + tbPrefix);
                     }
                 }
+                sqlList.add(tmpSql);
 
             }
             return sqlList.toArray(new String[sqlList.size()]);
@@ -106,7 +114,7 @@ public class SqlUtil {
                     String rTb = RealTableCache.getRealByUp(tbName);
                     TableConfig tc = schema.getTables().get(tbName);
                     if (tc != null && tc.getRule().isTbShard()) {
-                        sqlTmp = sqlTmp.replaceAll(rTb, rTb + tbPrefix);
+                        sqlTmp = replaceSqlTb(sqlTmp, rTb, rTb + tbPrefix);
                     }
                 }
             }
@@ -115,5 +123,22 @@ public class SqlUtil {
             return oSql;
         }
 
+    }
+
+    private static String replaceSqlTb(String sql, String tb, String logic) {
+        Matcher m = Pattern.compile(tb + "[\\s|,|\\.]").matcher(sql);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String g = m.group();
+            m.appendReplacement(sb, logic + g.charAt(g.length() - 1));
+
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
+    public static void main(String args[]) {
+        String sql = "select * from trans_tb,trans_tb_ext,trans_tb where trans_tb.id='123'";
+        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
     }
 }

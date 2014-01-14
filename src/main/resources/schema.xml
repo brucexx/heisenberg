@@ -8,6 +8,8 @@
 
 	<schema name="trans_shard">
 		<table name="trans_tb" dataNode="trans_shard$0-9" rule="rule1" />
+		<table name="trans_content" dataNode="trans_shard$0-9" rule="rule1" />
+		<table name="trans_tb_ext" dataNode="trans_shard$0-9" rule="rule2" />
 	</schema>
 
 	<!--dataNode name="dn_shard"> <property name="dataSource"> <dataSourceRef>dsMaster$0-1</dataSourceRef> 
