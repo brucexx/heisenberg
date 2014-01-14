@@ -213,7 +213,8 @@ public class SplitUtil {
             int max = Integer.parseInt(scope[scope.length - 1]);
             if (c3 == '0') {
                 for (int x = min; x <= max; x++) {
-                    list.add(new StringBuilder(s[0]).append(x).toString());
+                    String t = scope[0].substring(0, (scope[0].length() - (x + "").length())) + x;
+                    list.add(new StringBuilder(s[0]).append(t).toString());
                 }
             } else if (c4 == '0') {
                 for (int x = min; x <= max; x++) {

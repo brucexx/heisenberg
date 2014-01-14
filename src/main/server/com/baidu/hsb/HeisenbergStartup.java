@@ -9,6 +9,8 @@ import java.util.Date;
 
 import org.apache.log4j.helpers.LogLog;
 
+import com.baidu.hsb.route.util.StringUtil;
+
 /**
  * 
  * 
@@ -19,8 +21,12 @@ public final class HeisenbergStartup {
     private static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
 
     public static void main(String[] args) {
+        long s = System.currentTimeMillis();
         try {
-            System.setProperty("hsb.home", "D:/");
+            if (StringUtil.isEmpty(System.getProperty("hsb.home"))) {
+                System.setProperty("hsb.home", "D:/");
+            }
+
             // init
             HeisenbergServer server = HeisenbergServer.getInstance();
             server.beforeStart(dateFormat);
@@ -31,6 +37,8 @@ public final class HeisenbergStartup {
             SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
             LogLog.error(sdf.format(new Date()) + " startup error", e);
             System.exit(-1);
+        } finally {
+            System.out.println("start hsb time:" + (System.currentTimeMillis() - s) + "ms");
         }
     }
 

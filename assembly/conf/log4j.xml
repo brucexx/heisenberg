@@ -18,7 +18,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
   <appender name="STDOUT" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="file" value="${cobar.home}/logs/stdout.log" />
+    <param name="file" value="${hsb.home}/logs/stdout.log" />
     <param name="append" value="true" />
     <param name="encoding" value="UTF-8" />
     <layout class="org.apache.log4j.PatternLayout">
@@ -26,7 +26,7 @@
     </layout>
   </appender>
   <appender name="ALARM" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="file" value="${cobar.home}/logs/alarm.log" />
+    <param name="file" value="${hsb.home}/logs/alarm.log" />
     <param name="append" value="true" />
     <param name="encoding" value="UTF-8" />
     <layout class="org.apache.log4j.PatternLayout">
@@ -34,7 +34,7 @@
     </layout>
   </appender>
   <appender name="HEARTBEAT" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="file" value="${cobar.home}/logs/heartbeat.log" />
+    <param name="file" value="${hsb.home}/logs/heartbeat.log" />
     <param name="append" value="true" />
     <param name="encoding" value="UTF-8" />
     <layout class="org.apache.log4j.PatternLayout">
@@ -42,13 +42,13 @@
     </layout>
   </appender>
 
-  <logger name="com.alibaba.cobar.CobarServer">
+  <logger name="com.baidu.hsb.HeisenbergServer">
     <level value="debug" />
   </logger>
-  <logger name="com.alibaba.cobar.net.handler.FrontendAuthenticator">
+  <logger name="com.baidu.hsb.net.handler.FrontendAuthenticator">
     <level value="debug" />
   </logger>
-  <logger name="com.alibaba.cobar.mysql.MySQLDataNode">
+  <logger name="com.baidu.hsb.mysql.MySQLDataNode">
     <level value="debug" />
   </logger>
   <logger name="alarm">

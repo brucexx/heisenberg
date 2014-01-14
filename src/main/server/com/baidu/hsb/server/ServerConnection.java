@@ -26,15 +26,15 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com 2011-4-21 上午11:22:57
  */
 public class ServerConnection extends FrontendConnection {
-    private static final Logger LOGGER = Logger.getLogger(ServerConnection.class);
-    private static final long AUTH_TIMEOUT = 15 * 1000L;
+    private static final Logger LOGGER       = Logger.getLogger(ServerConnection.class);
+    private static final long   AUTH_TIMEOUT = 15 * 1000L;
 
-    private volatile int txIsolation;
-    private volatile boolean autocommit;
-    private volatile boolean txInterrupted;
-    private long lastInsertId;
-    private BlockingSession session;
-    private NonBlockingSession session2;
+    private volatile int        txIsolation;
+    private volatile boolean    autocommit;
+    private volatile boolean    txInterrupted;
+    private long                lastInsertId;
+    private BlockingSession     session;
+    private NonBlockingSession  session2;
 
     public ServerConnection(SocketChannel channel) {
         super(channel);
@@ -47,7 +47,8 @@ public class ServerConnection extends FrontendConnection {
         if (isAuthenticated) {
             return super.isIdleTimeout();
         } else {
-            return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime) + AUTH_TIMEOUT;
+            return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime)
+                                                  + AUTH_TIMEOUT;
         }
     }
 
@@ -131,18 +132,27 @@ public class ServerConnection extends FrontendConnection {
 
         // 路由计算
         RouteResultset rrs = null;
+        long st = System.currentTimeMillis();
+        long et = -1L;
         try {
             rrs = HServerRouter.route(schema, sql, this.charset, this);
         } catch (SQLNonTransientException e) {
             StringBuilder s = new StringBuilder();
             LOGGER.warn(s.append(this).append(sql).toString(), e);
             String msg = e.getMessage();
-            writeErrMessage(ErrorCode.ER_PARSE_ERROR, msg == null ? e.getClass().getSimpleName() : msg);
+            writeErrMessage(ErrorCode.ER_PARSE_ERROR, msg == null ? e.getClass().getSimpleName()
+                : msg);
             return;
+        } finally {
+            et = System.currentTimeMillis();
+            LOGGER.debug("sql route time:" + (et - st) + "ms");
         }
-
-        // session执行
-        session.execute(rrs, type);
+        try {
+            // session执行
+            session.execute(rrs, type);
+        } finally {
+            LOGGER.debug("sql execute time:" + (System.currentTimeMillis() - et) + "ms");
+        }
     }
 
     /**
@@ -201,12 +211,12 @@ public class ServerConnection extends FrontendConnection {
 
         // 异常返回码处理
         switch (errCode) {
-        case ErrorCode.ERR_HANDLE_DATA:
-            String msg = t.getMessage();
-            writeErrMessage(ErrorCode.ER_YES, msg == null ? t.getClass().getSimpleName() : msg);
-            break;
-        default:
-            close();
+            case ErrorCode.ERR_HANDLE_DATA:
+                String msg = t.getMessage();
+                writeErrMessage(ErrorCode.ER_YES, msg == null ? t.getClass().getSimpleName() : msg);
+                break;
+            default:
+                close();
         }
     }
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 echo Baidu.com,Inc.                                  
-echo Copyright (c) 2000-2013 All Rights Reserved.                                                                         
+echo 'Copyright (c) 2000-2013 All Rights Reserved.'                                                                      
 echo Distributed 
 echo https://github.com/brucexx/heisenberg
 echo brucest0078@gmail.com
@@ -71,7 +71,7 @@ RUN_CMD="\"$JAVA_HOME/bin/java\""
 RUN_CMD="$RUN_CMD -Dcobar.home=\"$HSB_HOME\""
 RUN_CMD="$RUN_CMD -classpath \"$HSB_CLASSPATH\""
 RUN_CMD="$RUN_CMD $JAVA_OPTS"
-RUN_CMD="$RUN_CMD com.alibaba.cobar.CobarStartup $@"
+RUN_CMD="$RUN_CMD com.baidu.hsb.HeisenbergStartup $@"
 RUN_CMD="$RUN_CMD >> \"$HSB_HOME/logs/console.log\" 2>&1 &"
 echo $RUN_CMD
 eval $RUN_CMD

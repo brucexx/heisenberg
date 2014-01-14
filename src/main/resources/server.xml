@@ -21,7 +21,7 @@
   <!-- 用户访问定义，用户名、密码、schema等信息。 -->
   <user name="brucexx">
     <property name="password">st0078</property>
-    <property name="schemas">trans_shard</property>
+    <property name="schemas">wms_shard</property>
   </user>
   <!--
   <user name="root">
