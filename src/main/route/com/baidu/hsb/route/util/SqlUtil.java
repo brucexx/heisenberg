@@ -126,19 +126,37 @@ public class SqlUtil {
     }
 
     private static String replaceSqlTb(String sql, String tb, String logic) {
-        Matcher m = Pattern.compile(tb + "[\\s|,|\\.]").matcher(sql);
+        Matcher m = Pattern.compile(tb).matcher(sql);
         StringBuffer sb = new StringBuffer();
+        int len = sql.length();
         while (m.find()) {
-            String g = m.group();
-            m.appendReplacement(sb, logic + g.charAt(g.length() - 1));
-
+            int eIdx = m.end();
+            if (eIdx >= len) {
+                m.appendReplacement(sb, logic);
+            } else {
+                String s = sql.substring(eIdx, eIdx + 1);
+                if (s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\r")
+                    || s.equals("\n")) {
+                    m.appendReplacement(sb, logic);
+                }
+            }
         }
         m.appendTail(sb);
         return sb.toString();
     }
 
     public static void main(String args[]) {
-        String sql = "select * from trans_tb,trans_tb_ext,trans_tb where trans_tb.id='123'";
+        String sql = "select * from trans_tb";
         System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        sql = "select * from trans_tb,trans_tb_ext";
+        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        sql = "select * from trans_tb.";
+        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        sql = "select * from trans_tb ";
+        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        sql = "select * from trans_tb\r\n";
+        System.out.println(sql + "|");
+        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
+
     }
 }
