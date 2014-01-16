@@ -130,13 +130,17 @@ public class SqlUtil {
         StringBuffer sb = new StringBuffer();
         int len = sql.length();
         while (m.find()) {
+            int sIdx = m.start();
             int eIdx = m.end();
-            if (eIdx >= len) {
+            if (eIdx >= len || sIdx <= 0) {
                 m.appendReplacement(sb, logic);
             } else {
                 String s = sql.substring(eIdx, eIdx + 1);
-                if (s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\r")
-                    || s.equals("\n")) {
+                String s1 = sql.substring(sIdx - 1, sIdx);
+                if ((s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\r") || s
+                    .equals("\n"))
+                    && (s1.equals(",") || s1.equals(".") || s1.equals(" ") || s1.equals("\r") || s1
+                        .equals("\n"))) {
                     m.appendReplacement(sb, logic);
                 }
             }
@@ -146,7 +150,7 @@ public class SqlUtil {
     }
 
     public static void main(String args[]) {
-        String sql = "select * from trans_tb";
+        String sql = "select * from \r\ntrans_tb";
         System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
         sql = "select * from trans_tb,trans_tb_ext";
         System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
@@ -155,7 +159,7 @@ public class SqlUtil {
         sql = "select * from trans_tb ";
         System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
         sql = "select * from trans_tb\r\n";
-        System.out.println(sql + "|");
+        //System.out.println(sql + "|");
         System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
 
     }

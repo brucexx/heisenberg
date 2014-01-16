@@ -11,7 +11,10 @@
 		</dbRuleList>
 		<tbRuleList>
 			<tbRule><![CDATA[#set($start=$F_USER_ID.length() - 1)##
-			 $stringUtil.substring($F_USER_ID,$start)]]></tbRule>
+			#set($start1=$F_USER_ID.length() - 3)##
+			#set($end=$F_USER_ID.length() - 1)##
+			#set($prefix="_"+$stringUtil.substring($F_USER_ID,$start1,$end)+"_"+$stringUtil.substring($F_USER_ID,$start))##
+			$!prefix]]></tbRule>
 		</tbRuleList>
 		<!-- 00-99 100个表,每个表属于哪个结点 Map<Integer,Set<String>> -->
 		<tbPrefix>

@@ -12,9 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
-import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.config.model.config.TableConfig;
 import com.baidu.hsb.config.model.config.TableRuleConfig;
