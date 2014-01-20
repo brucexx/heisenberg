@@ -38,10 +38,10 @@
 	<dataSource name="transDS" type="mysql">
 		<property name="location">
 			<location>10.58.49.14:8701/db$0-9</location>
-		</property>
+	</property>
 		<property name="user">root</property>
 		<property name="password">st0078</property>
-		<property name="sqlMode">STRICT_TRANS_TABLES</property>
+        <property name="sqlMode">STRICT_TRANS_TABLES</property>
 	</dataSource>
 	<dataSource name="transSlaveDS" type="mysql">
 		<property name="location">
