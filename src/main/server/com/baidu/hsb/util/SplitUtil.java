@@ -7,6 +7,11 @@ package com.baidu.hsb.util;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.w3c.dom.Element;
+
+import com.baidu.hsb.parser.util.ArrayUtil;
+import com.baidu.hsb.route.util.StringUtil;
+
 /**
  * @author xiongzhao@baidu.com  
  */
@@ -249,4 +254,15 @@ public class SplitUtil {
         return list.toArray(new String[list.size()]);
     }
 
+    public static void main(String[] args) {
+        String locStr = "10.58.49.16:8801/db_$00-99";
+        int colonIndex = locStr.indexOf(':');
+        int slashIndex = locStr.indexOf('/');
+        String dsHost = locStr.substring(0, colonIndex).trim();
+        int dsPort = Integer.parseInt(locStr.substring(colonIndex + 1, slashIndex).trim());
+        String[] schemas = SplitUtil.split(locStr.substring(slashIndex + 1).trim(), ',', '$', '-');
+        System.out.println(ArrayUtil.join(schemas, ","));
+        System.out.println(ArrayUtil.join(schemas, ","));
+
+    }
 }

@@ -148,6 +148,9 @@ public class HServerRouter {
                               PartitionKeyVisitor visitor, Map<String, List<Object>> columnValues,
                               String stmt, Set<String> tbSet) {
         Integer[] dnIndexs = cacDataNodes(tc, columnValues);
+        if (dnIndexs.length == 0) {
+            throw new IllegalArgumentException("error!no partion value!");
+        }
         RouteResultsetNode[] rrn = new RouteResultsetNode[dnIndexs.length];
         for (int i = 0; i < dnIndexs.length; i++) {
             int idx = dnIndexs[i];
@@ -170,7 +173,7 @@ public class HServerRouter {
     private static Integer[] cacDataNodes(TableConfig tc, Map<String, List<Object>> columnValues) {
         Set<Integer> renderNode = VelocityUtil.evalDBRuleArray(tc.getRule(), columnValues);
         if (renderNode.size() == 0) {
-            return new Integer[tc.getDataNodes().length];
+            return new Integer[0];
         } else {
             return renderNode.toArray(new Integer[renderNode.size()]);
         }
