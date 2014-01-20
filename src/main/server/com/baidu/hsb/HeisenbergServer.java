@@ -32,7 +32,7 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com  
  */
 public class HeisenbergServer {
-    public static final String NAME = "Cobar";
+    public static final String NAME = "Heisenberg";
     private static final long LOG_WATCH_DELAY = 60000L;
     private static final long TIME_UPDATE_PERIOD = 20L;
     private static final HeisenbergServer INSTANCE = new HeisenbergServer();

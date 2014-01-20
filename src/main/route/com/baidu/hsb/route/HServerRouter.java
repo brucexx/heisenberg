@@ -15,10 +15,12 @@ import java.util.Set;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.config.model.config.TableConfig;
 import com.baidu.hsb.config.model.config.TableRuleConfig;
+import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 import com.baidu.hsb.parser.ast.stmt.dal.DALShowStatement;
+import com.baidu.hsb.parser.ast.stmt.dml.DMLQueryStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLSelectStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLSelectUnionStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLUpdateStatement;
@@ -26,10 +28,12 @@ import com.baidu.hsb.parser.recognizer.SQLParserDelegate;
 import com.baidu.hsb.parser.recognizer.mysql.syntax.MySQLParser;
 import com.baidu.hsb.parser.util.Pair;
 import com.baidu.hsb.parser.visitor.MySQLOutputASTVisitor;
+import com.baidu.hsb.route.context.HeisenbergContext;
 import com.baidu.hsb.route.router.MetaRouter;
 import com.baidu.hsb.route.util.SqlUtil;
 import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.route.util.VelocityUtil;
+import com.baidu.hsb.route.util.WeightHelper;
 import com.baidu.hsb.route.visitor.PartitionKeyVisitor;
 
 /**
@@ -39,8 +43,22 @@ import com.baidu.hsb.route.visitor.PartitionKeyVisitor;
  */
 public class HServerRouter {
 
+    private static int getReadIdx(boolean isRead, String dataNode) {
+        if (!isRead) {
+            return -1;
+        }
+        MySQLDataNode dn = HeisenbergContext.getMysqlDataNode().get(dataNode);
+        if (StringUtil.isEmpty(dataNode)) {
+            throw new IllegalArgumentException(
+                "schema don't have dataNode attribute or dataNode is null");
+        }
+        return WeightHelper.getReadIndex(dn);
+
+    }
+
     public static RouteResultset route(SchemaConfig schema, String stmt, String charset, Object info)
                                                                                                      throws SQLNonTransientException {
+        boolean isRead = false;
 
         RouteResultset rrs = new RouteResultset(stmt);
         //无分库表
@@ -50,13 +68,18 @@ public class HServerRouter {
                     charset == null ? MySQLParser.DEFAULT_CHARSET : charset);
                 PartitionKeyVisitor visitor = new PartitionKeyVisitor(schema.getTables());
                 visitor.setTrimSchema(schema.getName());
+                if (ast instanceof DMLQueryStatement) {
+                    isRead = true;
+                }
                 ast.accept(visitor);
                 if (visitor.isSchemaTrimmed()) {
                     stmt = genSQL(ast, stmt);
                 }
             }
+
             RouteResultsetNode[] nodes = new RouteResultsetNode[1];
-            nodes[0] = new RouteResultsetNode(schema.getDataNode(), new String[] { stmt });
+            nodes[0] = new RouteResultsetNode(schema.getDataNode(), getReadIdx(isRead,
+                schema.getDataNode()), new String[] { stmt });
             rrs.setNodes(nodes);
             return rrs;
         }
@@ -65,6 +88,9 @@ public class HServerRouter {
         PartitionKeyVisitor visitor = new PartitionKeyVisitor(schema.getTables());
         visitor.setTrimSchema(schema.isKeepSqlSchema() ? schema.getName() : null);
         ast.accept(visitor);
+        if (ast instanceof DMLQueryStatement) {
+            isRead = true;
+        }
 
         // 如果sql包含用户自定义的schema，则路由到default节点
         if (schema.isKeepSqlSchema() && visitor.isCustomedSchema()) {
@@ -72,7 +98,8 @@ public class HServerRouter {
                 stmt = genSQL(ast, stmt);
             }
             RouteResultsetNode[] nodes = new RouteResultsetNode[1];
-            nodes[0] = new RouteResultsetNode(schema.getDataNode(), new String[] { stmt });
+            nodes[0] = new RouteResultsetNode(schema.getDataNode(), getReadIdx(isRead,
+                schema.getDataNode()), new String[] { stmt });
             rrs.setNodes(nodes);
             return rrs;
         }
@@ -127,12 +154,13 @@ public class HServerRouter {
         //无命中，全扫描 
         if (!colShard) {
             //
-            return colsShared(schema, astExt.keySet(), rrs, matchedTable, visitor, ast, stmt);
+            return colsShared(isRead, schema, astExt.keySet(), rrs, matchedTable, visitor, ast,
+                stmt);
         }
         //防止变更分区列
         validateAST(ast, matchedTable, visitor);
 
-        shard(schema, rrs, matchedTable, visitor, columnValues, stmt, astExt.keySet());
+        shard(isRead, schema, rrs, matchedTable, visitor, columnValues, stmt, astExt.keySet());
 
         return rrs;
     }
@@ -144,15 +172,19 @@ public class HServerRouter {
      * @param matchedTable
      * @param columnValues
      */
-    private static void shard(SchemaConfig schema, RouteResultset rrs, TableConfig tc,
-                              PartitionKeyVisitor visitor, Map<String, List<Object>> columnValues,
-                              String stmt, Set<String> tbSet) {
+    private static void shard(boolean isRead, SchemaConfig schema, RouteResultset rrs,
+                              TableConfig tc, PartitionKeyVisitor visitor,
+                              Map<String, List<Object>> columnValues, String stmt, Set<String> tbSet) {
         Integer[] dnIndexs = cacDataNodes(tc, columnValues);
+        if (dnIndexs.length == 0) {
+            throw new IllegalArgumentException("error!no partion value!");
+        }
         RouteResultsetNode[] rrn = new RouteResultsetNode[dnIndexs.length];
         for (int i = 0; i < dnIndexs.length; i++) {
             int idx = dnIndexs[i];
-            rrn[i] = new RouteResultsetNode(tc.getDataNodes()[idx], SqlUtil.renderTB(schema, stmt,
-                columnValues, tc, tbSet, idx));
+            String dataNode = tc.getDataNodes()[idx];
+            rrn[i] = new RouteResultsetNode(dataNode, getReadIdx(isRead, dataNode),
+                SqlUtil.renderTB(schema, stmt, columnValues, tc, tbSet, idx));
         }
         rrs.setNodes(rrn);
         if (dnIndexs.length > 1) {
@@ -170,7 +202,7 @@ public class HServerRouter {
     private static Integer[] cacDataNodes(TableConfig tc, Map<String, List<Object>> columnValues) {
         Set<Integer> renderNode = VelocityUtil.evalDBRuleArray(tc.getRule(), columnValues);
         if (renderNode.size() == 0) {
-            return new Integer[tc.getDataNodes().length];
+            return new Integer[0];
         } else {
             return renderNode.toArray(new Integer[renderNode.size()]);
         }
@@ -192,7 +224,8 @@ public class HServerRouter {
         String sql = visitor.isSchemaTrimmed() ? genSQL(ast, stmt) : stmt;
         RouteResultsetNode[] rn = new RouteResultsetNode[1];
         if ("".equals(schema.getDataNode()) && isSystemReadSQL(ast)) {
-            rn[0] = new RouteResultsetNode(schema.getRandomDataNode(), new String[] { sql });
+            String rnNode = schema.getRandomDataNode();
+            rn[0] = new RouteResultsetNode(rnNode, new String[] { sql });
         } else {
             rn[0] = new RouteResultsetNode(schema.getDataNode(), new String[] { sql });
         }
@@ -210,8 +243,8 @@ public class HServerRouter {
      * @param stmt
      * @return
      */
-    private static RouteResultset colsShared(SchemaConfig schema, Set<String> tbSet,
-                                             RouteResultset rrs, TableConfig tc,
+    private static RouteResultset colsShared(boolean isRead, SchemaConfig schema,
+                                             Set<String> tbSet, RouteResultset rrs, TableConfig tc,
                                              PartitionKeyVisitor visitor, SQLStatement ast,
                                              String stmt) {
 
@@ -219,8 +252,8 @@ public class HServerRouter {
         String sql = visitor.isSchemaTrimmed() ? genSQL(ast, stmt) : stmt;
         RouteResultsetNode[] rn = new RouteResultsetNode[dataNodes.length];
         for (int i = 0; i < rn.length; i++) {
-            rn[i] = new RouteResultsetNode(dataNodes[i], SqlUtil.scan(schema, sql, tbSet, i, tc
-                .getRule().getTbMap()));
+            rn[i] = new RouteResultsetNode(dataNodes[i], getReadIdx(isRead, dataNodes[i]),
+                SqlUtil.scan(schema, sql, tbSet, i, tc.getRule().getTbMap()));
         }
         rrs.setNodes(rn);
         setGroupFlagAndLimit(rrs, visitor);

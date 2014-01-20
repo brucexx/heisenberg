@@ -182,7 +182,8 @@ public final class MultiNodeExecutor extends NodeExecutor {
         final MySQLDataNode dn = conf.getDataNodes().get(rrn.getName());
         if (dn == null) {
             handleFailure(ss, rrn, new SimpleErrInfo(new UnknownDataNodeException(
-                "Unknown dataNode '" + rrn.getName() + "'"), ErrorCode.ER_BAD_DB_ERROR, sc, rrn), 1);
+                "Unknown dataNode '" + rrn.getName() + "'"), ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
+                rrn.getSqlCount());
             return;
         }
 
@@ -190,27 +191,33 @@ public final class MultiNodeExecutor extends NodeExecutor {
         sc.getProcessor().getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                // 取得数据通道
-                int i = rrn.getReplicaIndex();
-                Channel c = null;
-                try {
-                    c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
-                } catch (final Exception e) {
-                    handleFailure(ss, rrn,
-                        new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn), 1);
-                    return;
-                }
-
-                c.setRunning(true);
-                Channel old = ss.getTarget().put(rrn, c);
-                if (old != null && c != old) {
-                    old.close();
-                }
-
-                // 执行
-                execute0(rrn, c, autocommit, ss, flag);
+                runTask(rrn, dn, ss, sc, autocommit, flag);
             }
         });
+    }
+
+    private void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn,
+                         final BlockingSession ss, final ServerConnection sc,
+                         final boolean autocommit, final int flag) {
+        // 取得数据通道
+        int i = rrn.getReplicaIndex();
+        Channel c = null;
+        try {
+            c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
+        } catch (final Exception e) {
+            handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
+                rrn.getSqlCount());
+            return;
+        }
+
+        c.setRunning(true);
+        Channel old = ss.getTarget().put(rrn, c);
+        if (old != null && c != old) {
+            old.close();
+        }
+
+        // 执行
+        execute0(rrn, c, autocommit, ss, flag);
     }
 
     /**

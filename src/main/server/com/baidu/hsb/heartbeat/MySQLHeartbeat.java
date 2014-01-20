@@ -23,7 +23,7 @@ public class MySQLHeartbeat {
     public static final int ERROR_STATUS = -1;
     private static final int TIMEOUT_STATUS = -2;
     private static final int INIT_STATUS = 0;
-    private static final int MAX_RETRY_COUNT = 5;
+    private static final int MAX_RETRY_COUNT = 15;
     private static final Logger LOGGER = Logger.getLogger(MySQLHeartbeat.class);
 
     private final MySQLDataSource source;

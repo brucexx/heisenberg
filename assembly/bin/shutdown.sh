@@ -1,6 +1,6 @@
 #!/bin/sh
 echo Baidu.com,Inc.                                  
-echo Copyright (c) 2000-2013 All Rights Reserved.                                                                         
+echo Copyright '(c)' 2000-2013 All Rights Reserved.                                                                         
 echo Distributed 
 echo https://github.com/brucexx/heisenberg
 echo brucest0078@gmail.com

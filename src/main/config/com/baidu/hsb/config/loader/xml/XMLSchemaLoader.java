@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -26,6 +27,7 @@ import com.baidu.hsb.config.model.config.TableRuleConfig;
 import com.baidu.hsb.config.util.ConfigException;
 import com.baidu.hsb.config.util.ConfigUtil;
 import com.baidu.hsb.config.util.ParameterMapping;
+import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
@@ -192,13 +194,16 @@ public class XMLSchemaLoader implements SchemaLoader {
         for (int i = 0, n = list.getLength(); i < n; i++) {
             Element element = (Element) list.item(i);
             String dnNamePrefix = element.getAttribute("name");
+
             List<DataNodeConfig> confList = new ArrayList<DataNodeConfig>();
             try {
                 Element dsElement = findPropertyByName(element, "dataSource");
+                Element rwRule = findPropertyByName(element, "rwRule");
                 if (dsElement == null) {
                     throw new NullPointerException("dataNode xml Element with name of "
                                                    + dnNamePrefix + " has no dataSource Element");
                 }
+
                 NodeList dataSourceList = dsElement.getElementsByTagName("dataSourceRef");
                 String dataSources[][] = new String[dataSourceList.getLength()][];
                 for (int j = 0, m = dataSourceList.getLength(); j < m; ++j) {
@@ -233,6 +238,27 @@ public class XMLSchemaLoader implements SchemaLoader {
                             conf.setName(dnNamePrefix + "[" + k + "]");
                             break;
                     }
+                    if (rwRule != null) {
+                        String rwStr = StringUtil.trim(rwRule.getTextContent());
+                        if (StringUtil.isNotEmpty(rwStr)) {
+                            conf.setNeedWR(true);
+                            String[] rwStrArr = StringUtil.split(rwStr, ',');
+                            int mW = 0;
+                            int sW = 0;
+                            for (String rwArr : rwStrArr) {
+                                String[] pair = rwArr.split(":");
+                                if (StringUtil.equals(pair[0], "m")) {
+                                    mW = NumberUtils.toInt(pair[1]);
+                                }
+                                if (StringUtil.equals(pair[0], "s")) {
+                                    sW = NumberUtils.toInt(pair[1]);
+                                }
+                            }
+                            conf.setMasterReadWeight(mW);
+                            conf.setSlaveReadWeight(sW);
+                        }
+                    }
+
                     conf.setDataSource(dsString.toString());
                 }
             } catch (Exception e) {

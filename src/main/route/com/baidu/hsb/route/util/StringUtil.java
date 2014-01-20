@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -434,6 +435,24 @@ public class StringUtil extends StringUtils {
         } catch (UnsupportedEncodingException e) {
             return EMPTY;
         }
+    }
+
+    private static String crc32(String str) {
+        CRC32 crc32 = new CRC32();
+        crc32.update(str.getBytes());
+        return crc32.getValue() + "";
+    }
+
+    public static void main(String[] args) {
+
+        System.out.println("0123241414-->" + crc32("0123241414"));
+        System.out.println("8421412415-->" + crc32("8421412415"));
+        System.out.println("9942134412-->" + crc32("9942134412"));
+
+        System.out.println("8857213214-->" + crc32("8857213214"));
+        System.out.println("44213232314-->" + crc32("44213232314"));
+        System.out.println("652343466634-->" + crc32("652343466634"));
+
     }
 
 }

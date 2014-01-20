@@ -29,6 +29,7 @@ import com.baidu.hsb.parser.visitor.MySQLOutputASTVisitor;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
+ * 每个节点都有一个主备，灾备
  * @author xiongzhao@baidu.com 2011-4-26 上午11:12:24
  */
 public final class MySQLDataNode {
