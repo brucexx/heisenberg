@@ -48,6 +48,9 @@ public class HServerRouter {
             return -1;
         }
         MySQLDataNode dn = HeisenbergContext.getMysqlDataNode().get(dataNode);
+        if (!dn.getConfig().isNeedWR()) {
+            return -1;
+        }
         if (StringUtil.isEmpty(dataNode)) {
             throw new IllegalArgumentException(
                 "schema don't have dataNode attribute or dataNode is null");
