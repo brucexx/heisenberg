@@ -68,7 +68,7 @@ done
 
 #startup Server
 RUN_CMD="\"$JAVA_HOME/bin/java\""
-RUN_CMD="$RUN_CMD -Dcobar.home=\"$HSB_HOME\""
+RUN_CMD="$RUN_CMD -Dhsb.home=\"$HSB_HOME\""
 RUN_CMD="$RUN_CMD -classpath \"$HSB_CLASSPATH\""
 RUN_CMD="$RUN_CMD $JAVA_OPTS"
 RUN_CMD="$RUN_CMD com.baidu.hsb.HeisenbergStartup $@"
