@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<heisenberg:schema xmlns:heisenberg="https://github.com/brucexx/heisenberg">
+
+	<!-- schema定义 -->
+	<!-- schema name="db_shard"> <table name="tb1" dataNode="dn_shard$0-1" rule="rule1" 
+		/> </schema -->
+
+	<schema name="wms_shard">
+		<!--table name="trans_tb" dataNode="trans_shard$0-9" rule="rule1" />
+		<table name="trans_content" dataNode="trans_shard$0-9" rule="rule1" />
+		<table name="trans_tb_ext" dataNode="trans_shard$0-9" rule="rule2" /-->
+		<table name="t_asset_deal_type" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_supplier_account_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_account_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_bank_auth_request_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_bank_bind_request_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_bank_create_account_request_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_bank_sign_request_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_bind_bank_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_fund_sign_request_info" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_id_map" dataNode="wmsDN$0-99" rule="rule1" />
+		<table name="t_user_investment_info" dataNode="wmsDN$0-99" rule="rule1" />
+	</schema>
+
+	<!--dataNode name="dn_shard"> <property name="dataSource"> <dataSourceRef>dsMaster$0-1</dataSourceRef> 
+		</property> <property name="poolSize">256</property> <property name="heartbeatSQL">select 
+		user()</property> </dataNode -->
+
+	<dataNode name="wmsDN">
+		<property name="dataSource">
+			<dataSourceRef>wmsDS$0-99</dataSourceRef>
+			<!-- slave,暂无 -->
+			<!-- dataSourceRef>ds_shard_slave$0-3</dataSourceRef -->
+		</property>
+		<property name="poolSize">256</property>
+		<property name="heartbeatSQL">select user()</property>
+	</dataNode>
+
+	<dataSource name="wmsDS" type="mysql">
+		<property name="location">
+			<location>10.81.13.29:8806/wms_db_$00-99</location>
+		</property>
+		<property name="user">pay</property>
+		<property name="password">MiraCle</property>
+		<!--  property name="sqlMode">STRICT_TRANS_TABLES</property-->
+	</dataSource>
+
+
+	<!-- 数据源定义，数据源是一个具体的后端数据连接的表示。 -->
+	<!-- dataSource name="dsMaster" type="mysql"> <property name="location"> 
+		<location>10.46.188.55:8801/cobar$1-2</location> </property> <property name="user">root</property> 
+		<property name="password">st0078</property> <property name="sqlMode">STRICT_TRANS_TABLES</property> 
+		</dataSource -->
+
+
+</heisenberg:schema>
