@@ -19,6 +19,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.baidu.hsb.HeisenbergContext;
 import com.baidu.hsb.config.loader.SchemaLoader;
 import com.baidu.hsb.config.model.RealTableCache;
 import com.baidu.hsb.config.model.config.DataNodeConfig;
@@ -30,6 +31,7 @@ import com.baidu.hsb.config.util.ConfigException;
 import com.baidu.hsb.config.util.ConfigUtil;
 import com.baidu.hsb.config.util.ParameterMapping;
 import com.baidu.hsb.route.util.StringUtil;
+import com.baidu.hsb.security.KeyPairGen;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
@@ -319,6 +321,11 @@ public class XMLSchemaLoader implements SchemaLoader {
                     for (String dsSchema : schemas) {
                         DataSourceConfig dsConf = new DataSourceConfig();
                         ParameterMapping.mapping(dsConf, ConfigUtil.loadElements(element));
+                        if (dsConf.isNeedEncrypt()) {
+                            dsConf.setPassword(KeyPairGen.decrypt(HeisenbergContext.getPubKey(),
+                                dsConf.getPassword()));
+                        }
+                        //System.out.println("pwd-->"+dsConf.getPassword());
                         dscList.add(dsConf);
                         switch (dsIndex) {
                             case 0:

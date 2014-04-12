@@ -20,7 +20,8 @@
 
   <!-- 用户访问定义，用户名、密码、schema等信息。 -->
   <user name="pay">
-    <property name="password">MiraCle</property>
+  	<!-- property name="needEncrypt">true</property-->
+    <property name="password">hNATK0ojRGQnX7bE+1rs3MvxVziIlBHb+bJZ6bLb5BECQ/6RLrICGQVYKKFoKktNRRl837RJ93B3DbkXlgI4XA==</property>
     <property name="schemas">wms_shard</property>
   </user>
   <!--

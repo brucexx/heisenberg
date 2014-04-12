@@ -14,9 +14,29 @@ import java.util.Set;
  */
 public class UserConfig {
 
-    private String name;
-    private String password;
+    private String      name;
+    private boolean     needEncrypt = false;
+
+    private String      password;
     private Set<String> schemas;
+
+    /**
+     * Getter method for property <tt>needEncrypt</tt>.
+     * 
+     * @return property value of needEncrypt
+     */
+    public boolean isNeedEncrypt() {
+        return needEncrypt;
+    }
+
+    /**
+     * Setter method for property <tt>needEncrypt</tt>.
+     * 
+     * @param needEncrypt value to be assigned to property needEncrypt
+     */
+    public void setNeedEncrypt(boolean needEncrypt) {
+        this.needEncrypt = needEncrypt;
+    }
 
     public String getName() {
         return name;

@@ -124,6 +124,7 @@ public class HServerRouter {
         boolean colShard = false;
         Map<String, Map<String, List<Object>>> astExt = visitor.getColumnValue();
         Map<String, TableConfig> tables = schema.getTables();
+        boolean isForceHit = false;
         ft: for (Entry<String, Map<String, List<Object>>> e : astExt.entrySet()) {
             Map<String, List<Object>> col2Val = e.getValue();
             TableConfig tc = tables.get(e.getKey());
@@ -138,6 +139,7 @@ public class HServerRouter {
             }
             TableRuleConfig tr = tc.getRule();
             if (tr != null) {
+                isForceHit = tr.isForceHit();
                 boolean match = true;
                 for (String ruleColumn : tr.getColumns()) {
                     match &= col2Val.containsKey(ruleColumn);
@@ -147,6 +149,8 @@ public class HServerRouter {
                     columnValues = col2Val;
                     matchedTable = tc;
                     break ft;
+                } else if (isForceHit) {
+                    columnValues = col2Val;
                 }
             }
         }
@@ -158,6 +162,15 @@ public class HServerRouter {
 
         //无命中，全扫描 
         if (!colShard) {
+            //强制命中
+            if (isForceHit) {
+                //防止变更分区列
+                validateAST(ast, matchedTable, visitor);
+
+                shard(isRead, schema, rrs, matchedTable, visitor, columnValues, stmt,
+                    astExt.keySet());
+                return rrs;
+            }
             //
             return colsShared(isRead, schema, astExt.keySet(), rrs, matchedTable, visitor, ast,
                 stmt);

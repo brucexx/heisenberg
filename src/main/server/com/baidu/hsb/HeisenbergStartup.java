@@ -4,6 +4,8 @@
  */
 package com.baidu.hsb;
 
+import java.io.File;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +52,16 @@ public final class HeisenbergStartup {
             if (StringUtil.isEmpty(System.getProperty("hsb.log.home"))) {
                 System.setProperty("hsb.log.home", System.getProperty("hsb.home"));
             }
+            String fp = null;
+
+            if (hasSelfConfigPath()) {
+                fp = new File(getConfigPath()).getPath() + File.separator + "hsb.properties";
+            } else {
+                URL uri = HeisenbergStartup.class.getResource("/hsb.properties");
+                fp = uri.getPath();
+            }
+
+            HeisenbergContext.load(fp);
 
             // init
             HeisenbergServer server = HeisenbergServer.getInstance();

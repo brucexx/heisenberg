@@ -65,6 +65,7 @@ public class VelocityUtil {
             //第一个取到即可
 
             try {
+                String dbIndex = "";
                 VelocityContext context = getContext();
                 for (Map.Entry<String, List<Object>> entry : colsVal.entrySet()) {
                     List<Object> list = entry.getValue();
@@ -73,7 +74,12 @@ public class VelocityUtil {
                         try {
                             context.put(entry.getKey(), obj);
                             Velocity.evaluate(context, writer, StringUtil.EMPTY, dbRule);
-                            idxs.add(NumberUtils.toInt(StringUtil.trim(writer.toString())));
+                            dbIndex = StringUtil.trim(writer.toString());
+                            if (StringUtil.isEmpty(dbIndex)) {
+                                continue;
+                            }
+                            idxs.add(NumberUtils.toInt(dbIndex));
+
                         } finally {
                             IOUtils.closeQuietly(writer);
                         }
@@ -83,7 +89,13 @@ public class VelocityUtil {
             } catch (ParseErrorException e) {
                 throw e;
             } catch (Exception e) {
-                LOGGER.debug(tc.getName() + "eval " + dbRule + " error..");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(tc.getName() + "eval " + dbRule + " error..");
+
+                }
+            }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("db flag val: " + idxs);
             }
             if (!idxs.isEmpty()) {
                 return idxs;
@@ -114,6 +126,10 @@ public class VelocityUtil {
                             writer.close();
                         }
                     }
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("tb flag val: " + tbPreSet);
+                    }
+
                     if (!tbPreSet.isEmpty()) {
                         return tbPreSet;
                     }

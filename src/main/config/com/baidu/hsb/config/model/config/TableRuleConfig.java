@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.log4j.Logger;
 
 import com.baidu.hsb.route.util.StringUtil;
@@ -24,7 +25,7 @@ import com.baidu.hsb.route.util.StringUtil;
  */
 public class TableRuleConfig {
 
-    private static final Logger        LOGGER = Logger.getLogger(TableRuleConfig.class);
+    private static final Logger        LOGGER   = Logger.getLogger(TableRuleConfig.class);
 
     private final String               name;
     private final List<String>         columns;
@@ -34,14 +35,16 @@ public class TableRuleConfig {
     private Map<Integer, List<String>> tbMap;
     //key tbPrefix value=dataNodeIndex
     private Map<String, Integer>       tbIndexMap;
+    private boolean                    forceHit = false;
 
     @SuppressWarnings("unchecked")
-    public TableRuleConfig(String name, String[] columns, List<String> dbRuleArray,
-                           List<String> tbRuleArray, String tbPrefix) {
+    public TableRuleConfig(String name, String forceHit, String[] columns,
+                           List<String> dbRuleArray, List<String> tbRuleArray, String tbPrefix) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
         this.name = name;
+        this.forceHit = BooleanUtils.toBoolean(forceHit);
         if (columns == null || columns.length == 0) {
             throw new IllegalArgumentException("no column is found!");
         }
@@ -79,6 +82,15 @@ public class TableRuleConfig {
         } catch (Exception e) {
             LOGGER.error("init table rule error!", e);
         }
+    }
+
+    /**
+     * Getter method for property <tt>forceHit</tt>.
+     * 
+     * @return property value of forceHit
+     */
+    public boolean isForceHit() {
+        return forceHit;
     }
 
     public boolean isTbShard() {

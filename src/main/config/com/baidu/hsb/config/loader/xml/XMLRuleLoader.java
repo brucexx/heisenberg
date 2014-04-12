@@ -89,6 +89,7 @@ public class XMLRuleLoader {
             if (node instanceof Element) {
                 Element e = (Element) node;
                 String name = e.getAttribute("name");
+                String forceHit = e.getAttribute("forceHit");
                 if (tableRules.containsKey(name)) {
                     throw new ConfigException("table rule " + name + " duplicated!");
                 }
@@ -124,11 +125,10 @@ public class XMLRuleLoader {
                         if (tbRuleNode instanceof Element) {
                             tbRuleStrList.add(((Element) tbRuleNodeList.item(j)).getTextContent());
                         }
-
                     }
                 }
 
-                tableRules.put(name, new TableRuleConfig(name, colsStr.split(",", -1),
+                tableRules.put(name, new TableRuleConfig(name, forceHit, colsStr.split(",", -1),
                     dbRuleStrList, tbRuleStrList, tbPrefixStr));
             }
         }

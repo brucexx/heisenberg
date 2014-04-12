@@ -15,10 +15,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.baidu.hsb.HeisenbergContext;
 import com.baidu.hsb.config.model.config.ClusterConfig;
 import com.baidu.hsb.config.model.config.QuarantineConfig;
 import com.baidu.hsb.config.model.config.SystemConfig;
@@ -27,6 +30,7 @@ import com.baidu.hsb.config.util.ConfigException;
 import com.baidu.hsb.config.util.ConfigUtil;
 import com.baidu.hsb.config.util.ParameterMapping;
 import com.baidu.hsb.route.util.StringUtil;
+import com.baidu.hsb.security.KeyPairGen;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
@@ -38,6 +42,8 @@ public class XMLServerLoader {
     private final Map<String, UserConfig> users;
     private final QuarantineConfig        quarantine;
     private ClusterConfig                 cluster;
+
+    private static final Logger           logger = Logger.getLogger(XMLServerLoader.class);
 
     public XMLServerLoader(String configFolder) {
         this.system = new SystemConfig();
@@ -142,7 +148,22 @@ public class XMLServerLoader {
                 UserConfig user = new UserConfig();
                 user.setName(name);
                 Map<String, Object> props = ConfigUtil.loadElements(e);
-                user.setPassword((String) props.get("password"));
+                boolean needEncrypt = props.get("needEncrypt") == null ? false : BooleanUtils
+                    .toBoolean(props.get("needEncrypt").toString());
+
+                String pwd = (String) props.get("password");
+                if (needEncrypt) {
+                    try {
+                        user.setPassword(KeyPairGen.decrypt(HeisenbergContext.getPubKey(), pwd));
+
+                    } catch (Exception e1) {
+                        logger.error("密钥解密失败", e1);
+                    }
+                } else {
+                    user.setPassword(pwd);
+                }
+                //System.out.println("ds password-->" + user.getPassword());
+
                 String schemas = (String) props.get("schemas");
                 if (schemas != null) {
                     String[] strArray = SplitUtil.split(schemas, ',', true);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rule>
-    <tableRule name="rule1">
+    <tableRule name="rule1" forceHit="true">
         <columns>F_USER_ID</columns>
     <dbRuleList>
         <dbRule><![CDATA[
