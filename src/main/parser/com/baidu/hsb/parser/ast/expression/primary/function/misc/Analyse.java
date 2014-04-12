@@ -1,0 +1,27 @@
+/**
+ * Baidu.com,Inc.
+ * Copyright (c) 2000-2013 All Rights Reserved.
+ */
+package com.baidu.hsb.parser.ast.expression.primary.function.misc;
+
+import java.util.List;
+
+import com.baidu.hsb.parser.ast.expression.Expression;
+import com.baidu.hsb.parser.ast.expression.primary.function.FunctionExpression;
+
+/**
+ * MySQL extending function
+ * 
+ * @author xiongzhao@baidu.com
+ */
+public class Analyse extends FunctionExpression {
+    public Analyse(List<Expression> arguments) {
+        super("ANALYSE", arguments);
+    }
+
+    @Override
+    public FunctionExpression constructFunction(List<Expression> arguments) {
+        return new Analyse(arguments);
+    }
+
+}

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rule>
+    <tableRule name="rule1">
+        <columns>F_USER_ID</columns>
+    <dbRuleList>
+        <dbRule><![CDATA[
+            #set($sub_str=$F_USER_ID%1000+"")
+            $!stringUtil.substring($stringUtil.alignRights($sub_str,3,"0"),0,2)]]>
+            </dbRule>
+        </dbRuleList>
+    <tbRuleList>
+        <tbRule><![CDATA[
+		#set($sub_str=$F_USER_ID%1000+"")
+		#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
+		#set($db_flag=$stringUtil.substring($sub_str,0,2))
+		#set($tb_flag=$stringUtil.substring($sub_str,2))
+		#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+		$!prefix]]>
+        </tbRule>
+    </tbRuleList>
+        <tbPrefix>
+                <![CDATA[     
+                        def map = [:];
+                        for (int i=0; i<100; i++) {
+                           def list = [];
+                            for (int j=0; j<10; j++) {
+                                def k=i<10?"0"+i:i;
+                                list.add("_"+k+"_"+j);
+                            }
+                             map.put(i,list);
+                        };
+                        return map; 
+                ]]>
+        </tbPrefix>
+    </tableRule>
+    <tableRule name="rule2">
+        <columns>F_APPLICATION_NO</columns>
+    <dbRuleList>
+        <dbRule><![CDATA[
+            $!stringUtil.substring($F_APPLICATION_NO,-3,-1)]]>
+            </dbRule>
+        </dbRuleList>
+    <tbRuleList>
+        <tbRule><![CDATA[
+            #set($db_flag=$!stringUtil.substring($F_APPLICATION_NO,-3,-1))
+            #set($tb_flag=$!stringUtil.substring($F_APPLICATION_NO,-1))
+		#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+		$!prefix]]>
+        </tbRule>
+    </tbRuleList>
+        <tbPrefix>
+                <![CDATA[     
+                        def map = [:];
+                        for (int i=0; i<100; i++) {
+                           def list = [];
+                            for (int j=0; j<10; j++) {
+                                def k=i<10?"0"+i:i;
+                                list.add("_"+k+"_"+j);
+                            }
+                             map.put(i,list);
+                        };
+                        return map; 
+                ]]>
+        </tbPrefix>
+    </tableRule>
+    <tableRule name="rule3">
+        <columns>F_UID</columns>
+    <dbRuleList>
+        <dbRule><![CDATA[
+            #set($sub_str=$F_UID%1000+"")
+            $!stringUtil.substring($stringUtil.alignRights($sub_str,3,"0"),0,2)]]>
+            </dbRule>
+        </dbRuleList>
+    <tbRuleList>
+        <tbRule><![CDATA[
+		#set($sub_str=$F_UID%1000+"")
+		#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
+		#set($db_flag=$stringUtil.substring($sub_str,0,2))
+		#set($tb_flag=$stringUtil.substring($sub_str,2))
+		#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+		$!prefix]]>
+        </tbRule>
+    </tbRuleList>
+        <tbPrefix>
+                <![CDATA[     
+                        def map = [:];
+                        for (int i=0; i<100; i++) {
+                           def list = [];
+                            for (int j=0; j<10; j++) {
+                                def k=i<10?"0"+i:i;
+                                list.add("_"+k+"_"+j);
+                            }
+                             map.put(i,list);
+                        };
+                        return map; 
+                ]]>
+        </tbPrefix>
+    </tableRule>
+    <tableRule name="rule4">
+        <columns>F_CERTIFICATE_CODE</columns>
+    <dbRuleList>
+        <dbRule><![CDATA[
+	    #set($db_flag=stringUtil.crc32($F_CERTIFICATE_CODE))
+            $!stringUtil.substring($db_flag,-3,-1)]]>
+            </dbRule>
+        </dbRuleList>
+    <tbRuleList>
+        <tbRule><![CDATA[
+	    #set($sub_str=stringUtil.crc32($F_CERTIFICATE_CODE))
+            #set($db_flag=$!stringUtil.substring($sub_str,-3,-1))
+            #set($tb_flag=$!stringUtil.substring($sub_str,-1))
+		#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+		$!prefix]]>
+        </tbRule>
+    </tbRuleList>
+        <tbPrefix>
+                <![CDATA[     
+                        def map = [:];
+                        for (int i=0; i<100; i++) {
+                           def list = [];
+                            for (int j=0; j<10; j++) {
+                                def k=i<10?"0"+i:i;
+                                list.add("_"+k+"_"+j);
+                            }
+                             map.put(i,list);
+                        };
+                        return map; 
+                ]]>
+        </tbPrefix>
+    </tableRule>
+</rule>
+
+
