@@ -326,26 +326,24 @@ public final class SingleNodeExecutor extends NodeExecutor {
     private void handleNext(final RouteResultsetNode rrn, final BlockingSession ss,
                             final MySQLChannel mc, final ByteBuffer bb, final byte id) {
         final ServerConnection sc = ss.getSource();
-        sc.getProcessor().getExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    handleRowData(rrn, ss, mc, bb, id);
-                } catch (IOException e) {
-                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
-                    mc.close();
-                    String msg = e.getMessage();
-                    handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg,
-                        ss);
-                } catch (RuntimeException e) {
-                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
-                    mc.close();
-                    String msg = e.getMessage();
-                    handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg,
-                        ss);
-                }
-            }
-        });
+        //        sc.getProcessor().getExecutor().execute(new Runnable() {
+        //            @Override
+        //            public void run() {
+        try {
+            handleRowData(rrn, ss, mc, bb, id);
+        } catch (IOException e) {
+            LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+            mc.close();
+            String msg = e.getMessage();
+            handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
+        } catch (RuntimeException e) {
+            LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+            mc.close();
+            String msg = e.getMessage();
+            handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
+        }
+        //            }
+        //        });
     }
 
     /**

@@ -31,8 +31,10 @@ echo Distributed
 echo https://github.com/brucexx/heisenberg
 echo brucest0078@gmail.com
 
-#set JAVA_HOME
-#JAVA_HOME=/home/work/soft/java
+SOFT_DIR="${HOME}/soft"
+if [ -d ${SOFT_DIR}/java ]; then
+	export JAVA_HOME=${SOFT_DIR}/java
+fi
 
 #check JAVA_HOME & java
 noJavaHome=false
@@ -48,29 +50,6 @@ if $noJavaHome ; then
     echo
     exit 1
 fi
-#==============================================================================
-
-#set JAVA_OPTS
-JAVA_OPTS="-server -Xms1024m -Xmx1024m -Xmn256m -Xss256k"
-#performance Options
-JAVA_OPTS="$JAVA_OPTS -XX:+AggressiveOpts"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseBiasedLocking"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseFastAccessorMethods"
-JAVA_OPTS="$JAVA_OPTS -XX:+DisableExplicitGC"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
-JAVA_OPTS="$JAVA_OPTS -XX:+CMSParallelRemarkEnabled"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSCompactAtFullCollection"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
-JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
-#GC Log Options
-#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
-#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
-#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
-#debug Options
-if [ "$DEBUG_MODE"x == "1"x ] ; then
-JAVA_OPTS="$JAVA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,address=8065,server=y,suspend=n"
-fi 
 #==============================================================================
 
 #set HOME
@@ -91,6 +70,37 @@ if [ -z "$HSB_HOME" ] ; then
     echo
     exit 1
 fi
+LOG_HOME="$HSB_HOME/logs"
+if [ ! -z "$LOG_BASE_DIR" ] ; then 
+  LOG_HOME="$LOG_BASE_DIR/logs"
+fi
+
+
+#set JAVA_OPTS
+JAVA_OPTS="-server -Xms2048m -Xmx2048m -Xmn768m -Xss512k -XX:PermSize=256m -XX:MaxPermSize=256m"
+#performance Options
+#JAVA_OPTS="$JAVA_OPTS -XX:+AggressiveOpts"
+#JAVA_OPTS="$JAVA_OPTS -XX:+UseBiasedLocking"
+#JAVA_OPTS="$JAVA_OPTS -XX:+UseFastAccessorMethods"
+JAVA_OPTS="$JAVA_OPTS -XX:+CMSClassUnloadingEnabled -XX:+ExplicitGCInvokesConcurrent"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseParNewGC"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSCompactAtFullCollection"
+JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
+JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
+JAVA_OPTS="$JAVA_OPTS -Dsun.net.inetaddr.ttl=5"
+#GC Log Options
+JAVA_OPTS="$JAVA_OPTS -Xloggc:$LOG_HOME/gc.log"
+JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
+JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
+JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
+#debug Options
+if [ "$DEBUG_MODE"x == "1"x ] ; then
+JAVA_OPTS="$JAVA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,address=8065,server=y,suspend=n"
+fi 
+#==============================================================================
+
+
 #=============================================================================
 
 #set CLASSPATH

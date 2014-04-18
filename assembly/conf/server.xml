@@ -22,6 +22,7 @@
   <user name="pay">
     <property name="password">MiraCle</property>
     <property name="schemas">wms_shard</property>
+	<property name="needEncrypt">true</property>
   </user>
   <!--
   <user name="root">

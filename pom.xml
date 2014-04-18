@@ -12,7 +12,7 @@
 
 	<properties>
 		<app.encoding>UTF-8</app.encoding>
-		<app.version>1.0.0</app.version>
+		<app.version>1.0.1</app.version>
 	</properties>
 
 	<dependencies>
@@ -75,11 +75,49 @@
 
 	<repositories>
 		<repository>
-			<id>baidu repo</id>
-			<name>Baidu Maven Release Repository</name>
+			<id>baidu-nexus</id>
 			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
+		<repository>
+			<id>Baidu_Local</id>
+			<url>http://maven.scm.baidu.com:8081/nexus/content/repositories/Baidu_Local</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>Baidu_Local_Snapshots</id>
+			<url>http://maven.scm.baidu.com:8081/nexus/content/repositories/Baidu_Local_Snapshots</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>	
 	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>baidu-nexus</id>
+			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<build>
 		<resources>

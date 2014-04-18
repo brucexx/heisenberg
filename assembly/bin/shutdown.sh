@@ -5,8 +5,10 @@ echo Distributed
 echo https://github.com/brucexx/heisenberg
 echo brucest0078@gmail.com
 
-#set JAVA_HOME
-#JAVA_HOME=/home/work/soft/java
+SOFT_DIR="${HOME}/soft"
+if [ -d ${SOFT_DIR}/java ]; then
+	export JAVA_HOME=${SOFT_DIR}/java
+fi
 
 #check JAVA_HOME & java
 noJavaHome=false

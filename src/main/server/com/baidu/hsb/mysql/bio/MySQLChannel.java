@@ -252,6 +252,9 @@ public final class MySQLChannel implements Channel {
         if (isClosed.compareAndSet(false, true)) {
             killChannel();
             try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(toString() + "kill close..");
+                }
                 mysqlClose();
             } finally {
                 dataSource.deActive();
@@ -263,6 +266,9 @@ public final class MySQLChannel implements Channel {
     public void close() {
         if (isClosed.compareAndSet(false, true)) {
             try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(toString() + "active close..");
+                }
                 mysqlClose();
             } finally {
                 dataSource.deActive();
@@ -273,6 +279,9 @@ public final class MySQLChannel implements Channel {
     @Override
     public void closeNoActive() {
         if (isClosed.compareAndSet(false, true)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(toString() + "NoActive close..");
+            }
             mysqlClose();
         }
     }
@@ -586,6 +595,10 @@ public final class MySQLChannel implements Channel {
         } finally {
             try {
                 socket.close();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(toString() + ",socket self close!");
+                }
+
             } catch (Throwable e) {
                 LOGGER.error(toString(), e);
             }

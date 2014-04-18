@@ -25,18 +25,19 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com
  */
 public class MySQLDetector extends BackendConnection {
-    private static final Logger LOGGER = Logger.getLogger(MySQLDetector.class);
-    private static final long CLIENT_FLAGS = initClientFlags();
+    private static final Logger LOGGER       = Logger.getLogger(MySQLDetector.class);
+    private static final long   CLIENT_FLAGS = initClientFlags();
+    private static final Logger HEARTBEAT    = Logger.getLogger("heartbeat");
 
-    private MySQLHeartbeat heartbeat;
-    private final long clientFlags;
-    private HandshakePacket handshake;
-    private int charsetIndex;
-    private boolean isAuthenticated;
-    private String user;
-    private String password;
-    private String schema;
-    private long heartbeatTimeout;
+    private MySQLHeartbeat      heartbeat;
+    private final long          clientFlags;
+    private HandshakePacket     handshake;
+    private int                 charsetIndex;
+    private boolean             isAuthenticated;
+    private String              user;
+    private String              password;
+    private String              schema;
+    private long                heartbeatTimeout;
     private final AtomicBoolean isQuit;
 
     public MySQLDetector(SocketChannel channel) {
@@ -87,7 +88,8 @@ public class MySQLDetector extends BackendConnection {
     }
 
     public boolean isHeartbeatTimeout() {
-        return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime) + heartbeatTimeout;
+        return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime)
+                                              + heartbeatTimeout;
     }
 
     public long lastReadTime() {
@@ -143,6 +145,7 @@ public class MySQLDetector extends BackendConnection {
                 packet.command = MySQLPacket.COM_QUERY;
                 packet.arg = sql.getBytes();
                 packet.write(this);
+                HEARTBEAT.info("heartbeat[" + sql + "]");
             }
         } else {
             authenticate();
@@ -168,11 +171,11 @@ public class MySQLDetector extends BackendConnection {
     public void error(int errCode, Throwable t) {
         LOGGER.warn(toString(), t);
         switch (errCode) {
-        case ErrorCode.ERR_HANDLE_DATA:
-            heartbeat.setResult(MySQLHeartbeat.ERROR_STATUS, this, false);
-            break;
-        default:
-            heartbeat.setResult(MySQLHeartbeat.ERROR_STATUS, this, true);
+            case ErrorCode.ERR_HANDLE_DATA:
+                heartbeat.setResult(MySQLHeartbeat.ERROR_STATUS, this, false);
+                break;
+            default:
+                heartbeat.setResult(MySQLHeartbeat.ERROR_STATUS, this, true);
         }
     }
 
@@ -185,9 +188,10 @@ public class MySQLDetector extends BackendConnection {
     }
 
     public String toString() {
-        return new StringBuilder().append("[thread=").append(Thread.currentThread().getName()).append(",class=")
-                .append(getClass().getSimpleName()).append(",host=").append(host).append(",port=").append(port)
-                .append(",localPort=").append(localPort).append(",schema=").append(schema).append(']').toString();
+        return new StringBuilder().append("[thread=").append(Thread.currentThread().getName())
+            .append(",class=").append(getClass().getSimpleName()).append(",host=").append(host)
+            .append(",port=").append(port).append(",localPort=").append(localPort)
+            .append(",schema=").append(schema).append(']').toString();
     }
 
     private static long initClientFlags() {
