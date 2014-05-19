@@ -6,6 +6,8 @@ package com.baidu.hsb.config.util;
 
 import org.apache.log4j.Logger;
 
+import com.baidu.hsb.route.util.StringUtil;
+
 /**
  * 
  * @author xiongzhao@baidu.com
@@ -14,22 +16,47 @@ import org.apache.log4j.Logger;
 public class LoggerUtil {
 
     /** 线程编号修饰符 */
-    private static final char THREAD_RIGHT_TAG = ']';
+    private static final char   THREAD_RIGHT_TAG = ']';
 
     /** 线程编号修饰符 */
-    private static final char THREAD_LEFT_TAG  = '[';
+    private static final char   THREAD_LEFT_TAG  = '[';
 
     /** 换行符 */
-    public static final char  ENTERSTR         = '\n';
+    public static final char    ENTERSTR         = '\n';
 
     /** 逗号 */
-    public static final char  COMMA            = ',';
+    public static final char    COMMA            = ',';
+
+    private static long         PERF_THRESHOLD   = 100;
+
+    private static final Logger perfLogger       = Logger.getLogger("sql-perf");
+    private static final Logger digestLogger     = Logger.getLogger("sql-digest");
 
     /**
      * 禁用构造函数
      */
     private LoggerUtil() {
         // 禁用构造函数
+    }
+
+    static {
+        if (StringUtil.isNotEmpty(System.getProperty("perf.threshold"))) {
+            PERF_THRESHOLD = Long.parseLong(System.getProperty("perf.threshold"));
+        }
+    }
+
+    public static void printDigest(Logger logger, long exeTime, String stmt) {
+        if (exeTime >= PERF_THRESHOLD) {
+            perfLogger.info(exeTime + "ms,[" + stmt + "]");
+        }
+        digestLogger.info(exeTime + "ms,[" + stmt + "]");
+    }
+
+    public static void printDigest(Logger logger, long exeTime, long beginTime, String stmt) {
+        if (exeTime >= PERF_THRESHOLD) {
+            perfLogger.info(exeTime + "ms," + beginTime + ",[" + stmt + "]");
+        }
+        digestLogger.info(exeTime + "ms,[" + stmt + "]");
     }
 
     /**

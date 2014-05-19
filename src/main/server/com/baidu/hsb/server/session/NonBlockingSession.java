@@ -41,17 +41,18 @@ import com.baidu.hsb.server.parser.ServerParse;
  * @author xiongzhao@baidu.com
  */
 public class NonBlockingSession implements Session {
-    private static final Logger LOGGER = Logger.getLogger(NonBlockingSession.class);
+    private static final Logger                                          LOGGER = Logger
+                                                                                    .getLogger(NonBlockingSession.class);
 
-    private final ServerConnection source;
+    private final ServerConnection                                       source;
     private final ConcurrentHashMap<RouteResultsetNode, MySQLConnection> target;
-    private final AtomicBoolean terminating;
+    private final AtomicBoolean                                          terminating;
 
     // life-cycle: each sql execution
-    private volatile SingleNodeHandler singleNodeHandler;
-    private volatile MultiNodeQueryHandler multiNodeHandler;
-    private volatile CommitNodeHandler commitHandler;
-    private volatile RollbackNodeHandler rollbackHandler;
+    private volatile SingleNodeHandler                                   singleNodeHandler;
+    private volatile MultiNodeQueryHandler                               multiNodeHandler;
+    private volatile CommitNodeHandler                                   commitHandler;
+    private volatile RollbackNodeHandler                                 rollbackHandler;
 
     public NonBlockingSession(ServerConnection source) {
         this.source = source;
@@ -82,7 +83,7 @@ public class NonBlockingSession implements Session {
     }
 
     @Override
-    public void execute(RouteResultset rrs, int type) {
+    public void execute(RouteResultset rrs, String sql, int type) {
         if (LOGGER.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             LOGGER.debug(s.append(source).append(rrs).toString());
@@ -92,7 +93,6 @@ public class NonBlockingSession implements Session {
         RouteResultsetNode[] nodes = rrs.getNodes();
         if (nodes == null || nodes.length == 0) {
             source.writeErrMessage(ErrorCode.ER_NO_DB_ERROR, "No dataNode selected");
-            return;
         }
 
         if (nodes.length == 1) {
@@ -104,7 +104,7 @@ public class NonBlockingSession implements Session {
                 autocommit = false;
             }
             multiNodeHandler = new MultiNodeQueryHandler(nodes, autocommit, this);
-            // multiNodeHandler.execute();
+            //multiNodeHandler.execute();
         }
     }
 
@@ -149,18 +149,18 @@ public class NonBlockingSession implements Session {
             @Override
             public void run() {
                 new Terminator().nextInvocation(singleNodeHandler).nextInvocation(multiNodeHandler)
-                        .nextInvocation(commitHandler).nextInvocation(rollbackHandler)
-                        .nextInvocation(new Terminatable() {
-                            @Override
-                            public void terminate(Runnable runnable) {
-                                clearConnections(false);
-                            }
-                        }).nextInvocation(new Terminatable() {
-                            @Override
-                            public void terminate(Runnable runnable) {
-                                terminating.set(false);
-                            }
-                        }).invoke();
+                    .nextInvocation(commitHandler).nextInvocation(rollbackHandler)
+                    .nextInvocation(new Terminatable() {
+                        @Override
+                        public void terminate(Runnable runnable) {
+                            clearConnections(false);
+                        }
+                    }).nextInvocation(new Terminatable() {
+                        @Override
+                        public void terminate(Runnable runnable) {
+                            terminating.set(false);
+                        }
+                    }).invoke();
             }
         });
     }
@@ -218,7 +218,7 @@ public class NonBlockingSession implements Session {
 
     private static class Terminator {
         private LinkedList<Terminatable> list = new LinkedList<Terminatable>();
-        private Iterator<Terminatable> iter;
+        private Iterator<Terminatable>   iter;
 
         public Terminator nextInvocation(Terminatable term) {
             list.add(term);
@@ -265,7 +265,8 @@ public class NonBlockingSession implements Session {
         }
         if (hooked) {
             for (Entry<RouteResultsetNode, MySQLConnection> en : killees.entrySet()) {
-                KillConnectionHandler kill = new KillConnectionHandler(en.getValue(), this, run, count);
+                KillConnectionHandler kill = new KillConnectionHandler(en.getValue(), this, run,
+                    count);
                 HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
                 MySQLDataNode dn = conf.getDataNodes().get(en.getKey().getName());
                 try {
@@ -311,13 +312,13 @@ public class NonBlockingSession implements Session {
 
     private static boolean isModifySQL(int type) {
         switch (type) {
-        case ServerParse.INSERT:
-        case ServerParse.DELETE:
-        case ServerParse.UPDATE:
-        case ServerParse.REPLACE:
-            return true;
-        default:
-            return false;
+            case ServerParse.INSERT:
+            case ServerParse.DELETE:
+            case ServerParse.UPDATE:
+            case ServerParse.REPLACE:
+                return true;
+            default:
+                return false;
         }
     }
 

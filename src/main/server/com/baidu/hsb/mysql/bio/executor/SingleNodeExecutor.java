@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.baidu.hsb.HeisenbergConfig;
 import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
+import com.baidu.hsb.config.util.LoggerUtil;
 import com.baidu.hsb.exception.UnknownDataNodeException;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.PacketUtil;
@@ -41,6 +43,7 @@ import com.baidu.hsb.util.StringUtil;
  * @author xiongzhao@baidu.com
  */
 public final class SingleNodeExecutor extends NodeExecutor {
+
     private static final Logger LOGGER             = Logger.getLogger(SingleNodeExecutor.class);
     private static final int    RECEIVE_CHUNK_SIZE = 64 * 1024;
 
@@ -65,7 +68,7 @@ public final class SingleNodeExecutor extends NodeExecutor {
     /**
      * 单数据节点执行
      */
-    public void execute(RouteResultsetNode rrn, BlockingSession ss, int flag) {
+    public void execute(RouteResultsetNode rrn, BlockingSession ss, int flag, final String sql) {
         // 初始化
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -81,14 +84,14 @@ public final class SingleNodeExecutor extends NodeExecutor {
             endRunning();
             return;
         }
-
+        final AtomicLong exeTime = new AtomicLong(0);
         // 单节点处理
         Channel c = ss.getTarget().get(rrn);
         if (c != null) {
             c.setRunning(true);
-            bindingExecute(rrn, ss, c, flag);
+            bindingExecute(rrn, ss, c, flag, sql, exeTime);
         } else {
-            newExecute(rrn, ss, flag);
+            newExecute(rrn, ss, flag, sql, exeTime);
         }
     }
 
@@ -96,11 +99,12 @@ public final class SingleNodeExecutor extends NodeExecutor {
      * 已绑定数据通道的执行
      */
     private void bindingExecute(final RouteResultsetNode rrn, final BlockingSession ss,
-                                final Channel c, final int flag) {
+                                final Channel c, final int flag, final String sql,
+                                final AtomicLong exeTime) {
         ss.getSource().getProcessor().getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                execute0(rrn, ss, c, flag);
+                execute0(rrn, ss, c, flag, sql, exeTime);
             }
         });
     }
@@ -108,7 +112,9 @@ public final class SingleNodeExecutor extends NodeExecutor {
     /**
      * 新数据通道的执行
      */
-    private void newExecute(final RouteResultsetNode rrn, final BlockingSession ss, final int flag) {
+    private void newExecute(final RouteResultsetNode rrn, final BlockingSession ss, final int flag,
+                            final String sql, final AtomicLong exeTime) {
+
         final ServerConnection sc = ss.getSource();
 
         // 检查数据节点是否存在
@@ -153,7 +159,7 @@ public final class SingleNodeExecutor extends NodeExecutor {
                 }
 
                 // 执行
-                execute0(rrn, ss, c, flag);
+                execute0(rrn, ss, c, flag, sql, exeTime);
             }
         });
     }
@@ -161,8 +167,10 @@ public final class SingleNodeExecutor extends NodeExecutor {
     /**
      * 数据通道执行
      */
-    private void execute0(RouteResultsetNode rrn, BlockingSession ss, Channel c, int flag) {
+    private void execute0(RouteResultsetNode rrn, BlockingSession ss, Channel c, int flag,
+                          final String sql, final AtomicLong exeTime) {
         final ServerConnection sc = ss.getSource();
+        long s = System.currentTimeMillis();
 
         // 检查连接是否已关闭
         if (sc.isClosed()) {
@@ -173,50 +181,63 @@ public final class SingleNodeExecutor extends NodeExecutor {
         }
         // 执行并等待返回
         MySQLChannel mc = (MySQLChannel) c;
-        for (String stmt : rrn.getStatement()) {
-            try {
-                BinaryPacket bin = mc.execute(stmt, rrn, sc, sc.isAutocommit());
+        try {
+            for (String stmt : rrn.getStatement()) {
+                try {
+                    BinaryPacket bin = mc.execute(stmt, rrn, sc, sc.isAutocommit());
 
-                // 接收和处理数据
-                switch (bin.data[0]) {
-                    case OkPacket.FIELD_COUNT: {
-                        mc.setRunning(false);
-                        if (mc.isAutocommit()) {
-                            ss.clear();
+                    // 接收和处理数据
+                    switch (bin.data[0]) {
+                        case OkPacket.FIELD_COUNT: {
+                            mc.setRunning(false);
+                            if (mc.isAutocommit()) {
+                                ss.clear();
+                            }
+                            endRunning();
+                            bin.packetId = ++packetId;// OK_PACKET
+                            // set lastInsertId
+                            setLastInsertId(bin, sc);
+                            sc.write(bin.write(sc.allocate(), sc));
+                            break;
                         }
-                        endRunning();
-                        bin.packetId = ++packetId;// OK_PACKET
-                        // set lastInsertId
-                        setLastInsertId(bin, sc);
-                        sc.write(bin.write(sc.allocate(), sc));
-                        break;
-                    }
-                    case ErrorPacket.FIELD_COUNT: {
-                        LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc));
-                        mc.setRunning(false);
-                        if (mc.isAutocommit()) {
-                            ss.clear();
+                        case ErrorPacket.FIELD_COUNT: {
+                            LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc));
+                            mc.setRunning(false);
+                            if (mc.isAutocommit()) {
+                                ss.clear();
+                            }
+                            endRunning();
+                            bin.packetId = ++packetId;// ERROR_PACKET
+                            sc.write(bin.write(sc.allocate(), sc));
+                            break;
                         }
-                        endRunning();
-                        bin.packetId = ++packetId;// ERROR_PACKET
-                        sc.write(bin.write(sc.allocate(), sc));
-                        break;
+                        default: // HEADER|FIELDS|FIELD_EOF|ROWS|LAST_EOF
+                            handleResultSet(rrn, ss, mc, bin, flag);
                     }
-                    default: // HEADER|FIELDS|FIELD_EOF|ROWS|LAST_EOF
-                        handleResultSet(rrn, ss, mc, bin, flag);
+                } catch (IOException e) {
+                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+                    c.close();
+                    String msg = e.getMessage();
+                    handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg,
+                        ss);
+                } catch (RuntimeException e) {
+                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+                    c.close();
+                    String msg = e.getMessage();
+                    handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg,
+                        ss);
+                } finally {
+                    long e = System.currentTimeMillis();
+                    //                    if (LOGGER.isDebugEnabled()) {
+                    //                        LOGGER.debug("[" + stmt + "]starttime:" + s + ",endtime:" + e + "");
+                    //                    }
+                    exeTime.getAndAdd(e - s);
                 }
-            } catch (IOException e) {
-                LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
-                c.close();
-                String msg = e.getMessage();
-                handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
-            } catch (RuntimeException e) {
-                LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
-                c.close();
-                String msg = e.getMessage();
-                handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
             }
+        } finally {
+            LoggerUtil.printDigest(LOGGER, exeTime.get(), s, sql);
         }
+
     }
 
     /**

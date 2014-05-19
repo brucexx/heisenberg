@@ -16,7 +16,6 @@ import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.route.HServerRouter;
 import com.baidu.hsb.route.RouteResultset;
-import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.server.response.Heartbeat;
 import com.baidu.hsb.server.response.Ping;
 import com.baidu.hsb.server.session.BlockingSession;
@@ -27,14 +26,11 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com 2011-4-21 上午11:22:57
  */
 public class ServerConnection extends FrontendConnection {
-    private static final Logger LOGGER         = Logger.getLogger(ServerConnection.class);
+    private static final Logger LOGGER       = Logger.getLogger(ServerConnection.class);
 
-    private static final Logger digestLogger   = Logger.getLogger("sql-digest");
-    private static final Logger routeLogger    = Logger.getLogger("route-digest");
-    private static final Logger perfLogger     = Logger.getLogger("sql-perf");
-    private static final long   AUTH_TIMEOUT   = 15 * 1000L;
+    private static final Logger routeLogger  = Logger.getLogger("route-digest");
 
-    private static long         PERF_THRESHOLD = 300;
+    private static final long   AUTH_TIMEOUT = 15 * 1000L;
 
     private volatile int        txIsolation;
     private volatile boolean    autocommit;
@@ -42,12 +38,6 @@ public class ServerConnection extends FrontendConnection {
     private long                lastInsertId;
     private BlockingSession     session;
     private NonBlockingSession  session2;
-
-    static {
-        if (StringUtil.isNotEmpty(System.getProperty("perf.threshold"))) {
-            PERF_THRESHOLD = Long.parseLong(System.getProperty("perf.threshold"));
-        }
-    }
 
     public ServerConnection(SocketChannel channel) {
         super(channel);
@@ -160,17 +150,9 @@ public class ServerConnection extends FrontendConnection {
             et = System.currentTimeMillis();
             routeLogger.info((et - st) + "ms,[" + sql + "]");
         }
-        try {
-            // session执行
-            session.execute(rrs, type);
-        } finally {
-            long now = System.currentTimeMillis();
 
-            if ((now - st) >= PERF_THRESHOLD) {
-                perfLogger.info((now - st) + "ms,[" + sql + "]");
-            }
-            digestLogger.info((now - et) + "ms,[" + sql + "]");
-        }
+        session.execute(rrs, sql, type);
+
     }
 
     /**

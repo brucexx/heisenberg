@@ -22,9 +22,5 @@ public class QuitPacket extends MySQLPacket {
     protected String getPacketInfo() {
         return "MySQL Quit Packet";
     }
-    
-    public static void main(String args[]){
-        System.out.println(new String(QUIT));
-    }
 
 }

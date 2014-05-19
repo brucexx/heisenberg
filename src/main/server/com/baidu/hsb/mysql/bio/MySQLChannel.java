@@ -150,6 +150,16 @@ public final class MySQLChannel implements Channel {
         this.isRunning = running;
     }
 
+    /**
+     * 
+     * 
+     * @return
+     */
+    public String getAddr() {
+        return ((InetSocketAddress) socket.getLocalSocketAddress()).getHostName() + ":"
+               + socket.getLocalPort();
+    }
+
     @Override
     public void connect(long timeout) throws Exception {
         // 网络IO参数设置

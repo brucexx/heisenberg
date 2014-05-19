@@ -21,7 +21,7 @@ public final class SystemConfig {
                                                                        .availableProcessors();
     private static final long   DEFAULT_IDLE_TIMEOUT               = 8 * 3600 * 1000L;
     private static final long   DEFAULT_PROCESSOR_CHECK_PERIOD     = 15 * 1000L;
-    private static final long   DEFAULT_DATANODE_IDLE_CHECK_PERIOD = 60 * 1000L;
+    private static final long   DEFAULT_DATANODE_IDLE_CHECK_PERIOD = 1800 * 1000L;
     private static final long   DEFAULT_DATANODE_HEARTBEAT_PERIOD  = 10 * 1000L;
     private static final long   DEFAULT_CLUSTER_HEARTBEAT_PERIOD   = 5 * 1000L;
     private static final long   DEFAULT_CLUSTER_HEARTBEAT_TIMEOUT  = 10 * 1000L;
@@ -30,7 +30,7 @@ public final class SystemConfig {
     private static final String DEFAULT_CLUSTER_HEARTBEAT_PASS     = "_HEARTBEAT_PASS_";
     private static final int    DEFAULT_PARSER_COMMENT_VERSION     = 50148;
     private static final int    DEFAULT_SQL_RECORD_COUNT           = 10;
- 
+
     private int                 serverPort;
     private int                 managerPort;
     private String              charset;

@@ -25,7 +25,7 @@ public interface Session {
     /**
      * 开启一个会话执行
      */
-    void execute(RouteResultset rrs, int type);
+    void execute(RouteResultset rrs,String sql, int type);
 
     /**
      * 提交一个会话执行

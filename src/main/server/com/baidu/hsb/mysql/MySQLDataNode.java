@@ -33,20 +33,20 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com 2011-4-26 上午11:12:24
  */
 public final class MySQLDataNode {
-    private static final Logger LOGGER = Logger.getLogger(MySQLDataNode.class);
-    private static final Logger ALARM = Logger.getLogger("alarm");
+    private static final Logger      LOGGER = Logger.getLogger(MySQLDataNode.class);
+    private static final Logger      ALARM  = Logger.getLogger("alarm");
 
-    private final String name;
-    private final DataNodeConfig config;
-    private MySQLDataSource[] sources;
-    private MySQLConnectionPool[] dataSources;
-    private int activedIndex;
-    private long executeCount;
-    private long heartbeatRecoveryTime;
-    private volatile boolean initSuccess;
-    private final ReentrantLock switchLock;
+    private final String             name;
+    private final DataNodeConfig     config;
+    private MySQLDataSource[]        sources;
+    private MySQLConnectionPool[]    dataSources;
+    private int                      activedIndex;
+    private long                     executeCount;
+    private long                     heartbeatRecoveryTime;
+    private volatile boolean         initSuccess;
+    private final ReentrantLock      switchLock;
 
-    private SQLStatement heartbeatAST;// 动态心跳语句AST
+    private SQLStatement             heartbeatAST;                                   // 动态心跳语句AST
     private Map<PlaceHolder, Object> placeHolderToStringer;
 
     public MySQLDataNode(DataNodeConfig config) {
@@ -105,10 +105,10 @@ public final class MySQLDataNode {
             Map<PlaceHolder, Object> phm = new HashMap<PlaceHolder, Object>(plist.size(), 1);
             for (PlaceHolder ph : plist) {
                 final String content = ph.getName();
-                final int low = Integer.parseInt(content.substring(content.indexOf('(') + 1, content.indexOf(','))
-                        .trim());
-                final int high = Integer.parseInt(content.substring(content.indexOf(',') + 1, content.indexOf(')'))
-                        .trim());
+                final int low = Integer.parseInt(content.substring(content.indexOf('(') + 1,
+                    content.indexOf(',')).trim());
+                final int high = Integer.parseInt(content.substring(content.indexOf(',') + 1,
+                    content.indexOf(')')).trim());
                 phm.put(ph, new Object() {
                     private Random rnd = new Random();
 
