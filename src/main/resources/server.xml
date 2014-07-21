@@ -3,8 +3,8 @@
 <heisenberg:server xmlns:heisenberg="https://github.com/brucexx/heisenberg">
 	<!-- 系统参数定义，服务端口、管理端口，处理器个数、线程池等。 -->
 	<system>
-		<property name="serverPort">8055</property>
-		<property name="managerPort">8777</property>
+		<property name="serverPort">8077</property>
+		<property name="managerPort">9077</property>
 		<property name="initExecutor">16</property>
 		<property name="timerExecutor">4</property>
 		<property name="managerExecutor">4</property>
@@ -13,11 +13,12 @@
 		<property name="processorExecutor">16</property>
 		<property name="clusterHeartbeatUser">_HEARTBEAT_USER_</property>
 		<property name="clusterHeartbeatPass">_HEARTBEAT_PASS_</property>
-	</system>
+        <property name="dataNodeHeartbeatPeriod">300000</property>
+    </system>
 
 	<!-- 用户访问定义，用户名、密码、schema等信息。 -->
 	<user name="pay">
 		<property name="password">MiraCle</property>
-		<property name="schemas">test_shard</property>
+		<property name="schemas">trans_shard</property>
 	</user>
 </heisenberg:server>

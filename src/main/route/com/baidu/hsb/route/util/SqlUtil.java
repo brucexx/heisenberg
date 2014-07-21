@@ -76,15 +76,20 @@ public class SqlUtil {
 
         Set<String> tbPrefixSet = VelocityUtil.evalTbRuleArray(tc.getRule(), columnValues);
         List<String> sqlStrs = new ArrayList<String>();
-        for (String tbName : tbSet) {
-            String rTb = RealTableCache.getRealByUp(tbName);
-            TableConfig scanTc = schema.getTables().get(tbName);
-            if (scanTc != null && scanTc.getRule().isTbShard()) {
-                for (String tbPrefix : tbPrefixSet) {
+        for (String tbPrefix : tbPrefixSet) {
+            String tmp = oSql;
+            for (String tbName : tbSet) {
+                String rTb = RealTableCache.getRealByUp(tbName);
+                TableConfig scanTc = schema.getTables().get(tbName);
+                if (scanTc != null && scanTc.getRule().isTbShard()) {
                     if (scanTc.getRule().getTbIndexMap().get(tbPrefix) == dnIdx) {
-                        sqlStrs.add(oSql.replaceAll(rTb, rTb + tbPrefix.toUpperCase()));
+                        tmp = replaceSqlTb(tmp, rTb, rTb + tbPrefix.toUpperCase());
                     }
                 }
+            }
+            //如果没一个替换的
+            if (!StringUtil.equals(tmp, oSql)) {
+                sqlStrs.add(tmp);
             }
         }
         if (sqlStrs.size() > 0)
@@ -137,10 +142,10 @@ public class SqlUtil {
             } else {
                 String s = sql.substring(eIdx, eIdx + 1);
                 String s1 = sql.substring(sIdx - 1, sIdx);
-                if ((s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\r") || s
-                    .equals("\n"))
-                    && (s1.equals(",") || s1.equals(".") || s1.equals(" ") || s1.equals("\r") || s1
-                        .equals("\n"))) {
+                if ((s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\t")
+                     || s.equals("\r") || s.equals("\n"))
+                    && (s1.equals(",") || s1.equals(".") || s1.equals(" ") || s1.equals("\t")
+                        || s1.equals("\r") || s1.equals("\n"))) {
                     m.appendReplacement(sb, logic);
                 }
             }
@@ -150,17 +155,21 @@ public class SqlUtil {
     }
 
     public static void main(String args[]) {
-        String sql = "select * from \r\ntrans_tb";
-        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
-        sql = "select * from trans_tb,trans_tb_ext";
-        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
-        sql = "select * from trans_tb.";
-        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
-        sql = "select * from trans_tb ";
-        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
-        sql = "select * from trans_tb\r\n";
-        //System.out.println(sql + "|");
-        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
+        //        String sql = "select * from \r\ntrans_tb";
+        //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        //        sql = "select * from trans_tb,trans_tb_ext";
+        //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        //        sql = "select * from trans_tb.";
+        //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        //        sql = "select * from trans_tb ";
+        //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1"));
+        //        sql = "select * from trans_tb\r\n";
+        //        //System.out.println(sql + "|");
+        //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
+        System.out
+            .println(replaceSqlTb(
+                "select COUNT(distinct F_project_code)      from        t_crowdfunding_trans\twhere F_buyer_user_id =     128782556",
+                "t_crowdfunding_trans", "t_crowdfunding_trans_55_6"));
 
     }
 }

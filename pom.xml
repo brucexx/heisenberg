@@ -12,7 +12,7 @@
 
 	<properties>
 		<app.encoding>UTF-8</app.encoding>
-		<app.version>1.0.1</app.version>
+		<app.version>1.0.3.1</app.version>
 	</properties>
 
 	<dependencies>
@@ -149,6 +149,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>add-source</id>

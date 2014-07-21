@@ -24,6 +24,6 @@ public interface Versions {
     byte PROTOCOL_VERSION = 10;
 
     /** 服务器版本 */
-    byte[] SERVER_VERSION = "5.1.48-heisenberg".getBytes();
+    byte[] SERVER_VERSION = "1.0.3.1-heisenberg".getBytes();
 
 }

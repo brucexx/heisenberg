@@ -1,29 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rule>
-
-	<tableRule name="testRule">
-		<columns>TRANS_ID</columns>
-		<dbRuleList>
-			<dbRule><![CDATA[$!stringUtil.substring($TRANS_ID,-2,-1)]]></dbRule>
-		</dbRuleList>
-		<tbRuleList>
-			<tbRule><![CDATA[$!stringUtil.substring($TRANS_ID,-2)]]></tbRule>
-		</tbRuleList>
-		<tbPrefix>
-				<![CDATA[	 
-						def map = [:];
-						for (int i=0; i<10; i++) {
-							def list = [];
-							for (int j=0; j<10; j++) {
-								list.add(i+""+j);
-							}
-							map.put(i,list);
-						};
-						return map; 
-				]]>
-		</tbPrefix>
-	</tableRule>
 	<tableRule name="rule1" forceHit="true">
 		<columns>F_TRANS_ID,F_BUYER_USER_ID</columns>
 		<dbRuleList>
@@ -35,16 +12,15 @@
 		</dbRuleList>
 		<tbRuleList>
 			<tbRule><![CDATA[
-				#set($db_flag=$!stringUtil.substring($F_TRANS_ID,-3,-1))
-				#set($tb_flag=$!stringUtil.substring($F_TRANS_ID,-1))
+				#set($sub_str=$F_BUYER_USER_ID%1000+"")
+				#set($db_flag=$!stringUtil.substring($sub_str,-3,-1))
+				#set($tb_flag=$!stringUtil.substring($sub_str,-1))
 				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
 				$!prefix]]>
 			</tbRule>
 			<tbRule><![CDATA[
-				#set($sub_str=$F_BUYER_USER_ID%1000+"")
-				#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
-				#set($db_flag=$stringUtil.substring($sub_str,0,2))
-				#set($tb_flag=$stringUtil.substring($sub_str,2))
+				#set($db_flag=$!stringUtil.substring($F_TRANS_ID,-3,-1))
+				#set($tb_flag=$!stringUtil.substring($F_TRANS_ID,-1))
 				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
 				$!prefix]]>
 			</tbRule>
@@ -184,4 +160,117 @@
 				]]>
 		</tbPrefix>
 	</tableRule>
+
+
+
+ 	<tableRule name="rule5" forceHit="true">
+		<columns>F_TRANS_ID,F_OPT_USER_ID</columns>
+		<dbRuleList>
+			<dbRule><![CDATA[$!stringUtil.substring($F_TRANS_ID,-3,-1)]]></dbRule>
+			<dbRule><![CDATA[
+				#set($sub_str=$F_OPT_USER_ID%1000+"")
+				$!stringUtil.substring($stringUtil.alignRights($sub_str,3,"0"),0,2)]]>
+			</dbRule>
+		</dbRuleList>
+		<tbRuleList>
+			<tbRule><![CDATA[
+				#set($db_flag=$!stringUtil.substring($F_TRANS_ID,-3,-1))
+				#set($tb_flag=$!stringUtil.substring($F_TRANS_ID,-1))
+				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+				$!prefix]]>
+			</tbRule>
+			<tbRule><![CDATA[
+				#set($sub_str=$F_OPT_USER_ID%1000+"")
+				#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
+				#set($db_flag=$stringUtil.substring($sub_str,0,2))
+				#set($tb_flag=$stringUtil.substring($sub_str,2))
+				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+				$!prefix]]>
+			</tbRule>
+		</tbRuleList>
+		<tbPrefix>
+				<![CDATA[	 
+						def map = [:];
+						for (int i=0; i<100; i++) {
+							def list = [];
+							for (int j=0; j<10; j++) {
+								def k=i<10?"0"+i:i;
+								list.add("_"+k+"_"+j);
+							}
+							map.put(i,list);
+						};
+						return map; 
+				]]>
+		</tbPrefix>
+	</tableRule>
+
+
+	<tableRule name="rule6" forceHit="true">
+		<columns>F_BUYER_USER_ID</columns>
+		<dbRuleList>
+			<dbRule><![CDATA[
+				#set($sub_str=$F_BUYER_USER_ID%1000+"")
+				$!stringUtil.substring($stringUtil.alignRights($sub_str,3,"0"),0,2)]]>
+			</dbRule>
+		</dbRuleList>
+		<tbRuleList>
+			<tbRule><![CDATA[
+				#set($sub_str=$F_BUYER_USER_ID%1000+"")
+				#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
+				#set($db_flag=$stringUtil.substring($sub_str,0,2))
+				#set($tb_flag=$stringUtil.substring($sub_str,2))
+				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+				$!prefix]]>
+			</tbRule>
+		</tbRuleList>
+		<tbPrefix>
+				<![CDATA[	 
+						def map = [:];
+						for (int i=0; i<100; i++) {
+							def list = [];
+							for (int j=0; j<10; j++) {
+								def k=i<10?"0"+i:i;
+								list.add("_"+k+"_"+j);
+							}
+							map.put(i,list);
+						};
+						return map; 
+				]]>
+		</tbPrefix>
+	</tableRule>
+
+	<tableRule name="rule7" forceHit="true">
+		<columns>F_USER_ID</columns>
+		<dbRuleList>
+			<dbRule><![CDATA[
+				#set($sub_str=$F_USER_ID%1000+"")
+				$!stringUtil.substring($stringUtil.alignRights($sub_str,3,"0"),0,2)]]>
+			</dbRule>
+		</dbRuleList>
+		<tbRuleList>
+			<tbRule><![CDATA[
+				#set($sub_str=$F_USER_ID%1000+"")
+				#set($sub_str=$stringUtil.alignRights($sub_str,3,"0"))
+				#set($db_flag=$stringUtil.substring($sub_str,0,2))
+				#set($tb_flag=$stringUtil.substring($sub_str,2))
+				#set($prefix="_"+$db_flag+"_"+$tb_flag)##
+				$!prefix]]>
+			</tbRule>
+		</tbRuleList>
+		<tbPrefix>
+				<![CDATA[	 
+						def map = [:];
+						for (int i=0; i<100; i++) {
+							def list = [];
+							for (int j=0; j<10; j++) {
+								def k=i<10?"0"+i:i;
+								list.add("_"+k+"_"+j);
+							}
+							map.put(i,list);
+						};
+						return map; 
+				]]>
+		</tbPrefix>
+	</tableRule>
+
 </rule>
