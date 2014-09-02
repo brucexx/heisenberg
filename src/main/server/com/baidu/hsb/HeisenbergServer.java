@@ -32,28 +32,29 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com  
  */
 public class HeisenbergServer {
-    public static final String NAME = "Heisenberg";
-    private static final long LOG_WATCH_DELAY = 60000L;
-    private static final long TIME_UPDATE_PERIOD = 20L;
-    private static final HeisenbergServer INSTANCE = new HeisenbergServer();
-    private static final Logger LOGGER = Logger.getLogger(HeisenbergServer.class);
+    public static final String            NAME               = "Heisenberg";
+    private static final long             LOG_WATCH_DELAY    = 60000L;
+    private static final long             TIME_UPDATE_PERIOD = 20L;
+    private static final HeisenbergServer INSTANCE           = new HeisenbergServer();
+    private static final Logger           LOGGER             = Logger
+                                                                 .getLogger(HeisenbergServer.class);
 
     public static final HeisenbergServer getInstance() {
         return INSTANCE;
     }
 
     private final HeisenbergConfig config;
-    private final Timer timer;
+    private final Timer            timer;
     private final NameableExecutor managerExecutor;
     private final NameableExecutor timerExecutor;
     private final NameableExecutor initExecutor;
-    private final SQLRecorder sqlRecorder;
-    private final AtomicBoolean isOnline;
-    private final long startupTime;
-    private NIOProcessor[] processors;
-    private NIOConnector connector;
-    private NIOAcceptor manager;
-    private NIOAcceptor server;
+    private final SQLRecorder      sqlRecorder;
+    private final AtomicBoolean    isOnline;
+    private final long             startupTime;
+    private NIOProcessor[]         processors;
+    private NIOConnector           connector;
+    private NIOAcceptor            manager;
+    private NIOAcceptor            server;
 
     private HeisenbergServer() {
         this.config = new HeisenbergConfig();
@@ -198,6 +199,17 @@ public class HeisenbergServer {
                     public void run() {
                         for (NIOProcessor p : processors) {
                             p.check();
+                        }
+                    }
+                });
+                timerExecutor.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //初始化是否成功检查
+                        Map<String, MySQLDataNode> dataNodes = config.getDataNodes();
+                        for (MySQLDataNode node : dataNodes.values()) {
+                            node.init(1, 0);
                         }
                     }
                 });

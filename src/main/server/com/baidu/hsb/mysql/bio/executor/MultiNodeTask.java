@@ -1,6 +1,6 @@
 /**
  * Baidu.com,Inc.
- * Copyright (c) 2000-2013 All Rights Reserved.
+ * Copyright (c) 2000-2014 All Rights Reserved.
  */
 package com.baidu.hsb.mysql.bio.executor;
 
@@ -10,11 +10,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -41,15 +38,14 @@ import com.baidu.hsb.route.RouteResultset;
 import com.baidu.hsb.route.RouteResultsetNode;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.session.BlockingSession;
-import com.baidu.hsb.server.session.MultiExecutorTask;
 import com.baidu.hsb.util.StringUtil;
 
 /**
- * 多数据节点执行器
  * 
  * @author xiongzhao@baidu.com
+ * @version $Id: MultiNodeTask.java, v 0.1 2014年9月11日 下午8:19:03 HI:brucest0078 Exp $
  */
-public final class MultiNodeExecutor extends NodeExecutor {
+public class MultiNodeTask {
     private static final Logger         LOGGER             = Logger
                                                                .getLogger(MultiNodeExecutor.class);
     private static final int            RECEIVE_CHUNK_SIZE = 16 * 1024;
@@ -73,13 +69,71 @@ public final class MultiNodeExecutor extends NodeExecutor {
 
                                                                @Override
                                                                protected Logger getLogger() {
-                                                                   return MultiNodeExecutor.LOGGER;
+                                                                   return MultiNodeTask.LOGGER;
                                                                }
 
                                                            };
     private long                        nodeCount          = 0;
+    private long                        totalCount         = 0;
 
-    @Override
+    private AtomicLong                  exeTime            = new AtomicLong(0);
+    private RouteResultsetNode[]        nodes;
+    private boolean                     autocommit;
+    private BlockingSession             ss;
+    private int                         flag;
+    private String                      sql;
+
+    public MultiNodeTask(RouteResultsetNode[] nodes, final boolean autocommit,
+                         final BlockingSession ss, final int flag, final String sql) {
+
+        this.nodes = nodes;
+        this.autocommit = autocommit;
+        this.ss = ss;
+        this.sql = sql;
+        this.flag = flag;
+
+        this.isFail.set(false);
+        this.unfinishedNodeCount = 0;
+        this.nodeCount = 0;
+        for (RouteResultsetNode rrn : nodes) {
+            unfinishedNodeCount += rrn.getSqlCount();
+            this.nodeCount++;
+        }
+        totalCount = unfinishedNodeCount;
+        this.errno = 0;
+        this.errMessage = null;
+        this.fieldEOF.set(false);
+
+        this.packetId = 0;
+        this.affectedRows = 0L;
+        this.insertId = 0L;
+        this.buffer = ss.getSource().allocate();
+
+        if (ss.getSource().isClosed()) {
+            decrementCountToZero();
+            ss.getSource().recycle(this.buffer);
+            return;
+        }
+
+        // 多节点处理
+        ConcurrentMap<RouteResultsetNode, Channel> target = ss.getTarget();
+        for (RouteResultsetNode rrn : nodes) {
+            Channel c = target.get(rrn);
+            if (c != null) {
+                c.setRunning(true);
+            }
+        }
+    }
+
+    /**
+     * 是否已完成
+     * 
+     * @return
+     */
+    public boolean isTaskFinish() {
+        return unfinishedNodeCount <= 0;
+    }
+
     public void terminate() throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -117,56 +171,10 @@ public final class MultiNodeExecutor extends NodeExecutor {
         }
     }
 
-    /**
-     * 多数据节点执行
-     * 
-     * @param nodes
-     *            never null
-     */
-    public void execute(RouteResultsetNode[] nodes, final boolean autocommit,
-                        final BlockingSession ss, final int flag, final String sql) {
-        // 初始化
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try {
-            this.isFail.set(false);
-            this.unfinishedNodeCount = 0;
-            this.nodeCount = 0;
-            for (RouteResultsetNode rrn : nodes) {
-                unfinishedNodeCount += rrn.getSqlCount();
-                this.nodeCount++;
-            }
-            this.errno = 0;
-            this.errMessage = null;
-            this.fieldEOF.set(false);
-
-            this.packetId = 0;
-            this.affectedRows = 0L;
-            this.insertId = 0L;
-            this.buffer = ss.getSource().allocate();
-        } finally {
-            lock.unlock();
-        }
-
-        if (ss.getSource().isClosed()) {
-            decrementCountToZero();
-            ss.getSource().recycle(this.buffer);
-            return;
-        }
-
-        // 多节点处理
-        ConcurrentMap<RouteResultsetNode, Channel> target = ss.getTarget();
-        for (RouteResultsetNode rrn : nodes) {
-            Channel c = target.get(rrn);
-            if (c != null) {
-                c.setRunning(true);
-            }
-        }
-        final AtomicLong exeTime = new AtomicLong(0);
-
+    public void execute() {
         ThreadPoolExecutor exec = ss.getSource().getProcessor().getExecutor();
         for (final RouteResultsetNode rrn : nodes) {
-            final Channel c = target.get(rrn);
+            final Channel c = ss.getTarget().get(rrn);
             if (c != null) {
                 exec.execute(new Runnable() {
                     @Override
@@ -203,40 +211,48 @@ public final class MultiNodeExecutor extends NodeExecutor {
             @Override
             public void run() {
                 try {
-                    //5s读取时间，否则超时
-                    MultiExecutorTask.runTask(new Callable<Boolean>() {
-
-                        @Override
-                        public Boolean call() throws Exception {
-                            runTask(rrn, dn, ss, sc, autocommit, flag, sql, exeTime);
-                            return true;
-                        }
-                    }, 5);
-                } catch (InterruptedException e) {
-                    killServerTask(rrn, ss);
-                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_NET_READ_INTERRUPTED,
-                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
-                } catch (ExecutionException e) {
+                    runTask(rrn, dn, ss, sc, autocommit, flag, sql, exeTime);
+                } catch (Exception e) {
                     killServerTask(rrn, ss);
                     handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_EXEC_ERROR, sc,
                         rrn), rrn.getSqlCount(), exeTime, sql);
-                } catch (TimeoutException e) {
-                    killServerTask(rrn, ss);
-                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_QUERY_TIMEOUT,
-                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
                 }
+                //                try {
+                //
+                //                    //5s读取时间，否则超时
+                //                    MultiExecutorTask.runTask(new Callable<Boolean>() {
+                //
+                //                        @Override
+                //                        public Boolean call() throws Exception {
+                //                            return true;
+                //                        }
+                //                    }, 5);
+                //                } catch (InterruptedException e) {
+                //                    killServerTask(rrn, ss);
+                //                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_NET_READ_INTERRUPTED,
+                //                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
+                //                } catch (ExecutionException e) {
+                //                    killServerTask(rrn, ss);
+                //                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_EXEC_ERROR, sc,
+                //                        rrn), rrn.getSqlCount(), exeTime, sql);
+                //                } catch (TimeoutException e) {
+                //                    killServerTask(rrn, ss);
+                //                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_QUERY_TIMEOUT,
+                //                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
+                //                }
 
             }
         });
     }
 
     private void killServerTask(RouteResultsetNode rrn, BlockingSession ss) {
+
         ConcurrentMap<RouteResultsetNode, Channel> target = ss.getTarget();
         Channel c = target.get(rrn);
         if (c != null) {
+
             c.kill();
         }
-
     }
 
     private void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn,
@@ -247,7 +263,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
         int i = rrn.getReplicaIndex();
         Channel c = null;
         try {
-            c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
+            c = (i == DEFAULT_REPLICA_INDEX) ? dn.getMaxUseChannel() : dn.getMaxUseChannel(i);
         } catch (final Exception e) {
             handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
                 rrn.getSqlCount(), exeTime, sql);
@@ -286,7 +302,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
                 //System.out.println(rrn.getName() + ",sql[" + stmt + "]");
                 //LOGGER.info("node[" + rrn.getName()+"],sql["+stmt+"],recv=>"+ByteUtil.formatByte(bin.data)+"<=");
                 // 接收和处理数据
-                final ReentrantLock lock = MultiNodeExecutor.this.lock;
+                final ReentrantLock lock = MultiNodeTask.this.lock;
                 lock.lock();
                 try {
                     switch (bin.data[0]) {
@@ -413,16 +429,17 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     return;
                 case EOFPacket.FIELD_COUNT:
                     c.setRunning(false);
-                    if (source.isAutocommit()) {
-                        c = ss.getTarget().remove(rrn);
-                        if (c != null) {
-                            if (isFail.get() || source.isClosed()) {
-                                c.close();
-                            } else {
-                                c.release();
-                            }
-                        }
-                    }
+                    //忽略自动提交
+                    //                    if (source.isAutocommit()) {
+                    //                        c = ss.getTarget().remove(rrn);
+                    //                        if (c != null) {
+                    //                            if (isFail.get() || source.isClosed()) {
+                    //                                c.close();
+                    //                            } else {
+                    //                                c.release();
+                    //                            }
+                    //                        }
+                    //                    }
                     handleSuccessEOF(ss, rrn, bin, exeTime, sql);
                     return;
                 default:
@@ -447,7 +464,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
         //        sc.getProcessor().getExecutor().execute(new Runnable() {
         //            @Override
         //            public void run() {
-        final ReentrantLock lock = MultiNodeExecutor.this.lock;
+        final ReentrantLock lock = MultiNodeTask.this.lock;
         lock.lock();
         try {
             handleRowData(rrn, c, ss, exeTime, sql);
@@ -479,9 +496,10 @@ public final class MultiNodeExecutor extends NodeExecutor {
                 }
                 try {
                     ServerConnection source = ss.getSource();
-                    if (source.isAutocommit()) {
-                        ss.release();
-                    }
+                    //忽略自动提交
+                    //                    if (source.isAutocommit()) {
+                    //                        ss.release();
+                    //                    }
 
                     bin.packetId = ++packetId;// LAST_EOF
                     source.write(bin.write(buffer, source));
@@ -489,7 +507,10 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     LOGGER.warn("exception happens in success notification: " + ss.getSource(), e);
                 }
             } finally {
-                LoggerUtil.printDigest(LOGGER, exeTime.get() / nodeCount, sql);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("final exeTime-->" + exeTime.get() + ",nodeCount:" + nodeCount);
+                }
+                LoggerUtil.printDigest(LOGGER, (exeTime.get() / nodeCount), sql);
             }
         }
     }
@@ -514,16 +535,17 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     source.setLastInsertId(insertId);
                 }
 
-                if (source.isAutocommit()) {
-                    if (!autocommit) { // 前端非事务模式，后端事务模式，则需要自动递交后端事务。
-                        icExecutor.commit(ok, ss, ss.getTarget().size());
-                    } else {
-                        ss.release();
-                        ok.write(source);
-                    }
-                } else {
-                    ok.write(source);
-                }
+                //                if (source.isAutocommit()) {
+                //                    if (!autocommit) { // 前端非事务模式，后端事务模式，则需要自动递交后端事务。
+                //                        icExecutor.commit(ok, ss, ss.getTarget().size());
+                //                    } else {
+                //                        ss.release();
+                //                        ok.write(source);
+                //                    }
+                //                } else {
+                //多节点情况下以非事务模式执行
+                ok.write(source);
+                //                }
 
                 source.recycle(buffer);
             } catch (Exception e) {
@@ -539,14 +561,18 @@ public final class MultiNodeExecutor extends NodeExecutor {
             if (!isFail.getAndSet(true) && errInfo != null) {
                 errno = errInfo.getErrNo();
                 errMessage = errInfo.getErrMsg();
-
+                LOGGER.warn(rrn.getName() + " error[" + errInfo.getErrNo() + ","
+                            + errInfo.getErrMsg() + "] in sql[" + sql + "]");
                 errInfo.logErr();
             }
         } catch (Exception e) {
             LOGGER.warn("handleFailure failed in " + getClass().getSimpleName() + ", source = "
                         + ss.getSource(), e);
         } finally {
-            LoggerUtil.printDigest(LOGGER, exeTime.get(), sql);
+            LoggerUtil
+                .printDigest(LOGGER,
+                    (long) (exeTime.get() / ((double) (totalCount - unfinishedNodeCount)
+                                             * nodeCount / (double) totalCount)), sql);
         }
         if (decrementCountAndIsZero(c)) {
             notifyFailure(ss);

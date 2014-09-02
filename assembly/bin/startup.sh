@@ -92,7 +92,7 @@ JAVA_OPTS="$JAVA_OPTS -Dsun.net.inetaddr.ttl=5"
 #GC Log Options
 JAVA_OPTS="$JAVA_OPTS -Xloggc:$LOG_HOME/gc.log"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
+JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDateStamps"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
 #debug Options
 if [ "$DEBUG_MODE"x == "1"x ] ; then

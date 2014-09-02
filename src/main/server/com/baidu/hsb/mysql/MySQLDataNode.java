@@ -33,8 +33,8 @@ import com.baidu.hsb.util.TimeUtil;
  * @author xiongzhao@baidu.com 2011-4-26 上午11:12:24
  */
 public final class MySQLDataNode {
-    private static final Logger      LOGGER = Logger.getLogger(MySQLDataNode.class);
-    private static final Logger      ALARM  = Logger.getLogger("alarm");
+    private static final Logger      LOGGER      = Logger.getLogger(MySQLDataNode.class);
+    private static final Logger      ALARM       = Logger.getLogger("alarm");
 
     private final String             name;
     private final DataNodeConfig     config;
@@ -43,10 +43,10 @@ public final class MySQLDataNode {
     private int                      activedIndex;
     private long                     executeCount;
     private long                     heartbeatRecoveryTime;
-    private volatile boolean         initSuccess;
+    private volatile boolean         initSuccess = false;
     private final ReentrantLock      switchLock;
 
-    private SQLStatement             heartbeatAST;                                   // 动态心跳语句AST
+    private SQLStatement             heartbeatAST;                                       // 动态心跳语句AST
     private Map<PlaceHolder, Object> placeHolderToStringer;
 
     public MySQLDataNode(DataNodeConfig config) {
@@ -59,6 +59,9 @@ public final class MySQLDataNode {
     }
 
     public void init(int size, int index) {
+        if (initSuccess) {
+            return;
+        }
         if (!checkIndex(index)) {
             index = 0;
         }
@@ -165,6 +168,20 @@ public final class MySQLDataNode {
 
     public Channel getChannel() throws Exception {
         return getChannel(activedIndex);
+    }
+
+    public Channel getMaxUseChannel() throws Exception {
+        return getMaxUseChannel(activedIndex);
+    }
+
+    public Channel getMaxUseChannel(int i) throws Exception {
+        if (initSuccess) {
+            Channel c = sources[i].getChannel(true);
+            ++executeCount;
+            return c;
+        } else {
+            throw new IllegalArgumentException("Invalid DataSource:" + i);
+        }
     }
 
     /**

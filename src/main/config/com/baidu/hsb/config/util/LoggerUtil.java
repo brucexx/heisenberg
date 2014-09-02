@@ -16,21 +16,22 @@ import com.baidu.hsb.route.util.StringUtil;
 public class LoggerUtil {
 
     /** 线程编号修饰符 */
-    private static final char   THREAD_RIGHT_TAG = ']';
+    private static final char   THREAD_RIGHT_TAG     = ']';
 
     /** 线程编号修饰符 */
-    private static final char   THREAD_LEFT_TAG  = '[';
+    private static final char   THREAD_LEFT_TAG      = '[';
 
     /** 换行符 */
-    public static final char    ENTERSTR         = '\n';
+    public static final char    ENTERSTR             = '\n';
 
     /** 逗号 */
-    public static final char    COMMA            = ',';
+    public static final char    COMMA                = ',';
 
-    private static long         PERF_THRESHOLD   = 100;
+    private static long         PERF_THRESHOLD       = 100;
+    private static long         MULTI_PERF_THRESHOLD = 2000;
 
-    private static final Logger perfLogger       = Logger.getLogger("sql-perf");
-    private static final Logger digestLogger     = Logger.getLogger("sql-digest");
+    private static final Logger perfLogger           = Logger.getLogger("sql-perf");
+    private static final Logger digestLogger         = Logger.getLogger("sql-digest");
 
     /**
      * 禁用构造函数
@@ -46,17 +47,17 @@ public class LoggerUtil {
     }
 
     public static void printDigest(Logger logger, long exeTime, String stmt) {
-        if (exeTime >= PERF_THRESHOLD) {
-            perfLogger.info(exeTime + "ms,[" + stmt + "]");
+        if (exeTime >= MULTI_PERF_THRESHOLD) {
+            perfLogger.info("[multi]" + exeTime + "ms,[" + stmt + "]");
         }
-        digestLogger.info(exeTime + "ms,[" + stmt + "]");
+        digestLogger.info("[multi]" + exeTime + "ms,[" + stmt + "]");
     }
 
     public static void printDigest(Logger logger, long exeTime, long beginTime, String stmt) {
         if (exeTime >= PERF_THRESHOLD) {
-            perfLogger.info(exeTime + "ms," + beginTime + ",[" + stmt + "]");
+            perfLogger.info("[single]" + exeTime + "ms," + beginTime + ",[" + stmt + "]");
         }
-        digestLogger.info(exeTime + "ms,[" + stmt + "]");
+        digestLogger.info("[single]" + exeTime + "ms,[" + stmt + "]");
     }
 
     /**

@@ -12,7 +12,7 @@
 
 	<properties>
 		<app.encoding>UTF-8</app.encoding>
-		<app.version>1.0.3.1</app.version>
+		<app.version>1.0.3.2</app.version>
 	</properties>
 
 	<dependencies>
