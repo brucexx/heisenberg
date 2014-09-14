@@ -95,10 +95,10 @@ public class BlockingSession implements Session {
         } else {
             try {
                 // 多数据节点，非事务模式下，执行的是可修改数据的SQL，则后端为事务模式。
-                //                boolean autocommit = source.isAutocommit();
-                //                if (autocommit && isModifySQL(type)) {
-                //                    autocommit = false;
-                //                }
+                boolean autocommit = source.isAutocommit();
+                if (autocommit && isModifySQL(type)) {
+                    autocommit = false;
+                }
                 //                lockKey = getDataNode(nodes[0].getName());
                 //                if (LOGGER.isDebugEnabled()) {
                 //                    LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
@@ -111,9 +111,9 @@ public class BlockingSession implements Session {
                 //                                 + this.getSource().getHost() + "," + this.getSource().getPort()
                 //                                 + "start at:" + System.currentTimeMillis());
                 //                }
-                lock.lock();
+                //                lock.lock();
                 // autocommit直接置为false
-                MultiNodeTask task = new MultiNodeTask(nodes, false, this, rrs.getFlag(), sql);
+                MultiNodeTask task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
                 task.execute();
 
                 //                multiNodeExecutor.execute(nodes, autocommit, this, rrs.getFlag(), sql);
@@ -137,7 +137,7 @@ public class BlockingSession implements Session {
                 //                }
 
             } finally {
-                lock.unlock();
+                //                lock.unlock();
 
                 //                MultiLockPool.releaseLock(lockKey);
                 //                if (LOGGER.isDebugEnabled()) {

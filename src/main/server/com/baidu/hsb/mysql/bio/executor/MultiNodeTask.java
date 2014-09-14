@@ -430,16 +430,16 @@ public class MultiNodeTask {
                 case EOFPacket.FIELD_COUNT:
                     c.setRunning(false);
                     //忽略自动提交
-                    //                    if (source.isAutocommit()) {
-                    //                        c = ss.getTarget().remove(rrn);
-                    //                        if (c != null) {
-                    //                            if (isFail.get() || source.isClosed()) {
-                    //                                c.close();
-                    //                            } else {
-                    //                                c.release();
-                    //                            }
-                    //                        }
-                    //                    }
+                    if (source.isAutocommit()) {
+                        c = ss.getTarget().remove(rrn);
+                        if (c != null) {
+                            if (isFail.get() || source.isClosed()) {
+                                c.close();
+                            } else {
+                                c.release();
+                            }
+                        }
+                    }
                     handleSuccessEOF(ss, rrn, bin, exeTime, sql);
                     return;
                 default:
@@ -497,9 +497,9 @@ public class MultiNodeTask {
                 try {
                     ServerConnection source = ss.getSource();
                     //忽略自动提交
-                    //                    if (source.isAutocommit()) {
-                    //                        ss.release();
-                    //                    }
+                    if (source.isAutocommit()) {
+                        ss.release();
+                    }
 
                     bin.packetId = ++packetId;// LAST_EOF
                     source.write(bin.write(buffer, source));
@@ -535,17 +535,17 @@ public class MultiNodeTask {
                     source.setLastInsertId(insertId);
                 }
 
-                //                if (source.isAutocommit()) {
-                //                    if (!autocommit) { // 前端非事务模式，后端事务模式，则需要自动递交后端事务。
-                //                        icExecutor.commit(ok, ss, ss.getTarget().size());
-                //                    } else {
-                //                        ss.release();
-                //                        ok.write(source);
-                //                    }
-                //                } else {
-                //多节点情况下以非事务模式执行
-                ok.write(source);
-                //                }
+                if (source.isAutocommit()) {
+                    if (!autocommit) { // 前端非事务模式，后端事务模式，则需要自动递交后端事务。
+                        icExecutor.commit(ok, ss, ss.getTarget().size());
+                    } else {
+                        ss.release();
+                        ok.write(source);
+                    }
+                } else {
+                    //多节点情况下以非事务模式执行
+                    ok.write(source);
+                }
 
                 source.recycle(buffer);
             } catch (Exception e) {

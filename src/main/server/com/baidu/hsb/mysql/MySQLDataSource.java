@@ -119,7 +119,7 @@ public final class MySQLDataSource {
             ALARM.error(s.toString());
         }
 
-        if (activeCount < size * 0.5 && idleCount < 10) {
+        if (activeCount < size * 0.5 && idleCount < 5) {
             final ReentrantLock lock = this.lock;
             lock.lock();
             // 将创建新连接，在此先假设创建成功。
