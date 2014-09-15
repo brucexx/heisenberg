@@ -143,7 +143,7 @@ public class SqlUtil {
                 String s = sql.substring(eIdx, eIdx + 1);
                 String s1 = sql.substring(sIdx - 1, sIdx);
                 if ((s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\t")
-                     || s.equals("\r") || s.equals("\n"))
+                     || s.equals("\r") || s.equals("\n") || s.equals("("))
                     && (s1.equals(",") || s1.equals(".") || s1.equals(" ") || s1.equals("\t")
                         || s1.equals("\r") || s1.equals("\n"))) {
                     m.appendReplacement(sb, logic);
@@ -166,10 +166,8 @@ public class SqlUtil {
         //        sql = "select * from trans_tb\r\n";
         //        //System.out.println(sql + "|");
         //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
-        System.out
-            .println(replaceSqlTb(
-                "select COUNT(distinct F_project_code)      from        t_crowdfunding_trans\twhere F_buyer_user_id =     128782556",
-                "t_crowdfunding_trans", "t_crowdfunding_trans_55_6"));
+        System.out.println(replaceSqlTb("insert into t_crowdfunding_trans(id) values('22')",
+            "t_crowdfunding_trans", "t_crowdfunding_trans_55_6"));
 
     }
 }
