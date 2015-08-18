@@ -91,7 +91,12 @@ public class BlockingSession implements Session {
         String lockKey = "";
         //        // 选择执行方式
         if (nodes.length == 1) {
-            singleNodeExecutor.execute(nodes[0], this, rrs.getFlag(), sql);
+        	if(nodes[0].getSqlCount()>1){
+        		executeMutil(rrs, nodes, type, sql);
+        	}else{
+                singleNodeExecutor.execute(nodes[0], this, rrs.getFlag(), sql);
+
+        	}
         } else {
             try {
                 // 多数据节点，非事务模式下，执行的是可修改数据的SQL，则后端为事务模式。
@@ -148,6 +153,16 @@ public class BlockingSession implements Session {
 
             }
         }
+    }
+    
+    private void executeMutil(RouteResultset rrs,RouteResultsetNode[] nodes,int type,String sql){
+    	 
+    	  boolean autocommit = source.isAutocommit();
+          if (autocommit && isModifySQL(type)) {
+              autocommit = false;
+          }
+          MultiNodeTask task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
+          task.execute();
     }
 
     private String getDataNode(String dsName) {
