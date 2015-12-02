@@ -1,61 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <heisenberg:schema xmlns:heisenberg="https://github.com/brucexx/heisenberg">
-	<!-- 主库 -->
-	<schema name="trans_shard">
-		<table name="t_trans" dataNode="transDN$0-99" rule="rule1"/>
-		<table name="t_recvables" dataNode="transDN$0-99" rule="rule2"/>
-		<table name="t_trans_id_map" dataNode="transDN$0-99" rule="rule3"/>
-		<table name="t_payments" dataNode="transDN$0-99" rule="rule4"/>
-		<table name="t_loan_log" dataNode="transDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_trans" dataNode="transDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_trans_detail" dataNode="transDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_opt_log" dataNode="transDN$0-99" rule="rule5" />
-		<table name="t_user_asserts"  dataNode="transDN$0-99" rule="rule6" />
-		<table name="t_accounts"  dataNode="transDN$0-99" rule="rule7" />
+	<schema name="bank_data_master_shard">
+		<table name="bank_influx_transaction" dataNode="bankDataMasterDN$0-9" rule="rule1" />
+		<table name="bank_influx_inst" dataNode="bankDataMasterDN$0-9" rule="rule1" />
+		<table name="bank_influx_payer" dataNode="bankDataMasterDN$0-9" rule="rule1" />
+		<table name="bank_influx_term" dataNode="bankDataMasterDN$0-9" rule="rule1" />
+		<table name="bank_influx_extension" dataNode="bankDataMasterDN$0-9" rule="rule1" />
 	</schema>
-	<dataNode name="transDN">
+	<dataNode name="bankDataMasterDN">
 		<property name="dataSource">
-			<dataSourceRef>transDS$0-99</dataSourceRef>
+			<dataSourceRef>bankDataMasterDN$0-9</dataSourceRef>
 		</property>
 		<property name="poolSize">256</property>
+		<property name="coreSize">16</property>
 		<property name="heartbeatSQL">select user()</property>
 	</dataNode>
-	<dataSource name="transDS" type="mysql">
+	<dataSource name="bankDataMasterDN" type="mysql">
 		<property name="location">
-			<location>cp01-qa-bu-09-qa48.cp01.baidu.com:3306/wms_db_$00-99</location>
+			<location>127.0.0.1:3306/bank_data_db_$0-9</location>
 		</property>
-		<property name="user">pay</property>
-		<property name="password">MiraCle</property>
-		<property name="needEncrypt">false</property>
+		<property name="user">root</property>
+		<property name="password">root</property>
 	</dataSource>
-	
-	<!-- 从库 -->
-	<schema name="trans_slave_shard">
-		<table name="t_trans" dataNode="transSlaveDN$0-99" rule="rule1"/>
-		<table name="t_recvables" dataNode="transSlaveDN$0-99" rule="rule2"/>
-		<table name="t_trans_id_map" dataNode="transSlaveDN$0-99" rule="rule3"/>
-		<table name="t_payments" dataNode="transSlaveDN$0-99" rule="rule4"/>
-		<table name="t_loan_log" dataNode="transSlaveDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_trans" dataNode="transSlaveDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_trans_detail" dataNode="transSlaveDN$0-99" rule="rule1" />
-		<table name="t_crowdfunding_opt_log" dataNode="transSlaveDN$0-99" rule="rule5" />
-		<table name="t_user_asserts"  dataNode="transDN$0-99" rule="rule6" />
-		<table name="t_accounts"  dataNode="transDN$0-99" rule="rule7" />
-	</schema>
-	<dataNode name="transSlaveDN">
-		<property name="dataSource">
-			<dataSourceRef>transSlaveDS$0-99</dataSourceRef>
-		</property>
-		<property name="poolSize">256</property>
-		<property name="heartbeatSQL">select user()</property>
-	</dataNode>
-	<dataSource name="transSlaveDS" type="mysql">
-		<property name="location">
-			<location>cp01-qa-bu-09-qa48.cp01.baidu.com:3306/wms_db_$00-99</location>
-		</property>
-		<property name="user">pay</property>
-		<property name="password">MiraCle</property>
-		<property name="needEncrypt">false</property>
-	</dataSource>
+
 </heisenberg:schema>

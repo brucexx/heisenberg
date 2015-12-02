@@ -103,6 +103,7 @@ public final class MySQLDataSource {
             }
         }
     }
+    
 
     /**
      * 最大可能性利用mysql连接池,暂时不上线，后面看情况
@@ -119,12 +120,12 @@ public final class MySQLDataSource {
             ALARM.error(s.toString());
         }
 
-        if (activeCount < size * 0.5 && idleCount < 5) {
+        if (activeCount < size * 0.5 && idleCount < node.getConfig().getCoreSize()) {
             final ReentrantLock lock = this.lock;
             lock.lock();
             // 将创建新连接，在此先假设创建成功。
             try {
-                ++activeCount;
+                ++activeCount;               
             } finally {
                 lock.unlock();
             }
@@ -153,6 +154,7 @@ public final class MySQLDataSource {
         }
 
     }
+    
 
     /**
      * @return never null
@@ -182,9 +184,20 @@ public final class MySQLDataSource {
                     items[i] = null;
                     --idleCount;
                     if (c.isClosed()) {
+                    	//将废弃连接扔掉
+                    	items[i]=null;
                         continue;
                     } else {
                         ++activeCount;
+                        if(c.hasDirtyConnection()){
+                        	 if (LOGGER.isInfoEnabled()) {
+                                 LOGGER.info(getName() + "[" + getIndex() + "]activeCount[" + activeCount
+                                              + "]出现脏数据，清理关闭掉!");
+                             }
+                            --activeCount;
+                            c.close();
+                            continue;
+                        }
                         return c;
                     }
                 }

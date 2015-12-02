@@ -263,7 +263,7 @@ public class MultiNodeTask {
         int i = rrn.getReplicaIndex();
         Channel c = null;
         try {
-            c = (i == DEFAULT_REPLICA_INDEX) ? dn.getMaxUseChannel() : dn.getMaxUseChannel(i);
+            c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
         } catch (final Exception e) {
             handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
                 rrn.getSqlCount(), exeTime, sql);

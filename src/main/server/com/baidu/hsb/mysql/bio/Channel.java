@@ -64,5 +64,10 @@ public interface Channel {
      * 关闭未激活的数据通道
      */
     void closeNoActive();
+   
+    /**
+     * 清除有问题的连接
+     */
+    boolean hasDirtyConnection();
 
 }
