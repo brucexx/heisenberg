@@ -11,49 +11,55 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
 
-	<appender name="COMMON" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="COMMON" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/common.log" />
 		<param name="append" value="true" />
+		<param name="maxBackupIndex" value="15" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} %m%n" />
 		</layout>
 	</appender>
 
-	<appender name="STDOUT" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="STDOUT" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/stdout.log" />
+		<param name="maxBackupIndex" value="15" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} %m%n" />
 		</layout>
 	</appender>
-	<appender name="ALARM" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="ALARM" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/alarm.log" />
+		<param name="maxBackupIndex" value="60" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} %m%n" />
 		</layout>
 	</appender>
-	<appender name="HEARTBEAT" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="HEARTBEAT" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/heartbeat.log" />
+		<param name="maxBackupIndex" value="15" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} %m%n" />
 		</layout>
 	</appender>
-	<appender name="EXECUTE-DIGEST" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="EXECUTE-DIGEST" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/sql-digest.log" />
+		<param name="maxBackupIndex" value="120" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %c{2} %m%n" />
 		</layout>
 	</appender>
-	<appender name="ROUTE-DIGEST" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="ROUTE-DIGEST" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/route-digest.log" />
+		<param name="maxBackupIndex" value="30" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">
@@ -61,8 +67,9 @@
 		</layout>
 	</appender>
 
-	<appender name="EXECUTE-PERF" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="EXECUTE-PERF" class="org.apache.log4j.RollingFileAppender">
 		<param name="file" value="${hsb.log.home}/logs/sql-perf.log" />
+		<param name="maxBackupIndex" value="120" />
 		<param name="append" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<layout class="org.apache.log4j.PatternLayout">

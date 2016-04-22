@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.baidu.heisenberg</groupId>
 	<artifactId>heisenberg-server</artifactId>
-	<version>${app.version}</version>
+	<version>1.0.4</version>
 	<packaging>jar</packaging>
 	<name>${artifactId}</name>
 	<description>The project of heisenberg</description>
@@ -12,7 +12,6 @@
 
 	<properties>
 		<app.encoding>UTF-8</app.encoding>
-		<app.version>1.0.3.2</app.version>
 	</properties>
 
 	<dependencies>
@@ -59,65 +58,6 @@
 			<version>2.4</version>
 		</dependency>
 	</dependencies>
-
-	<distributionManagement>
-		<repository>
-			<id>nexus-releases</id>
-			<name>Nexus Releases Repository</name>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public</url>
-		</repository>
-		<snapshotRepository>
-			<id>nexus-snapshots</id>
-			<name>Nexus Snapshots Repository</name>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public-snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>baidu-nexus</id>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>Baidu_Local</id>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/repositories/Baidu_Local</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>Baidu_Local_Snapshots</id>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/repositories/Baidu_Local_Snapshots</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>	
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>baidu-nexus</id>
-			<url>http://maven.scm.baidu.com:8081/nexus/content/groups/public</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<build>
 		<resources>
@@ -219,7 +159,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>heisenberg-server-${app.version}</finalName>
+					<finalName>heisenberg-server-1.0.4</finalName>
 					<descriptors>
 						<descriptor>assembly/assembly.xml</descriptor>
 					</descriptors>

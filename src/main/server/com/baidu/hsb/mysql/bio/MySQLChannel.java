@@ -298,6 +298,8 @@ public final class MySQLChannel implements Channel {
 	public void release() {
 		dataSource.releaseChannel(this);
 	}
+	
+	
 
 	public String getErrMessage(BinaryPacket bin) {
 		String message = null;

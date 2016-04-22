@@ -14,11 +14,11 @@ package com.baidu.hsb.config.model.config;
 public final class DataNodeConfig {
 
 	private static final int DEFAULT_POOL_SIZE = 128;
-	private static final long DEFAULT_WAIT_TIMEOUT = 10 * 1000L;
+	private static final long DEFAULT_WAIT_TIMEOUT = 5 * 1000L;
 	private static final long DEFAULT_IDLE_TIMEOUT = 10 * 60 * 1000L;
 	private static final long DEFAULT_HEARTBEAT_TIMEOUT = 30 * 1000L;
 	private static final int DEFAULT_HEARTBEAT_RETRY = 10;
-	private static final int DEFAULT_CORE_SIZE = 10;
+	private static final int DEFAULT_CORE_SIZE = 5;
 
 	private String name;
 	private String dataSource;

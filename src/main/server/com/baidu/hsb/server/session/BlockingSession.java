@@ -38,16 +38,15 @@ import com.baidu.hsb.server.parser.ServerParse;
  * @author xiongzhao@baidu.com
  */
 public class BlockingSession implements Session {
-    private static final Logger                                  LOGGER = Logger
-                                                                            .getLogger(BlockingSession.class);
+    private static final Logger LOGGER = Logger.getLogger(BlockingSession.class);
 
-    private final ServerConnection                               source;
+    private final ServerConnection source;
     private final ConcurrentHashMap<RouteResultsetNode, Channel> target;
-    private final SingleNodeExecutor                             singleNodeExecutor;
-    private final MultiNodeExecutor                              multiNodeExecutor;
-    private final DefaultCommitExecutor                          commitExecutor;
-    private final RollbackExecutor                               rollbackExecutor;
-    private final ReentrantLock                                  lock   = new ReentrantLock();
+    private final SingleNodeExecutor singleNodeExecutor;
+    private MultiNodeTask task;
+    private final DefaultCommitExecutor commitExecutor;
+    private final RollbackExecutor rollbackExecutor;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public BlockingSession(ServerConnection source) {
         if (LOGGER.isDebugEnabled()) {
@@ -56,7 +55,6 @@ public class BlockingSession implements Session {
         this.source = source;
         this.target = new ConcurrentHashMap<RouteResultsetNode, Channel>();
         this.singleNodeExecutor = new SingleNodeExecutor();
-        this.multiNodeExecutor = new MultiNodeExecutor();
         this.commitExecutor = new DefaultCommitExecutor();
         this.rollbackExecutor = new RollbackExecutor();
     }
@@ -89,14 +87,14 @@ public class BlockingSession implements Session {
             source.writeErrMessage(ErrorCode.ER_NO_DB_ERROR, "No dataNode selected");
         }
         String lockKey = "";
-        //        // 选择执行方式
+        // // 选择执行方式
         if (nodes.length == 1) {
-        	if(nodes[0].getSqlCount()>1){
-        		executeMutil(rrs, nodes, type, sql);
-        	}else{
+            if (nodes[0].getSqlCount() > 1) {
+                executeMutil(rrs, nodes, type, sql);
+            } else {
                 singleNodeExecutor.execute(nodes[0], this, rrs.getFlag(), sql);
 
-        	}
+            }
         } else {
             try {
                 // 多数据节点，非事务模式下，执行的是可修改数据的SQL，则后端为事务模式。
@@ -104,65 +102,65 @@ public class BlockingSession implements Session {
                 if (autocommit && isModifySQL(type)) {
                     autocommit = false;
                 }
-                //                lockKey = getDataNode(nodes[0].getName());
-                //                if (LOGGER.isDebugEnabled()) {
-                //                    LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                //                                 + this.getSource().getHost() + "," + this.getSource().getPort()
-                //                                 + "lock...");
-                //                }
-                //                MultiLockPool.lock(lockKey);
-                //                if (LOGGER.isDebugEnabled()) {
-                //                    LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                //                                 + this.getSource().getHost() + "," + this.getSource().getPort()
-                //                                 + "start at:" + System.currentTimeMillis());
-                //                }
-                //                lock.lock();
+                // lockKey = getDataNode(nodes[0].getName());
+                // if (LOGGER.isDebugEnabled()) {
+                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
+                // + this.getSource().getHost() + "," + this.getSource().getPort()
+                // + "lock...");
+                // }
+                // MultiLockPool.lock(lockKey);
+                // if (LOGGER.isDebugEnabled()) {
+                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
+                // + this.getSource().getHost() + "," + this.getSource().getPort()
+                // + "start at:" + System.currentTimeMillis());
+                // }
+                // lock.lock();
                 // autocommit直接置为false
-                MultiNodeTask task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
+                task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
                 task.execute();
 
-                //                multiNodeExecutor.execute(nodes, autocommit, this, rrs.getFlag(), sql);
-                //                int c = 0;
-                //                while (!task.isTaskFinish() && c < 200) {
-                //                    try {
-                //                        c++;
-                //                        Thread.sleep(50);
-                //                    } catch (Exception e) {
+                // multiNodeExecutor.execute(nodes, autocommit, this, rrs.getFlag(), sql);
+                // int c = 0;
+                // while (!task.isTaskFinish() && c < 200) {
+                // try {
+                // c++;
+                // Thread.sleep(50);
+                // } catch (Exception e) {
                 //
-                //                    }
-                //                }
+                // }
+                // }
                 //
-                //                if (c >= 200) {
+                // if (c >= 200) {
                 //
-                //                    LOGGER.warn("[multi]sql" + sql + " execute too long >10s,prepare to kill!");
-                //                    //kill掉所有
-                //                    kill();
-                //                    source.writeErrMessage(ErrorCode.ER_MULTI_QUERY_TIMEOUT,
-                //                        "sql execute too long >10s!");
-                //                }
+                // LOGGER.warn("[multi]sql" + sql + " execute too long >10s,prepare to kill!");
+                // //kill掉所有
+                // kill();
+                // source.writeErrMessage(ErrorCode.ER_MULTI_QUERY_TIMEOUT,
+                // "sql execute too long >10s!");
+                // }
 
             } finally {
-                //                lock.unlock();
+                // lock.unlock();
 
-                //                MultiLockPool.releaseLock(lockKey);
-                //                if (LOGGER.isDebugEnabled()) {
-                //                    LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                //                                 + this.getSource().getHost() + "," + this.getSource().getPort()
-                //                                 + "unlock...at:" + System.currentTimeMillis());
-                //                }
+                // MultiLockPool.releaseLock(lockKey);
+                // if (LOGGER.isDebugEnabled()) {
+                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
+                // + this.getSource().getHost() + "," + this.getSource().getPort()
+                // + "unlock...at:" + System.currentTimeMillis());
+                // }
 
             }
         }
     }
-    
-    private void executeMutil(RouteResultset rrs,RouteResultsetNode[] nodes,int type,String sql){
-    	 
-    	  boolean autocommit = source.isAutocommit();
-          if (autocommit && isModifySQL(type)) {
-              autocommit = false;
-          }
-          MultiNodeTask task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
-          task.execute();
+
+    private void executeMutil(RouteResultset rrs, RouteResultsetNode[] nodes, int type, String sql) {
+
+        boolean autocommit = source.isAutocommit();
+        if (autocommit && isModifySQL(type)) {
+            autocommit = false;
+        }
+        task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
+        task.execute();
     }
 
     private String getDataNode(String dsName) {
@@ -211,7 +209,9 @@ public class BlockingSession implements Session {
         // 等待所有任务结束，包括还未执行的，执行中的，执行完的。
         try {
             singleNodeExecutor.terminate();
-            multiNodeExecutor.terminate();
+            if (task != null) {
+                task.terminate();
+            }
             commitExecutor.terminate();
             rollbackExecutor.terminate();
         } catch (InterruptedException e) {
@@ -232,9 +232,9 @@ public class BlockingSession implements Session {
      * 释放session关联的资源
      */
     public void release() {
-        //        if (LOGGER.isDebugEnabled()) {
-        //            LOGGER.debug("block session release...");
-        //        }
+        // if (LOGGER.isDebugEnabled()) {
+        // LOGGER.debug("block session release...");
+        // }
         for (RouteResultsetNode rrn : target.keySet()) {
             Channel c = target.remove(rrn);
             if (c != null) {
@@ -263,9 +263,7 @@ public class BlockingSession implements Session {
     /**
      * MUST be called at the end of {@link NodeExecutor}
      * 
-     * @param pessimisticRelease
-     *            true if this method might be invoked concurrently with
-     *            {@link #kill()}
+     * @param pessimisticRelease true if this method might be invoked concurrently with {@link #kill()}
      */
     private void clear(boolean pessimisticRelease) {
         for (RouteResultsetNode rrn : target.keySet()) {

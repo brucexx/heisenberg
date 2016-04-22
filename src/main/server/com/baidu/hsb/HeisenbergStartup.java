@@ -47,11 +47,12 @@ public final class HeisenbergStartup {
         long s = System.currentTimeMillis();
         try {
             if (StringUtil.isEmpty(System.getProperty("hsb.home"))) {
-                System.setProperty("hsb.home", "D:/");
+                System.setProperty("hsb.home", "/Users/baidu/tmp/hsb");
             }
             if (StringUtil.isEmpty(System.getProperty("hsb.log.home"))) {
                 System.setProperty("hsb.log.home", System.getProperty("hsb.home"));
             }
+            System.out.println("hsb.home-->"+System.getProperty("hsb.home"));
             String fp = null;
 
             if (hasSelfConfigPath()) {

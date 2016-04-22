@@ -99,7 +99,7 @@ public class HeisenbergServer {
             processors[i] = new NIOProcessor("Processor" + i, handler, executor);
             processors[i].startup();
         }
-        timer.schedule(processorCheck(), 0L, system.getProcessorCheckPeriod());
+        timer.schedule(processorCheck(), 10000L, system.getProcessorCheckPeriod());
 
         // startup connector
         LOGGER.info("Startup connector ...");
@@ -113,8 +113,8 @@ public class HeisenbergServer {
         for (MySQLDataNode node : dataNodes.values()) {
             node.init(1, 0);
         }
-        timer.schedule(dataNodeIdleCheck(), 0L, system.getDataNodeIdleCheckPeriod());
-        timer.schedule(dataNodeHeartbeat(), 0L, system.getDataNodeHeartbeatPeriod());
+        timer.schedule(dataNodeIdleCheck(), 60000L, system.getDataNodeIdleCheckPeriod());
+        timer.schedule(dataNodeHeartbeat(), 20000L, system.getDataNodeHeartbeatPeriod());
 
         // startup manager
         ManagerConnectionFactory mf = new ManagerConnectionFactory();

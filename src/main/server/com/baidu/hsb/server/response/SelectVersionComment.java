@@ -4,6 +4,7 @@
  */
 package com.baidu.hsb.server.response;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 import com.baidu.hsb.config.Fields;
@@ -19,12 +20,18 @@ import com.baidu.hsb.server.ServerConnection;
  */
 public class SelectVersionComment {
 
-    private static final byte[] VERSION_COMMENT = "Heisenberg Server-1.0.3.2 (BAIDU) author:brucest0078@gmail.com".getBytes();
+    private static byte[] VERSION_COMMENT = null;
     private static final int FIELD_COUNT = 1;
     private static final ResultSetHeaderPacket header = PacketUtil.getHeader(FIELD_COUNT);
     private static final FieldPacket[] fields = new FieldPacket[FIELD_COUNT];
     private static final EOFPacket eof = new EOFPacket();
+
     static {
+        try {
+            VERSION_COMMENT = "Heisenberg Server-1.0.4 author:BAIDU熊照 email:brucest0078@gmail.com".getBytes("GBK");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         int i = 0;
         byte packetId = 0;
         header.packetId = ++packetId;

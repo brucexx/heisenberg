@@ -170,20 +170,6 @@ public final class MySQLDataNode {
         return getChannel(activedIndex);
     }
 
-    public Channel getMaxUseChannel() throws Exception {
-        return getMaxUseChannel(activedIndex);
-    }
-
-    public Channel getMaxUseChannel(int i) throws Exception {
-        if (initSuccess) {
-            Channel c = sources[i].getChannel(true);
-            ++executeCount;
-            return c;
-        } else {
-            throw new IllegalArgumentException("Invalid DataSource:" + i);
-        }
-    }
-
     /**
      * 取得数据源通道
      */

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<heisenberg:schema xmlns:heisenberg="https://github.com/brucexx/heisenberg">
+	<schema name="bank_data_master_shard">
+	<table name="user_pay_online" dataNode="bankDataMasterDN$0-9" rule="userRule" />
+		<table name="refund_online" dataNode="bankDataMasterDN$0-9" rule="refundRule" />
+		<table name="purchase_online" dataNode="bankDataMasterDN$0-9" rule="purRule" />
+	</schema>
+	<dataNode name="bankDataMasterDN">
+		<property name="dataSource">
+			<dataSourceRef>bankDataMasterDN$0-9</dataSourceRef>
+		</property>
+		<property name="poolSize">256</property>
+		<property name="coreSize">5</property>
+		<property name="heartbeatSQL">select user()</property>
+	</dataNode>
+	<dataSource name="bankDataMasterDN" type="mysql">
+		<property name="location">
+			<location>localhost:3306/bank_data_db_$0-9</location>
+		</property>
+		<property name="user">root</property>
+		<property name="password"></property>
+	</dataSource>
+
+</heisenberg:schema>
