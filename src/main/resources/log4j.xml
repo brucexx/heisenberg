@@ -91,7 +91,7 @@
 		<appender-ref ref="ROUTE-DIGEST" />
 	</logger>
 	<logger name="com.baidu.hsb" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="COMMON" />
 	</logger>
 
