@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 
 import com.baidu.hsb.mysql.MySQLDataNode;
-import com.baidu.hsb.mysql.MySQLDataSource;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.statistic.HeartbeatRecorder;
 
 /**
@@ -26,7 +26,7 @@ public class MySQLHeartbeat {
     private static final int MAX_RETRY_COUNT = 15;
     private static final Logger LOGGER = Logger.getLogger(MySQLHeartbeat.class);
 
-    private final MySQLDataSource source;
+    private final DataSource source;
     private final AtomicBoolean isStop;
     private final AtomicBoolean isChecking;
     private final MySQLDetectorFactory factory;
@@ -37,7 +37,7 @@ public class MySQLHeartbeat {
     private volatile int status;
     private MySQLDetector detector;
 
-    public MySQLHeartbeat(MySQLDataSource source) {
+    public MySQLHeartbeat(DataSource source) {
         this.source = source;
         this.isStop = new AtomicBoolean(false);
         this.isChecking = new AtomicBoolean(false);
@@ -48,7 +48,7 @@ public class MySQLHeartbeat {
         this.status = INIT_STATUS;
     }
 
-    public MySQLDataSource getSource() {
+    public DataSource getSource() {
         return source;
     }
 

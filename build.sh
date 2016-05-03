@@ -7,9 +7,9 @@ mkdir output
 mvn clean package -Dmaven.test.skip=true
 
 cd target
-unzip -o heisenberg-server-1.0.4.zip
-cd heisenberg-server-1.0.4
+unzip -o heisenberg-server-1.0.5.zip
+cd heisenberg-server-1.0.5
 tar czf heisenberg-server.tgz *
 cd ../../
 
-cp target/heisenberg-server-1.0.4/heisenberg-server.tgz output/
+cp target/heisenberg-server-1.0.5/heisenberg-server.tgz output/

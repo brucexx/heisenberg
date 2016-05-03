@@ -8,6 +8,10 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.log4j.Logger;
+
+import com.baidu.hsb.net.AbstractConnection;
+
 /**
  * 
  * 
@@ -15,6 +19,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version $Id: BufferQueue.java, v 0.1 2013年12月26日 下午6:01:47 HI:brucest0078 Exp $
  */
 public final class BufferQueue {
+
+    protected static final Logger LOGGER = Logger.getLogger(BufferQueue.class);
 
     private int takeIndex;
     private int putIndex;
@@ -74,6 +80,7 @@ public final class BufferQueue {
             if (count == 0) {
                 return null;
             }
+
             return extract();
         } finally {
             lock.unlock();
@@ -81,14 +88,34 @@ public final class BufferQueue {
     }
 
     private void insert(ByteBuffer buffer) {
+      
         items[putIndex] = buffer;
         putIndex = inc(putIndex);
         ++count;
+        if (buffer != null && buffer.position()==0) {
+            if(LOGGER.isDebugEnabled()){
+                LOGGER.debug("insert empty buffer["+putIndex+"]...");
+            }
+        }
     }
 
     private ByteBuffer extract() {
         final ByteBuffer[] items = this.items;
         ByteBuffer buffer = items[takeIndex];
+//        if (LOGGER.isDebugEnabled()) {
+//            StringBuffer sb = new StringBuffer();
+//            int i = 0;
+//            for (ByteBuffer bf : items) {
+//                i++;
+//                if (bf != null)
+//                    sb.append("(" + i + ")[" + bf.position() + "],");
+//            }
+//            LOGGER.debug("remain buf:" + sb.toString());
+//
+//            if (buffer != null && buffer.position() == 0) {
+//                LOGGER.debug("poll buffer is empty");
+//            }
+//        }
         items[takeIndex] = null;
         takeIndex = inc(takeIndex);
         --count;

@@ -529,5 +529,6 @@ public interface ErrorCode {
     int ER_PLUGIN_IS_NOT_LOADED                    = 1494;
     int ER_MULTI_QUERY_TIMEOUT                     = 1495;
     int ER_MULTI_EXEC_ERROR                        = 1496;
+    int ER_EXEC_ERROR                              = 1497;
 
 }

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.baidu.heisenberg</groupId>
 	<artifactId>heisenberg-server</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<packaging>jar</packaging>
 	<name>${artifactId}</name>
 	<description>The project of heisenberg</description>
@@ -159,7 +159,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>heisenberg-server-1.0.4</finalName>
+					<finalName>heisenberg-server-1.0.5</finalName>
 					<descriptors>
 						<descriptor>assembly/assembly.xml</descriptor>
 					</descriptors>

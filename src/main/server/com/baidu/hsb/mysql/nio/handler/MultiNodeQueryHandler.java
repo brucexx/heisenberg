@@ -55,8 +55,12 @@ public class MultiNodeQueryHandler extends MultiNodeHandler {
     public void execute() throws Exception {
         final ReentrantLock lock = this.lock;
         lock.lock();
+        int initialCount=0;
         try {
-            this.reset(route.length);
+            for (RouteResultsetNode rrn : route) {
+                initialCount+=rrn.getSqlCount();
+            }
+            this.reset(initialCount);
             this.fieldsReturned = false;
             this.affectedRows = 0L;
             this.insertId = 0L;

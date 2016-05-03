@@ -9,10 +9,13 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.log4j.Logger;
+
 import com.baidu.hsb.HeisenbergConfig;
 import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.mysql.MySQLDataNode;
+import com.baidu.hsb.mysql.bio.executor.SingleNodeExecutor;
 import com.baidu.hsb.mysql.nio.MySQLConnection;
 import com.baidu.hsb.net.mysql.ErrorPacket;
 import com.baidu.hsb.net.mysql.OkPacket;
@@ -25,6 +28,9 @@ import com.baidu.hsb.util.StringUtil;
  * @author xiongzhao@baidu.com
  */
 public class SingleNodeHandler implements ResponseHandler, Terminatable {
+    
+    private static final Logger LOGGER             = Logger.getLogger(SingleNodeExecutor.class);
+
     private final RouteResultsetNode route;
     private final NonBlockingSession session;
     private byte packetId;
@@ -127,6 +133,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable {
         try {
             conn.execute(route, session.getSource(), session.getSource().isAutocommit());
         } catch (UnsupportedEncodingException e1) {
+            LOGGER.error("unsupport encoding["+route.getStatement()[0]+"]", e1);
             executeException(conn);
             return;
         }
@@ -142,6 +149,7 @@ public class SingleNodeHandler implements ResponseHandler, Terminatable {
         err.message = StringUtil.encode("unknown backend charset: " + c.getCharset(), session.getSource().getCharset());
         ServerConnection source = session.getSource();
         source.write(err.write(buffer, source));
+        
     }
 
     @Override

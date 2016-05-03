@@ -14,13 +14,17 @@ import com.baidu.hsb.heartbeat.MySQLHeartbeat;
 import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.ChannelFactory;
 import com.baidu.hsb.mysql.bio.MySQLChannelFactory;
+import com.baidu.hsb.mysql.common.DataSource;
+import com.baidu.hsb.mysql.nio.MySQLConnection;
+import com.baidu.hsb.mysql.nio.MySQLConnectionFactory;
+import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
 import com.baidu.hsb.statistic.SQLRecorder;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
  * @author xiongzhao@baidu.com 2011-4-26 上午11:12:13
  */
-public final class MySQLDataSource {
+public final class MySQLDataSource implements DataSource{
     private static final Logger LOGGER = Logger.getLogger(MySQLDataSource.class);
     private static final Logger ALARM = Logger.getLogger("alarm");
 
@@ -31,9 +35,12 @@ public final class MySQLDataSource {
     private int activeCount;
     private int idleCount;
     private final int size;
-    private final Channel[] items;
     private final ReentrantLock lock;
-    private final ChannelFactory factory;
+    // BIO
+    private Channel[] items;
+    private ChannelFactory factory;
+
+    //
     private final MySQLHeartbeat heartbeat;
     private final SQLRecorder sqlRecorder;
 
@@ -43,9 +50,9 @@ public final class MySQLDataSource {
         this.name = config.getName();
         this.config = config;
         this.size = size;
-        this.items = new Channel[size];
         this.lock = new ReentrantLock();
         this.factory = new MySQLChannelFactory();
+        this.items = new Channel[size];
         this.heartbeat = new MySQLHeartbeat(this);
         this.sqlRecorder = new SQLRecorder(config.getSqlRecordCount());
     }

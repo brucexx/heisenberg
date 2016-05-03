@@ -14,16 +14,16 @@ public final class DataSourceConfig {
 
     private static final int DEFAULT_SQL_RECORD_COUNT = 10;
 
-    private String           name;
-    private String           type;
-    private String           host;
-    private int              port;
-    private String           user;
-    private String           password;
-    private boolean          needEncrypt              = false;
-    private String           database;
-    private String           sqlMode;
-    private int              sqlRecordCount           = DEFAULT_SQL_RECORD_COUNT;
+    private String name;
+    private String type;
+    private String host;
+    private int port;
+    private String user;
+    private String password;
+    private boolean needEncrypt = false;
+    private String database;
+    private String sqlMode;
+    private int sqlRecordCount = DEFAULT_SQL_RECORD_COUNT;
 
     public String getName() {
         return name;
@@ -92,8 +92,6 @@ public final class DataSourceConfig {
     public int getSqlRecordCount() {
         return sqlRecordCount;
     }
-    
-    
 
     /**
      * Getter method for property <tt>needEncrypt</tt>.
@@ -119,9 +117,8 @@ public final class DataSourceConfig {
 
     @Override
     public String toString() {
-        return new StringBuilder().append("[name=").append(name).append(",host=").append(host)
-            .append(",port=").append(port).append(",database=").append(database).append(']')
-            .toString();
+        return new StringBuilder().append("[name=").append(name).append(",host=").append(host).append(",port=")
+                .append(port).append(",database=").append(database).append(']').toString();
     }
 
 }

@@ -7,8 +7,6 @@ package com.baidu.hsb.server.session;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +15,6 @@ import com.baidu.hsb.exception.UnknownPacketException;
 import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.MySQLChannel;
 import com.baidu.hsb.mysql.bio.executor.DefaultCommitExecutor;
-import com.baidu.hsb.mysql.bio.executor.MultiNodeExecutor;
 import com.baidu.hsb.mysql.bio.executor.MultiNodeTask;
 import com.baidu.hsb.mysql.bio.executor.NodeExecutor;
 import com.baidu.hsb.mysql.bio.executor.RollbackExecutor;
@@ -46,7 +43,6 @@ public class BlockingSession implements Session {
     private MultiNodeTask task;
     private final DefaultCommitExecutor commitExecutor;
     private final RollbackExecutor rollbackExecutor;
-    private final ReentrantLock lock = new ReentrantLock();
 
     public BlockingSession(ServerConnection source) {
         if (LOGGER.isDebugEnabled()) {
@@ -85,71 +81,14 @@ public class BlockingSession implements Session {
         RouteResultsetNode[] nodes = rrs.getNodes();
         if (nodes == null || nodes.length == 0) {
             source.writeErrMessage(ErrorCode.ER_NO_DB_ERROR, "No dataNode selected");
+            return;
         }
-        String lockKey = "";
         // // 选择执行方式
-        if (nodes.length == 1) {
-            if (nodes[0].getSqlCount() > 1) {
-                executeMutil(rrs, nodes, type, sql);
-            } else {
-                singleNodeExecutor.execute(nodes[0], this, rrs.getFlag(), sql);
-
-            }
+        if (nodes.length == 1 && nodes[0].getSqlCount() == 1) {
+            singleNodeExecutor.execute(nodes[0], this, rrs.getFlag(), sql);
         } else {
-            try {
-                // 多数据节点，非事务模式下，执行的是可修改数据的SQL，则后端为事务模式。
-                boolean autocommit = source.isAutocommit();
-                if (autocommit && isModifySQL(type)) {
-                    autocommit = false;
-                }
-                // lockKey = getDataNode(nodes[0].getName());
-                // if (LOGGER.isDebugEnabled()) {
-                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                // + this.getSource().getHost() + "," + this.getSource().getPort()
-                // + "lock...");
-                // }
-                // MultiLockPool.lock(lockKey);
-                // if (LOGGER.isDebugEnabled()) {
-                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                // + this.getSource().getHost() + "," + this.getSource().getPort()
-                // + "start at:" + System.currentTimeMillis());
-                // }
-                // lock.lock();
-                // autocommit直接置为false
-                task = new MultiNodeTask(nodes, autocommit, this, rrs.getFlag(), sql);
-                task.execute();
+            executeMutil(rrs, nodes, type, sql);
 
-                // multiNodeExecutor.execute(nodes, autocommit, this, rrs.getFlag(), sql);
-                // int c = 0;
-                // while (!task.isTaskFinish() && c < 200) {
-                // try {
-                // c++;
-                // Thread.sleep(50);
-                // } catch (Exception e) {
-                //
-                // }
-                // }
-                //
-                // if (c >= 200) {
-                //
-                // LOGGER.warn("[multi]sql" + sql + " execute too long >10s,prepare to kill!");
-                // //kill掉所有
-                // kill();
-                // source.writeErrMessage(ErrorCode.ER_MULTI_QUERY_TIMEOUT,
-                // "sql execute too long >10s!");
-                // }
-
-            } finally {
-                // lock.unlock();
-
-                // MultiLockPool.releaseLock(lockKey);
-                // if (LOGGER.isDebugEnabled()) {
-                // LOGGER.debug("lockKey:" + lockKey + " source IP&PORT:"
-                // + this.getSource().getHost() + "," + this.getSource().getPort()
-                // + "unlock...at:" + System.currentTimeMillis());
-                // }
-
-            }
         }
     }
 
@@ -337,16 +276,6 @@ public class BlockingSession implements Session {
             default:
                 return false;
         }
-    }
-
-    private static void g(AtomicLong t) {
-        t.getAndAdd(1);
-    }
-
-    public static void main(String[] args) {
-        AtomicLong tl = new AtomicLong(0);
-        g(tl);
-        System.out.println(tl.get());
     }
 
 }

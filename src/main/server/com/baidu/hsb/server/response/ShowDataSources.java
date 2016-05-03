@@ -11,8 +11,8 @@ import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.mysql.MySQLDataNode;
-import com.baidu.hsb.mysql.MySQLDataSource;
 import com.baidu.hsb.mysql.PacketUtil;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.net.mysql.EOFPacket;
 import com.baidu.hsb.net.mysql.FieldPacket;
 import com.baidu.hsb.net.mysql.ResultSetHeaderPacket;
@@ -84,7 +84,7 @@ public class ShowDataSources {
     private static RowDataPacket getRow(MySQLDataNode node, String charset) {
         RowDataPacket row = new RowDataPacket(FIELD_COUNT);
         row.add(StringUtil.encode(node.getName(), charset));
-        MySQLDataSource ds = node.getSource();
+        DataSource ds = node.getSource();
         if (ds != null) {
             DataSourceConfig dsc = ds.getConfig();
             row.add(StringUtil.encode(dsc.getType(), charset));

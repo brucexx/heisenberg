@@ -21,18 +21,19 @@ import com.baidu.hsb.config.model.config.UserConfig;
 import com.baidu.hsb.config.util.ConfigException;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.MySQLDataSource;
+import com.baidu.hsb.mysql.nio.MySQLConnectionPool;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
  * @author xiongzhao@baidu.com
  */
 public class ConfigInitializer {
-    private volatile SystemConfig                  system;
-    private volatile HeisenbergCluster             cluster;
-    private volatile QuarantineConfig              quarantine;
-    private volatile Map<String, UserConfig>       users;
-    private volatile Map<String, SchemaConfig>     schemas;
-    private volatile Map<String, MySQLDataNode>    dataNodes;
+    private volatile SystemConfig system;
+    private volatile HeisenbergCluster cluster;
+    private volatile QuarantineConfig quarantine;
+    private volatile Map<String, UserConfig> users;
+    private volatile Map<String, SchemaConfig> schemas;
+    private volatile Map<String, MySQLDataNode> dataNodes;
     private volatile Map<String, DataSourceConfig> dataSources;
 
     public ConfigInitializer() {
@@ -45,14 +46,13 @@ public class ConfigInitializer {
             schemaLoader = new XMLSchemaLoader();
         }
 
-        XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader,
-            HeisenbergStartup.getConfigPath());
-        //        try {
-        //           //RouteRuleInitializer.initRouteRule(schemaLoader);
-        //            schemaLoader = null;
-        //        } catch (SQLSyntaxErrorException e) {
-        //            throw new ConfigException(e);
-        //        }
+        XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader, HeisenbergStartup.getConfigPath());
+        // try {
+        // //RouteRuleInitializer.initRouteRule(schemaLoader);
+        // schemaLoader = null;
+        // } catch (SQLSyntaxErrorException e) {
+        // throw new ConfigException(e);
+        // }
         this.system = configLoader.getSystemConfig();
         this.users = configLoader.getUserConfigs();
         this.schemas = configLoader.getSchemaConfigs();
@@ -77,8 +77,7 @@ public class ConfigInitializer {
             }
             for (String schema : authSchemas) {
                 if (!schemas.containsKey(schema)) {
-                    String errMsg = "schema " + schema + " refered by user " + uc.getName()
-                                    + " is not exist!";
+                    String errMsg = "schema " + schema + " refered by user " + uc.getName() + " is not exist!";
                     throw new ConfigException(errMsg);
                 }
             }
@@ -90,8 +89,7 @@ public class ConfigInitializer {
             }
             String g = sc.getGroup();
             if (!cluster.getGroups().containsKey(g)) {
-                throw new ConfigException("[group:" + g + "] refered by [schema:" + sc.getName()
-                                          + "] is not exist!");
+                throw new ConfigException("[group:" + g + "] refered by [schema:" + sc.getName() + "] is not exist!");
             }
         }
     }
@@ -145,17 +143,24 @@ public class ConfigInitializer {
         String[] dsNames = SplitUtil.split(dnc.getDataSource(), ',');
         checkDataSourceExists(dsNames);
         MySQLDataNode node = new MySQLDataNode(dnc);
-        MySQLDataSource[] dsList = new MySQLDataSource[dsNames.length];
         int size = dnc.getPoolSize();
-        for (int i = 0; i < dsList.length; i++) {
+        MySQLDataSource[] dsList = new MySQLDataSource[dsNames.length];
+        MySQLConnectionPool[] poolList=new MySQLConnectionPool[dsNames.length];
+        for (int i = 0; i < dsNames.length; i++) {
             DataSourceConfig dsc = dataSources.get(dsNames[i]);
-            dsList[i] = new MySQLDataSource(node, i, dsc, size);
+            if (!getSystem().isBackNIO()) {
+                dsList[i] = new MySQLDataSource(node, i, dsc, size);
+                node.setSources(dsList);
+            } else {
+                poolList[i] = new MySQLConnectionPool(node, i, dsc, size);
+                node.setDataSources(poolList);
+            }
         }
-        node.setSources(dsList);
+
         return node;
     }
 
-    private void checkDataSourceExists(String... nodes) {
+    private void checkDataSourceExists(String...nodes) {
         if (nodes == null || nodes.length < 1) {
             return;
         }

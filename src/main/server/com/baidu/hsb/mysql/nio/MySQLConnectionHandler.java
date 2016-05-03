@@ -7,6 +7,8 @@ package com.baidu.hsb.mysql.nio;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.baidu.hsb.mysql.ByteUtil;
 import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
 import com.baidu.hsb.net.handler.BackendAsyncHandler;
@@ -20,6 +22,8 @@ import com.baidu.hsb.net.mysql.OkPacket;
  * @author xiongzhao@baidu.com 2012-4-12
  */
 public class MySQLConnectionHandler extends BackendAsyncHandler {
+    private static final Logger LOGGER = Logger.getLogger(MySQLConnectionHandler.class);
+
     private static final int RESULT_STATUS_INIT = 0;
     private static final int RESULT_STATUS_HEADER = 1;
     private static final int RESULT_STATUS_FIELD_EOF = 2;
@@ -63,50 +67,68 @@ public class MySQLConnectionHandler extends BackendAsyncHandler {
     @Override
     protected void handleData(byte[] data) {
         switch (resultStatus) {
-        case RESULT_STATUS_INIT:
-            switch (data[4]) {
-            case OkPacket.FIELD_COUNT:
-                handleOkPacket(data);
+            case RESULT_STATUS_INIT:
+                switch (data[4]) {
+                    case OkPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("RESULT_STATUS_INIT ok ..");
+                        }
+                        handleOkPacket(data);
+                        break;
+                    case ErrorPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("FIELD_COUNT error ..");
+                        }
+                        handleErrorPacket(data);
+                        break;
+                    default:
+                        resultStatus = RESULT_STATUS_HEADER;
+                        header = data;
+                        fields = new ArrayList<byte[]>((int) ByteUtil.readLength(data, 4));
+                }
                 break;
-            case ErrorPacket.FIELD_COUNT:
-                handleErrorPacket(data);
+            case RESULT_STATUS_HEADER:
+                switch (data[4]) {
+                    case ErrorPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("RESULT_STATUS_HEADER error ..");
+                        }
+                        resultStatus = RESULT_STATUS_INIT;
+                        handleErrorPacket(data);
+                        break;
+                    case EOFPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("RESULT_STATUS_HEADER field eof ..");
+                        }
+                        resultStatus = RESULT_STATUS_FIELD_EOF;
+                        handleFieldEofPacket(data);
+                        break;
+                    default:
+                        fields.add(data);
+                }
+                break;
+            case RESULT_STATUS_FIELD_EOF:
+                switch (data[4]) {
+                    case ErrorPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("RESULT_STATUS_FIELD_EOF error ..");
+                        }
+                        resultStatus = RESULT_STATUS_INIT;
+                        handleErrorPacket(data);
+                        break;
+                    case EOFPacket.FIELD_COUNT:
+                        if(LOGGER.isDebugEnabled()){
+                            LOGGER.debug("RESULT_STATUS_FIELD_EOF row eof ..");
+                        }
+                        resultStatus = RESULT_STATUS_INIT;
+                        handleRowEofPacket(data);
+                        break;
+                    default:
+                        handleRowPacket(data);
+                }
                 break;
             default:
-                resultStatus = RESULT_STATUS_HEADER;
-                header = data;
-                fields = new ArrayList<byte[]>((int) ByteUtil.readLength(data, 4));
-            }
-            break;
-        case RESULT_STATUS_HEADER:
-            switch (data[4]) {
-            case ErrorPacket.FIELD_COUNT:
-                resultStatus = RESULT_STATUS_INIT;
-                handleErrorPacket(data);
-                break;
-            case EOFPacket.FIELD_COUNT:
-                resultStatus = RESULT_STATUS_FIELD_EOF;
-                handleFieldEofPacket(data);
-                break;
-            default:
-                fields.add(data);
-            }
-            break;
-        case RESULT_STATUS_FIELD_EOF:
-            switch (data[4]) {
-            case ErrorPacket.FIELD_COUNT:
-                resultStatus = RESULT_STATUS_INIT;
-                handleErrorPacket(data);
-                break;
-            case EOFPacket.FIELD_COUNT:
-                resultStatus = RESULT_STATUS_INIT;
-                handleRowEofPacket(data);
-                break;
-            default:
-                handleRowPacket(data);
-            }
-            break;
-        default:
-            throw new RuntimeException("unknown status!");
+                throw new RuntimeException("unknown status!");
         }
     }
 

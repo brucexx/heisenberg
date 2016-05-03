@@ -19,8 +19,11 @@ import com.baidu.hsb.config.model.config.DataNodeConfig;
 import com.baidu.hsb.config.util.ConfigException;
 import com.baidu.hsb.heartbeat.MySQLHeartbeat;
 import com.baidu.hsb.mysql.bio.Channel;
+import com.baidu.hsb.mysql.common.DataSource;
+import com.baidu.hsb.mysql.nio.MySQLConnection;
 import com.baidu.hsb.mysql.nio.MySQLConnectionPool;
 import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
+import com.baidu.hsb.mysql.nio.handler.ResponseHandlerAdaptor;
 import com.baidu.hsb.parser.ast.expression.primary.PlaceHolder;
 import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 import com.baidu.hsb.parser.recognizer.SQLParserDelegate;
@@ -30,23 +33,25 @@ import com.baidu.hsb.util.TimeUtil;
 
 /**
  * 每个节点都有一个主备，灾备
+ * 
  * @author xiongzhao@baidu.com 2011-4-26 上午11:12:24
  */
 public final class MySQLDataNode {
-    private static final Logger      LOGGER      = Logger.getLogger(MySQLDataNode.class);
-    private static final Logger      ALARM       = Logger.getLogger("alarm");
+    private static final Logger LOGGER = Logger.getLogger(MySQLDataNode.class);
+    private static final Logger ALARM = Logger.getLogger("alarm");
 
-    private final String             name;
-    private final DataNodeConfig     config;
-    private MySQLDataSource[]        sources;
-    private MySQLConnectionPool[]    dataSources;
-    private int                      activedIndex;
-    private long                     executeCount;
-    private long                     heartbeatRecoveryTime;
-    private volatile boolean         initSuccess = false;
-    private final ReentrantLock      switchLock;
+    private final String name;
+    private final DataNodeConfig config;
+    private MySQLDataSource[] sources;
+    private MySQLConnectionPool[] dataSources;
+    private int activedIndex;
+    private long executeCount;
+    private long heartbeatRecoveryTime;
+    private volatile boolean initSuccess = false;
+    private final ReentrantLock switchLock;
+    private boolean isNIO = false;
 
-    private SQLStatement             heartbeatAST;                                       // 动态心跳语句AST
+    private SQLStatement heartbeatAST; // 动态心跳语句AST
     private Map<PlaceHolder, Object> placeHolderToStringer;
 
     public MySQLDataNode(DataNodeConfig config) {
@@ -58,6 +63,14 @@ public final class MySQLDataNode {
         this.switchLock = new ReentrantLock();
     }
 
+    public boolean isNIO() {
+        return isNIO;
+    }
+
+    public void setNIO(boolean isNIO) {
+        this.isNIO = isNIO;
+    }
+
     public void init(int size, int index) {
         if (initSuccess) {
             return;
@@ -66,11 +79,18 @@ public final class MySQLDataNode {
             index = 0;
         }
         int active = -1;
-        for (int i = 0; i < sources.length; i++) {
+        for (int i = 0; i < getSources().length; i++) {
             int j = loop(i + index);
-            if (initSource(sources[j], size)) {
-                active = j;
-                break;
+            if(isNIO){
+                if(initNIOSource((MySQLConnectionPool)getSources()[j], size)){
+                    active = j;
+                    break;
+                }
+            }else{
+                if(initSource((MySQLDataSource)getSources()[j], size)){
+                    active = j;
+                    break;
+                }
             }
         }
         if (checkIndex(active)) {
@@ -108,10 +128,10 @@ public final class MySQLDataNode {
             Map<PlaceHolder, Object> phm = new HashMap<PlaceHolder, Object>(plist.size(), 1);
             for (PlaceHolder ph : plist) {
                 final String content = ph.getName();
-                final int low = Integer.parseInt(content.substring(content.indexOf('(') + 1,
-                    content.indexOf(',')).trim());
-                final int high = Integer.parseInt(content.substring(content.indexOf(',') + 1,
-                    content.indexOf(')')).trim());
+                final int low =
+                        Integer.parseInt(content.substring(content.indexOf('(') + 1, content.indexOf(',')).trim());
+                final int high =
+                        Integer.parseInt(content.substring(content.indexOf(',') + 1, content.indexOf(')')).trim());
                 phm.put(ph, new Object() {
                     private Random rnd = new Random();
 
@@ -196,24 +216,29 @@ public final class MySQLDataNode {
         }
     }
 
-    public MySQLConnectionPool[] getDataSources() {
-        return dataSources;
-    }
-
     public void setDataSources(MySQLConnectionPool[] dataSources) {
+        this.isNIO = true;
         this.dataSources = dataSources;
     }
 
-    public MySQLDataSource[] getSources() {
-        return sources;
+    public DataSource[] getSources() {
+        if (isNIO) {
+            return dataSources;
+        } else {
+            return sources;
+        }
     }
 
     public void setSources(MySQLDataSource[] sources) {
         this.sources = sources;
     }
 
-    public MySQLDataSource getSource() {
-        return sources[activedIndex];
+    public DataSource getSource() {
+        if (!isNIO) {
+            return sources[activedIndex];
+        } else {
+            return dataSources[activedIndex];
+        }
     }
 
     /**
@@ -229,15 +254,15 @@ public final class MySQLDataNode {
             int current = activedIndex;
             if (current != newIndex) {
                 // 清理即将使用的数据源并开启心跳
-                sources[newIndex].clear();
-                sources[newIndex].startHeartbeat();
+                getSources()[newIndex].clear();
+                getSources()[newIndex].startHeartbeat();
 
                 // 执行切换赋值
                 activedIndex = newIndex;
 
                 // 清理切换前的数据源
-                sources[current].clear();
-                sources[current].stopHeartbeat();
+                getSources()[current].clear();
+                getSources()[current].stopHeartbeat();
 
                 // 记录切换日志
                 if (isAlarm) {
@@ -258,7 +283,7 @@ public final class MySQLDataNode {
      * 空闲检查
      */
     public void idleCheck() {
-        for (MySQLDataSource ds : sources) {
+        for (DataSource ds : getSources()) {
             if (ds != null) {
                 ds.idleCheck(config.getIdleTimeout());
             }
@@ -266,7 +291,7 @@ public final class MySQLDataNode {
     }
 
     public MySQLHeartbeat getHeartbeat() {
-        MySQLDataSource source = this.getSource();
+        DataSource source = this.getSource();
         if (source != null) {
             return source.getHeartbeat();
         } else {
@@ -278,7 +303,7 @@ public final class MySQLDataNode {
     }
 
     public void startHeartbeat() {
-        MySQLDataSource source = this.getSource();
+        DataSource source = this.getSource();
         if (source != null) {
             source.startHeartbeat();
         } else {
@@ -289,7 +314,7 @@ public final class MySQLDataNode {
     }
 
     public void stopHeartbeat() {
-        MySQLDataSource source = this.getSource();
+        DataSource source = this.getSource();
         if (source != null) {
             source.stopHeartbeat();
         } else {
@@ -306,7 +331,7 @@ public final class MySQLDataNode {
         }
 
         // 检查内部是否有连接池配置信息
-        if (sources == null || sources.length == 0) {
+        if (getSources() == null || getSources().length == 0) {
             return;
         }
 
@@ -316,7 +341,7 @@ public final class MySQLDataNode {
         }
 
         // 准备执行心跳检测
-        MySQLDataSource source = this.getSource();
+        DataSource source = this.getSource();
         if (source != null) {
             source.doHeartbeat();
         } else {
@@ -328,20 +353,51 @@ public final class MySQLDataNode {
 
     public int next(int i) {
         if (checkIndex(i)) {
-            return (++i == sources.length) ? 0 : i;
+            return (++i == getSources().length) ? 0 : i;
         } else {
             return 0;
         }
     }
 
     private int loop(int i) {
-        return i < sources.length ? i : (i - sources.length);
+        return i < getSources().length ? i : (i - getSources().length);
     }
 
     private boolean checkIndex(int i) {
-        return i >= 0 && i < sources.length;
+        return i >= 0 && i < getSources().length;
     }
 
+    private boolean initNIOSource(MySQLConnectionPool ds, int size) {
+        boolean success = true;
+        MySQLConnection[] list = new MySQLConnection[size < ds.size() ? size : ds.size()];
+        for (int i = 0; i < list.length; i++) {
+            try {
+                list[i] = ds.getConnection(new ResponseHandlerAdaptor(), null);
+            } catch (Exception e) {
+                success = false;
+                LOGGER.warn(getMessage(ds.getIndex(), " init error."), e);
+                break;
+            }
+        }
+        for (MySQLConnection c : list) {
+            if (c == null) {
+                continue;
+            }
+            if (success) {
+                c.release();
+            } else {
+                c.close();
+            }
+        }
+        return success;
+    }
+
+    /**
+     * 
+     * @param ds
+     * @param size
+     * @return
+     */
     private boolean initSource(MySQLDataSource ds, int size) {
         boolean success = true;
         Channel[] list = new Channel[size < ds.size() ? size : ds.size()];

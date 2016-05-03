@@ -20,24 +20,25 @@ import com.baidu.hsb.server.response.Heartbeat;
 import com.baidu.hsb.server.response.Ping;
 import com.baidu.hsb.server.session.BlockingSession;
 import com.baidu.hsb.server.session.NonBlockingSession;
+import com.baidu.hsb.server.session.Session;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
  * @author xiongzhao@baidu.com 2011-4-21 上午11:22:57
  */
 public class ServerConnection extends FrontendConnection {
-    private static final Logger LOGGER       = Logger.getLogger(ServerConnection.class);
+    private static final Logger LOGGER = Logger.getLogger(ServerConnection.class);
 
-    private static final Logger routeLogger  = Logger.getLogger("route-digest");
+    private static final Logger routeLogger = Logger.getLogger("route-digest");
 
-    private static final long   AUTH_TIMEOUT = 15 * 1000L;
+    private static final long AUTH_TIMEOUT = 15 * 1000L;
 
-    private volatile int        txIsolation;
-    private volatile boolean    autocommit;
-    private volatile boolean    txInterrupted;
-    private long                lastInsertId;
-    private BlockingSession     session;
-    private NonBlockingSession  session2;
+    private volatile int txIsolation;
+    private volatile boolean autocommit;
+    private volatile boolean txInterrupted;
+    private long lastInsertId;
+    private BlockingSession session;
+    private NonBlockingSession session2;
 
     public ServerConnection(SocketChannel channel) {
         super(channel);
@@ -50,8 +51,7 @@ public class ServerConnection extends FrontendConnection {
         if (isAuthenticated) {
             return super.isIdleTimeout();
         } else {
-            return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime)
-                                                  + AUTH_TIMEOUT;
+            return TimeUtil.currentTimeMillis() > Math.max(lastWriteTime, lastReadTime) + AUTH_TIMEOUT;
         }
     }
 
@@ -88,16 +88,8 @@ public class ServerConnection extends FrontendConnection {
         }
     }
 
-    public BlockingSession getSession() {
-        return session;
-    }
-
     public void setSession(BlockingSession session) {
         this.session = session;
-    }
-
-    public NonBlockingSession getSession2() {
-        return session2;
     }
 
     public void setSession2(NonBlockingSession session2) {
@@ -143,16 +135,23 @@ public class ServerConnection extends FrontendConnection {
             StringBuilder s = new StringBuilder();
             LOGGER.warn(s.append(this).append(sql).toString(), e);
             String msg = e.getMessage();
-            writeErrMessage(ErrorCode.ER_PARSE_ERROR, msg == null ? e.getClass().getSimpleName()
-                : msg);
+            writeErrMessage(ErrorCode.ER_PARSE_ERROR, msg == null ? e.getClass().getSimpleName() : msg);
             return;
         } finally {
             et = System.currentTimeMillis();
             routeLogger.info((et - st) + "ms,[" + sql + "]");
         }
 
-        session.execute(rrs, sql, type);
+        getSession().execute(rrs, sql, type);
 
+    }
+
+    public Session getSession() {
+        if (HeisenbergServer.getInstance().getConfig().getSystem().isBackNIO()) {
+            return session2;
+        } else {
+            return session;
+        }
     }
 
     /**
@@ -162,7 +161,7 @@ public class ServerConnection extends FrontendConnection {
         if (txInterrupted) {
             writeErrMessage(ErrorCode.ER_YES, "Transaction error, need to rollback.");
         } else {
-            session.commit();
+            getSession().commit();
         }
     }
 
@@ -176,20 +175,19 @@ public class ServerConnection extends FrontendConnection {
         }
 
         // 执行回滚
-        session.rollback();
+        getSession().rollback();
     }
 
     /**
      * 撤销执行中的语句
      * 
-     * @param sponsor
-     *            发起者为null表示是自己
+     * @param sponsor 发起者为null表示是自己
      */
     public void cancel(final FrontendConnection sponsor) {
         processor.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                session.cancel(sponsor);
+                getSession().cancel(sponsor);
             }
         });
     }
@@ -226,7 +224,7 @@ public class ServerConnection extends FrontendConnection {
             processor.getExecutor().execute(new Runnable() {
                 @Override
                 public void run() {
-                    session.terminate();
+                    getSession().terminate();
                 }
             });
             return true;

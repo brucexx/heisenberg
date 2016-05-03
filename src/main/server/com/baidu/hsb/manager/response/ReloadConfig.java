@@ -21,6 +21,7 @@ import com.baidu.hsb.config.model.config.UserConfig;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.MySQLDataSource;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.net.mysql.OkPacket;
 
 /**
@@ -83,7 +84,7 @@ public final class ReloadConfig {
         // 如果重载不成功，则清理已初始化的资源。
         if (!reloadStatus) {
             for (MySQLDataNode dn : dataNodes.values()) {
-                MySQLDataSource ds = dn.getSource();
+                DataSource ds = dn.getSource();
                 if (ds != null) {
                     ds.clear();
                 }
@@ -96,7 +97,7 @@ public final class ReloadConfig {
 
         // 处理旧的资源
         for (MySQLDataNode dn : cNodes.values()) {
-            MySQLDataSource ds = dn.getSource();
+            DataSource ds = dn.getSource();
             if (ds != null) {
                 ds.clear();
             }

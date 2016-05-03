@@ -26,3 +26,8 @@ Heisenberg服务器通过管理命令可以查看，如连接数，线程池，�
 增加了后端连接再次回收利用过程
 日志保存时间问题
 
+1.0.5  2016.5.3
+1.后台mysql连接池NIO化，在server.xml中
+		<!-- 设置mysqlServer连接NIO -->
+		<property name="isBackNIO">false</property>
+2.修复一些在前置连接上的bug

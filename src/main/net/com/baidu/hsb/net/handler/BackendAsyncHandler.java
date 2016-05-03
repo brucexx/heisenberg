@@ -48,6 +48,7 @@ public abstract class BackendAsyncHandler implements NIOHandler {
                             handleData(data);
                         }
                     } catch (Throwable t) {
+                        t.printStackTrace();
                         handleDataError(t);
                     } finally {
                         isHandling.set(false);

@@ -19,8 +19,8 @@ import com.baidu.hsb.config.Fields;
 import com.baidu.hsb.config.model.config.SchemaConfig;
 import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.MySQLDataNode;
-import com.baidu.hsb.mysql.MySQLDataSource;
 import com.baidu.hsb.mysql.PacketUtil;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.net.mysql.EOFPacket;
 import com.baidu.hsb.net.mysql.FieldPacket;
 import com.baidu.hsb.net.mysql.ResultSetHeaderPacket;
@@ -138,7 +138,7 @@ public final class ShowDataNode {
         RowDataPacket row = new RowDataPacket(FIELD_COUNT);
         row.add(StringUtil.encode(node.getName(), charset));
         row.add(StringUtil.encode(node.getConfig().getDataSource(), charset));
-        MySQLDataSource ds = node.getSource();
+        DataSource ds = node.getSource();
         if (ds != null) {
             row.add(IntegerUtil.toBytes(ds.getIndex()));
             row.add(ds.getConfig().getType().getBytes());

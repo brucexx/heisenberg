@@ -4,7 +4,6 @@
  */
 package com.baidu.hsb.net;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -14,6 +13,8 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.log4j.Logger;
 
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.net.buffer.BufferPool;
@@ -27,6 +28,9 @@ import com.baidu.hsb.util.TimeUtil;
  * @version $Id: AbstractConnection.java, v 0.1 2013年12月26日 下午6:06:45 HI:brucest0078 Exp $
  */
 public abstract class AbstractConnection implements NIOConnection {
+
+    protected static final Logger LOGGER = Logger.getLogger(AbstractConnection.class);
+
     private static final int OP_NOT_READ = ~SelectionKey.OP_READ;
     private static final int OP_NOT_WRITE = ~SelectionKey.OP_WRITE;
 
@@ -152,7 +156,7 @@ public abstract class AbstractConnection implements NIOConnection {
         int got = channel.read(buffer);
         lastReadTime = TimeUtil.currentTimeMillis();
         if (got < 0) {
-            throw new EOFException();
+            return;
         }
         netInBytes += got;
         processor.addNetInBytes(got);
@@ -430,7 +434,6 @@ public abstract class AbstractConnection implements NIOConnection {
             // 如果是一块未使用过的buffer，则执行关闭连接。
             if (buffer.position() == 0) {
                 processor.getBufferPool().recycle(buffer);
-                close();
                 return true;
             }
             buffer.flip();

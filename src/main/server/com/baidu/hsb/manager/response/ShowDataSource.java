@@ -19,6 +19,7 @@ import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.MySQLDataSource;
 import com.baidu.hsb.mysql.PacketUtil;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.net.mysql.EOFPacket;
 import com.baidu.hsb.net.mysql.FieldPacket;
 import com.baidu.hsb.net.mysql.ResultSetHeaderPacket;
@@ -85,7 +86,7 @@ public final class ShowDataSource {
         if (null != name) {
             MySQLDataNode dn = conf.getDataNodes().get(name);
             if (dn != null)
-                for (MySQLDataSource ds : dn.getSources()) {
+                for (DataSource ds : dn.getSources()) {
                     if (ds != null) {
                         keys.add(ds.getName());
                     }

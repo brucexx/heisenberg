@@ -15,6 +15,7 @@ import com.baidu.hsb.manager.ManagerConnection;
 import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.MySQLDataSource;
 import com.baidu.hsb.mysql.PacketUtil;
+import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.net.mysql.EOFPacket;
 import com.baidu.hsb.net.mysql.FieldPacket;
 import com.baidu.hsb.net.mysql.ResultSetHeaderPacket;
@@ -83,7 +84,7 @@ public final class ShowSlow {
         byte packetId = eof.packetId;
         HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         MySQLDataNode dn = conf.getDataNodes().get(name);
-        MySQLDataSource ds = null;
+        DataSource ds = null;
         if (dn != null && (ds = dn.getSource()) != null) {
             SQLRecord[] records = ds.getSqlRecorder().getRecords();
             for (int i = records.length - 1; i >= 0; i--) {
@@ -127,7 +128,7 @@ public final class ShowSlow {
             Map<String, MySQLDataNode> dataNodes = conf.getDataNodes();
             for (String n : schema.getAllDataNodes()) {
                 MySQLDataNode dn = dataNodes.get(n);
-                MySQLDataSource ds = null;
+                DataSource ds = null;
                 if (dn != null && (ds = dn.getSource()) != null) {
                     for (SQLRecord r : ds.getSqlRecorder().getRecords()) {
                         if (r != null && recorder.check(r.executeTime)) {

@@ -28,14 +28,15 @@ import com.baidu.hsb.route.RouteResultsetNode;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.statistic.SQLRecord;
 import com.baidu.hsb.statistic.SQLRecorder;
+import com.baidu.hsb.util.ThreadPool;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
  * @author xiongzhao@baidu.com
  */
 public class MySQLConnection extends BackendConnection {
-    private static final Logger LOGGER       = Logger.getLogger(MySQLConnection.class);
-    private static final long   CLIENT_FLAGS = initClientFlags();
+    private static final Logger LOGGER = Logger.getLogger(MySQLConnection.class);
+    private static final long CLIENT_FLAGS = initClientFlags();
 
     private static long initClientFlags() {
         int flag = 0;
@@ -62,18 +63,18 @@ public class MySQLConnection extends BackendConnection {
     }
 
     private static final CommandPacket _READ_UNCOMMITTED = new CommandPacket();
-    private static final CommandPacket _READ_COMMITTED   = new CommandPacket();
-    private static final CommandPacket _REPEATED_READ    = new CommandPacket();
-    private static final CommandPacket _SERIALIZABLE     = new CommandPacket();
-    private static final CommandPacket _AUTOCOMMIT_ON    = new CommandPacket();
-    private static final CommandPacket _AUTOCOMMIT_OFF   = new CommandPacket();
-    private static final CommandPacket _COMMIT           = new CommandPacket();
-    private static final CommandPacket _ROLLBACK         = new CommandPacket();
+    private static final CommandPacket _READ_COMMITTED = new CommandPacket();
+    private static final CommandPacket _REPEATED_READ = new CommandPacket();
+    private static final CommandPacket _SERIALIZABLE = new CommandPacket();
+    private static final CommandPacket _AUTOCOMMIT_ON = new CommandPacket();
+    private static final CommandPacket _AUTOCOMMIT_OFF = new CommandPacket();
+    private static final CommandPacket _COMMIT = new CommandPacket();
+    private static final CommandPacket _ROLLBACK = new CommandPacket();
+
     static {
         _READ_UNCOMMITTED.packetId = 0;
         _READ_UNCOMMITTED.command = MySQLPacket.COM_QUERY;
-        _READ_UNCOMMITTED.arg = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"
-            .getBytes();
+        _READ_UNCOMMITTED.arg = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED".getBytes();
         _READ_COMMITTED.packetId = 0;
         _READ_COMMITTED.command = MySQLPacket.COM_QUERY;
         _READ_COMMITTED.arg = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED".getBytes();
@@ -97,32 +98,40 @@ public class MySQLConnection extends BackendConnection {
         _ROLLBACK.arg = "rollback".getBytes();
     }
 
-    private MySQLConnectionPool        pool;
-    private long                       threadId;
-    private HandshakePacket            handshake;
-    private int                        charsetIndex;
-    private String                     charset;
-    private volatile int               txIsolation;
-    private volatile boolean           autocommit;
-    private long                       clientFlags;
-    private boolean                    isAuthenticated;
-    private String                     user;
-    private String                     password;
-    private String                     schema;
-    private Object                     attachment;
+    private MySQLConnectionPool pool;
+    private long threadId;
+    private HandshakePacket handshake;
+    private int charsetIndex;
+    private String charset;
+    private volatile int txIsolation;
+    private volatile boolean autocommit;
+    private long clientFlags;
+    private boolean isAuthenticated;
+    private String user;
+    private String password;
+    private String schema;
+    private Object attachment;
+    private long lastActiveTime;
 
-    private final AtomicBoolean        isRunning;
-    private long                       lastTime;                               // QS_TODO
-    private final AtomicBoolean        isQuit;
-    private volatile StatusSync        statusSync;
+    private final AtomicBoolean isRunning;
+    private final AtomicBoolean isQuit;
+    private volatile StatusSync statusSync;
 
     public MySQLConnection(SocketChannel channel) {
         super(channel);
         this.clientFlags = CLIENT_FLAGS;
-        this.lastTime = TimeUtil.currentTimeMillis();
+        this.lastActiveTime = TimeUtil.currentTimeMillis();
         this.isRunning = new AtomicBoolean(false);
         this.isQuit = new AtomicBoolean(false);
         this.autocommit = true;
+    }
+
+    public long getLastActiveTime() {
+        return lastActiveTime;
+    }
+
+    public void setLastActiveTime(long lastActiveTime) {
+        this.lastActiveTime = lastActiveTime;
     }
 
     public MySQLConnectionPool getPool() {
@@ -209,14 +218,6 @@ public class MySQLConnection extends BackendConnection {
         packet.write(this);
     }
 
-    public long getLastTime() {
-        return lastTime;
-    }
-
-    public void setLastTime(long lastTime) {
-        this.lastTime = lastTime;
-    }
-
     public void setRunning(boolean running) {
         isRunning.set(running);
     }
@@ -241,29 +242,36 @@ public class MySQLConnection extends BackendConnection {
         return isClosed() || isQuit.get();
     }
 
+    public void closeNoActive() {
+        if (isClosed.compareAndSet(false, true)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(toString() + "NoActive close..");
+            }
+        }
+        isQuit.set(true);
+        super.close();
+    }
+
     private static class StatusSync {
         private final RouteResultsetNode rrn;
-        private final MySQLConnection    conn;
-        private CommandPacket            charCmd;
-        private CommandPacket            isoCmd;
-        private CommandPacket            acCmd;
-        private final int                charIndex;
-        private final int                txIsolation;
-        private final boolean            autocommit;
-        private volatile boolean         executed;
+        private final MySQLConnection conn;
+        private CommandPacket charCmd;
+        private CommandPacket isoCmd;
+        private CommandPacket acCmd;
+        private final int charIndex;
+        private final int txIsolation;
+        private final boolean autocommit;
+        private volatile boolean executed;
 
-        public StatusSync(MySQLConnection conn, RouteResultsetNode rrn, ServerConnection sc,
-                          boolean autocommit) {
+        public StatusSync(MySQLConnection conn, RouteResultsetNode rrn, ServerConnection sc, boolean autocommit) {
             this.conn = conn;
             this.rrn = rrn;
             this.charIndex = sc.getCharsetIndex();
             this.charCmd = conn.charsetIndex != charIndex ? getCharsetCommand(charIndex) : null;
             this.txIsolation = sc.getTxIsolation();
-            this.isoCmd = conn.txIsolation != txIsolation ? getTxIsolationCommand(txIsolation)
-                : null;
+            this.isoCmd = conn.txIsolation != txIsolation ? getTxIsolationCommand(txIsolation) : null;
             this.autocommit = autocommit;
-            this.acCmd = conn.autocommit != autocommit ? (autocommit ? _AUTOCOMMIT_ON
-                : _AUTOCOMMIT_OFF) : null;
+            this.acCmd = conn.autocommit != autocommit ? (autocommit ? _AUTOCOMMIT_ON : _AUTOCOMMIT_OFF) : null;
         }
 
         private Runnable updater;
@@ -279,7 +287,7 @@ public class MySQLConnection extends BackendConnection {
         public void update() {
             Runnable updater = this.updater;
             if (updater != null) {
-                updater.run();
+                ThreadPool.execute(updater);
             }
         }
 
@@ -300,6 +308,9 @@ public class MySQLConnection extends BackendConnection {
                 cmd = charCmd;
                 charCmd = null;
                 cmd.write(conn);
+//                if (LOGGER.isDebugEnabled()) {
+//                    LOGGER.info("wrote conn charset :" + this.charIndex);
+//                }
                 return true;
             }
             if (isoCmd != null) {
@@ -312,6 +323,9 @@ public class MySQLConnection extends BackendConnection {
                 cmd = isoCmd;
                 isoCmd = null;
                 cmd.write(conn);
+//                if (LOGGER.isDebugEnabled()) {
+//                    LOGGER.info("wrote conn iso :" + this.txIsolation);
+//                }
                 return true;
             }
             if (acCmd != null) {
@@ -324,6 +338,9 @@ public class MySQLConnection extends BackendConnection {
                 cmd = acCmd;
                 acCmd = null;
                 cmd.write(conn);
+//                if (LOGGER.isDebugEnabled()) {
+//                    LOGGER.info("wrote conn autocommit  :" + this.autocommit);
+//                }
                 return true;
             }
             return false;
@@ -336,10 +353,9 @@ public class MySQLConnection extends BackendConnection {
                 packet.packetId = 0;
                 packet.command = MySQLPacket.COM_QUERY;
                 packet.arg = stmt.getBytes(conn.getCharset());
-                conn.lastTime = TimeUtil.currentTimeMillis();
+                conn.lastActiveTime = TimeUtil.currentTimeMillis();
                 packet.write(conn);
             }
-
         }
 
         private static CommandPacket getTxIsolationCommand(int txIsolation) {
@@ -370,8 +386,7 @@ public class MySQLConnection extends BackendConnection {
     }
 
     /**
-     * @return if synchronization finished and execute-sql has already been sent
-     *         before
+     * @return if synchronization finished and execute-sql has already been sent before
      */
     public boolean syncAndExcute() throws UnsupportedEncodingException {
         StatusSync sync = statusSync;
@@ -389,7 +404,7 @@ public class MySQLConnection extends BackendConnection {
     }
 
     public void execute(RouteResultsetNode rrn, ServerConnection sc, boolean autocommit)
-                                                                                        throws UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
         StatusSync sync = new StatusSync(this, rrn, sc, autocommit);
         statusSync = sync;
         if (sync.isSync() || !sync.sync()) {
@@ -430,7 +445,7 @@ public class MySQLConnection extends BackendConnection {
     public void release() {
         attachment = null;
         statusSync = null;
-        setResponseHandler(null);
+//        setResponseHandler(null);
         pool.releaseChannel(this);
     }
 
@@ -465,8 +480,8 @@ public class MySQLConnection extends BackendConnection {
      */
     public void recordSql(String host, String schema, String[] stmts) {
         final long now = TimeUtil.currentTimeMillis();
-        if (now > this.lastTime) {
-            long time = now - this.lastTime;
+        if (now > this.lastActiveTime) {
+            long time = now - this.lastActiveTime;
             SQLRecorder sqlRecorder = this.pool.getSqlRecorder();
             if (sqlRecorder.check(time)) {
                 for (String stmt : stmts) {
@@ -474,7 +489,7 @@ public class MySQLConnection extends BackendConnection {
                     recorder.host = host;
                     recorder.schema = schema;
                     recorder.statement = stmt;
-                    recorder.startTime = lastTime;
+                    recorder.startTime = lastActiveTime;
                     recorder.executeTime = time;
                     recorder.dataNode = pool.getName();
                     recorder.dataNodeIndex = pool.getIndex();
@@ -482,7 +497,7 @@ public class MySQLConnection extends BackendConnection {
                 }
             }
         }
-        this.lastTime = now;
+        this.lastActiveTime = now;
     }
 
     private static byte[] passwd(String pass, HandshakePacket hs) throws NoSuchAlgorithmException {

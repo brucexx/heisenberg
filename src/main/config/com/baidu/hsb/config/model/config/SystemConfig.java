@@ -4,6 +4,8 @@
  */
 package com.baidu.hsb.config.model.config;
 
+import org.apache.commons.lang.BooleanUtils;
+
 import com.baidu.hsb.config.Isolations;
 
 /**
@@ -52,6 +54,15 @@ public final class SystemConfig {
     private int                 txIsolation;
     private int                 parserCommentVersion;
     private int                 sqlRecordCount;
+    private String              isBackNIO;
+
+    public boolean isBackNIO() {
+        return BooleanUtils.toBoolean(isBackNIO) ;
+    }
+
+    public void setIsBackNIO(String isBackNIO) {
+        this.isBackNIO = isBackNIO;
+    }
 
     public SystemConfig() {
         this.serverPort = DEFAULT_PORT;
