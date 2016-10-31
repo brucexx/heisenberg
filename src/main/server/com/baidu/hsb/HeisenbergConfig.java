@@ -43,6 +43,11 @@ public class HeisenbergConfig {
     public HeisenbergConfig() {
         ConfigInitializer confInit = new ConfigInitializer();
         this.system = confInit.getSystem();
+        if(system.isBackNIO()){
+            System.out.println("backend NIO mode actived..");
+        }else{
+            System.out.println("backend BIO mode default..");
+        }
         this.users = confInit.getUsers();
         this.schemas = confInit.getSchemas();
         this.dataSources = confInit.getDataSources();

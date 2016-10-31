@@ -6,6 +6,7 @@ package com.baidu.hsb.mysql.nio;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -15,13 +16,10 @@ import com.baidu.hsb.config.Alarms;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
 import com.baidu.hsb.heartbeat.MySQLHeartbeat;
 import com.baidu.hsb.mysql.MySQLDataNode;
-import com.baidu.hsb.mysql.MySQLDataSource;
-import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.common.DataSource;
 import com.baidu.hsb.mysql.nio.handler.DelegateResponseHandler;
 import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
 import com.baidu.hsb.statistic.SQLRecorder;
-import com.baidu.hsb.util.CollectionUtil;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
@@ -41,8 +39,8 @@ public class MySQLConnectionPool implements DataSource {
 
     private final MySQLConnectionFactory factory;
     private final MySQLConnection[] items;
-    private int activeCount;
-    private int idleCount;
+    private AtomicInteger activeCount=new AtomicInteger(0);
+    private AtomicInteger idleCount=new AtomicInteger(0);
     private final SQLRecorder sqlRecorder;
     private final MySQLHeartbeat heartbeat;
 
@@ -71,7 +69,7 @@ public class MySQLConnectionPool implements DataSource {
         lock.lock();
         try {
             // too many active connections
-            if (activeCount >= size) {
+            if (activeCount.get()+idleCount.get() >= size) {
                 StringBuilder s = new StringBuilder();
                 s.append(Alarms.DEFAULT).append("[name=").append(name).append(",active=");
                 s.append(activeCount).append(",size=").append(size).append(']');
@@ -80,22 +78,22 @@ public class MySQLConnectionPool implements DataSource {
 
             // get connection from pool
             final MySQLConnection[] items = this.items;
-            for (int i = 0, len = items.length; idleCount > 0 && i < len; ++i) {
-                if (items[i] != null) {
+            for (int i = 0, len = items.length; idleCount.get() > 0 && i < len; ++i) {
+                if (items[i] != null&& !items[i].isRunning() ) {
                     MySQLConnection conn = items[i];
                     items[i] = null;
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     if (conn.isClosedOrQuit()) {
                         continue;
                     } else {
-                        ++activeCount;
+                        activeCount.incrementAndGet();
                         conn.setAttachment(attachment);
                         handler.connectionAcquired(conn);
                         return conn;
                     }
                 }
             }
-            ++activeCount;
+            activeCount.incrementAndGet();
         } finally {
             lock.unlock();
         }
@@ -110,7 +108,7 @@ public class MySQLConnectionPool implements DataSource {
                 lock.lock();
                 try {
                     if (!deactived) {
-                        --activeCount;
+                        activeCount.decrementAndGet();
                         deactived = true;
                     }
                 } finally {
@@ -144,8 +142,8 @@ public class MySQLConnectionPool implements DataSource {
             final MySQLConnection[] items = this.items;
             for (int i = 0; i < items.length; i++) {
                 if (items[i] == null) {
-                    ++idleCount;
-                    --activeCount;
+                    idleCount.incrementAndGet();
+                    activeCount.decrementAndGet();
                     c.setLastActiveTime(TimeUtil.currentTimeMillis());
                     items[i] = c;
                     if (LOGGER.isDebugEnabled()) {
@@ -167,7 +165,7 @@ public class MySQLConnectionPool implements DataSource {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            --activeCount;
+            activeCount.decrementAndGet();
         } finally {
             lock.unlock();
         }
@@ -208,7 +206,7 @@ public class MySQLConnectionPool implements DataSource {
      */
     @Override
     public int getActiveCount() {
-        return activeCount;
+        return activeCount.get();
     }
 
     /*
@@ -218,7 +216,7 @@ public class MySQLConnectionPool implements DataSource {
      */
     @Override
     public int getIdleCount() {
-        return idleCount;
+        return idleCount.get();
     }
 
     /*
@@ -283,7 +281,7 @@ public class MySQLConnectionPool implements DataSource {
                 MySQLConnection c = items[i];
                 if (c != null) {
                     c.closeNoActive();
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     items[i] = null;
                 }
             }
@@ -308,7 +306,7 @@ public class MySQLConnectionPool implements DataSource {
                 MySQLConnection c = items[i];
                 if (c != null && time > c.getLastActiveTime()) {
                     c.closeNoActive();
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     items[i] = null;
                 }
             }

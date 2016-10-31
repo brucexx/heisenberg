@@ -62,11 +62,20 @@ public final class MySQLDataNode {
         this.heartbeatRecoveryTime = -1L;
         this.switchLock = new ReentrantLock();
     }
-    
-    public void printDsConnCount(){
-        for(int i=0;i<sources.length;i++){
-            System.out.println("["+i+"]activeCount:"+sources[i].getActiveCount()+",idleCount:"+sources[i].getIdleCount());
+
+    public void printDsConnCount() {
+        if (isNIO) {
+            for (int i = 0; i < sources.length; i++) {
+                System.out.println("[" + i + "]activeCount:" + dataSources[i].getActiveCount() + ",idleCount:"
+                        + dataSources[i].getIdleCount());
+            }
+        } else {
+            for (int i = 0; i < sources.length; i++) {
+                System.out.println("[" + i + "]activeCount:" + sources[i].getActiveCount() + ",idleCount:"
+                        + sources[i].getIdleCount());
+            }
         }
+
     }
 
     public boolean isNIO() {
@@ -87,13 +96,13 @@ public final class MySQLDataNode {
         int active = -1;
         for (int i = 0; i < getSources().length; i++) {
             int j = loop(i + index);
-            if(isNIO){
-                if(initNIOSource((MySQLConnectionPool)getSources()[j], size)){
+            if (isNIO) {
+                if (initNIOSource((MySQLConnectionPool) getSources()[j], size)) {
                     active = j;
                     break;
                 }
-            }else{
-                if(initSource((MySQLDataSource)getSources()[j], size)){
+            } else {
+                if (initSource((MySQLDataSource) getSources()[j], size)) {
                     active = j;
                     break;
                 }

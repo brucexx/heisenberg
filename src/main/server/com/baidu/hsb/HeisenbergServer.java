@@ -210,8 +210,10 @@ public class HeisenbergServer {
                         Map<String, MySQLDataNode> dataNodes = config.getDataNodes();
                         for (MySQLDataNode node : dataNodes.values()) {
                             node.init(1, 0);
-                            System.out.println("node:"+node.getName());
-                            node.printDsConnCount();
+                            if(LOGGER.isDebugEnabled()){
+                                System.out.println("node:"+node.getName());
+                              node.printDsConnCount();
+                            }
                         }
                     }
                 });
