@@ -21,7 +21,7 @@
 
 	<!-- 用户访问定义，用户名、密码、schema等信息。 -->
 	<user name="root">
-		<property name="password">123456</property>
+		<property name="password">st0078</property>
 		<property name="schemas">bank_data_master_shard</property>
 	</user>
 

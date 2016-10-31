@@ -107,7 +107,7 @@ public final class MySQLChannel implements Channel {
 	private String charset;
 	private volatile int txIsolation;
 	private volatile boolean autocommit;
-	private volatile boolean isRunning;
+	private AtomicBoolean isRunning;
 	private final AtomicBoolean isClosed;
 	private long lastActiveTime;
 
@@ -115,7 +115,7 @@ public final class MySQLChannel implements Channel {
 		this.dataSource = dataSource;
 		this.dsc = dataSource.getConfig();
 		this.autocommit = true;
-		this.isRunning = false;
+		this.isRunning = new AtomicBoolean(false);
 		this.isClosed = new AtomicBoolean(false);
 		this.lastActiveTime = TimeUtil.currentTimeMillis();
 	}
@@ -141,12 +141,12 @@ public final class MySQLChannel implements Channel {
 
 	@Override
 	public boolean isRunning() {
-		return isRunning;
+		return isRunning.get();
 	}
 
 	@Override
 	public void setRunning(boolean running) {
-		this.isRunning = running;
+		this.isRunning.getAndSet(running);
 	}
 
 	/**

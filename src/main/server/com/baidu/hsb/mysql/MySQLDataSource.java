@@ -4,6 +4,7 @@
  */
 package com.baidu.hsb.mysql;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
@@ -15,9 +16,6 @@ import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.ChannelFactory;
 import com.baidu.hsb.mysql.bio.MySQLChannelFactory;
 import com.baidu.hsb.mysql.common.DataSource;
-import com.baidu.hsb.mysql.nio.MySQLConnection;
-import com.baidu.hsb.mysql.nio.MySQLConnectionFactory;
-import com.baidu.hsb.mysql.nio.handler.ResponseHandler;
 import com.baidu.hsb.statistic.SQLRecorder;
 import com.baidu.hsb.util.TimeUtil;
 
@@ -32,8 +30,8 @@ public final class MySQLDataSource implements DataSource{
     private final int index;
     private final String name;
     private final DataSourceConfig config;
-    private int activeCount;
-    private int idleCount;
+    private AtomicInteger activeCount=new AtomicInteger(0);
+    private AtomicInteger idleCount=new AtomicInteger(0);
     private final int size;
     private final ReentrantLock lock;
     // BIO
@@ -78,11 +76,11 @@ public final class MySQLDataSource implements DataSource{
     }
 
     public int getActiveCount() {
-        return activeCount;
+        return activeCount.get();
     }
 
     public int getIdleCount() {
-        return idleCount;
+        return idleCount.get();
     }
 
     public MySQLHeartbeat getHeartbeat() {
@@ -120,7 +118,7 @@ public final class MySQLDataSource implements DataSource{
         lock.lock();
         try {
             // 当活跃资源大于等于池大小时，记录告警信息。
-            if (activeCount + idleCount >= size * 0.8) {
+            if (activeCount.get() + idleCount.get() >= size * 0.8) {
                 StringBuilder s = new StringBuilder();
                 s.append(Alarms.DEFAULT).append("[name=").append(name).append(",active=");
                 s.append(activeCount).append(",idleCount=").append(idleCount).append(",size=").append(size).append(']');
@@ -129,25 +127,25 @@ public final class MySQLDataSource implements DataSource{
 
             // 检查池中是否有可用资源
             final Channel[] items = this.items;
-            for (int i = 0; idleCount > 0 && i < items.length; i++) {
-                if (items[i] != null) {
+            for (int i = 0; idleCount.get() > 0 && i < items.length; i++) {
+                if (items[i] != null && !items[i].isRunning()) {
                     Channel c = items[i];
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(getName() + "[" + getIndex() + "]" + "activeCount[" + activeCount
                                 + "]get connection-->" + i);
                     }
                     items[i] = null;
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     if (c.isClosed()) {
                         continue;
                     } else {
-                        ++activeCount;
+                        activeCount.incrementAndGet();
                         if (c.hasDirtyConnection()) {
                             if (LOGGER.isInfoEnabled()) {
                                 LOGGER.info(
                                         getName() + "[" + getIndex() + "]activeCount[" + activeCount + "]出现脏数据，清理关闭掉!");
                             }
-                            --activeCount;
+                            activeCount.decrementAndGet();
                             c.close();
                             continue;
                         }
@@ -156,7 +154,7 @@ public final class MySQLDataSource implements DataSource{
                 }
             }
             // 将创建新连接，在此先假设创建成功。
-            ++activeCount;
+            activeCount.incrementAndGet();
         } finally {
             lock.unlock();
         }
@@ -170,7 +168,8 @@ public final class MySQLDataSource implements DataSource{
         } catch (Exception e) {
             lock.lock();
             try {
-                --activeCount;
+                activeCount.decrementAndGet();
+
             } finally {
                 lock.unlock();
             }
@@ -198,8 +197,8 @@ public final class MySQLDataSource implements DataSource{
             final Channel[] items = this.items;
             for (int i = 0; i < items.length; i++) {
                 if (items[i] == null) {
-                    ++idleCount;
-                    --activeCount;
+                    idleCount.incrementAndGet();
+                    activeCount.decrementAndGet();
                     c.setLastActiveTime(TimeUtil.currentTimeMillis());
                     items[i] = c;
                     if (LOGGER.isDebugEnabled()) {
@@ -218,7 +217,7 @@ public final class MySQLDataSource implements DataSource{
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            --activeCount;
+            activeCount.decrementAndGet();
         } finally {
             lock.unlock();
         }
@@ -233,7 +232,7 @@ public final class MySQLDataSource implements DataSource{
                 Channel c = items[i];
                 if (c != null) {
                     c.closeNoActive();
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     items[i] = null;
                 }
             }
@@ -252,7 +251,7 @@ public final class MySQLDataSource implements DataSource{
                 Channel c = items[i];
                 if (c != null && time > c.getLastAcitveTime()) {
                     c.closeNoActive();
-                    --idleCount;
+                    idleCount.decrementAndGet();
                     items[i] = null;
                 }
             }

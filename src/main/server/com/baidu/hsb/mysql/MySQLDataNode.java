@@ -62,6 +62,12 @@ public final class MySQLDataNode {
         this.heartbeatRecoveryTime = -1L;
         this.switchLock = new ReentrantLock();
     }
+    
+    public void printDsConnCount(){
+        for(int i=0;i<sources.length;i++){
+            System.out.println("["+i+"]activeCount:"+sources[i].getActiveCount()+",idleCount:"+sources[i].getIdleCount());
+        }
+    }
 
     public boolean isNIO() {
         return isNIO;

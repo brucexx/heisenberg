@@ -39,6 +39,7 @@ import com.baidu.hsb.net.mysql.MySQLPacket;
 import com.baidu.hsb.net.mysql.OkPacket;
 import com.baidu.hsb.route.RouteResultset;
 import com.baidu.hsb.route.RouteResultsetNode;
+import com.baidu.hsb.route.util.DateUtil;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.session.BlockingSession;
 import com.baidu.hsb.util.StringUtil;
@@ -63,6 +64,7 @@ public class MultiNodeTask {
     private ByteBuffer buffer;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition taskFinished = lock.newCondition();
+    private String taskName = "";
     private final DefaultCommitExecutor icExecutor = new DefaultCommitExecutor() {
         @Override
         protected String getErrorMessage() {
@@ -88,7 +90,8 @@ public class MultiNodeTask {
 
     public MultiNodeTask(RouteResultsetNode[] nodes, final boolean autocommit, final BlockingSession ss, final int flag,
             final String sql) {
-
+        this.taskName = DateUtil.formatCurrent(DateUtil.LONG_FORMAT) + StringUtil.getRandomString(5);
+//        System.out.println(taskName+"start>>");
         this.nodes = nodes;
         this.autocommit = autocommit;
         this.ss = ss;
@@ -297,7 +300,7 @@ public class MultiNodeTask {
                             if (ok.insertId > 0) {
                                 insertId = (insertId == 0) ? ok.insertId : Math.min(insertId, ok.insertId);
                             }
-                            if(runData.get(rrn.getName()).decrementAndGet()==0){
+                            if (runData.get(rrn.getName()).decrementAndGet() == 0) {
                                 c.setRunning(false);
                             }
                             handleSuccessOK(ss, rrn, autocommit, ok);
@@ -306,6 +309,7 @@ public class MultiNodeTask {
                             final MySQLChannel mc = (MySQLChannel) c;
                             if (fieldEOF.get()) {
                                 for (;;) {
+//                                    System.out.println(taskName+" eof recv++");
                                     bin = mc.receive();
                                     switch (bin.data[0]) {
                                         case ErrorPacket.FIELD_COUNT:
@@ -314,6 +318,7 @@ public class MultiNodeTask {
                                                     sql);
                                             continue extSql;
                                         case EOFPacket.FIELD_COUNT:
+//                                            System.out.println(taskName+" eof data++");
                                             handleRowData(rrn, c, ss, exeTime, sql);
                                             continue extSql;
                                         default:
@@ -400,7 +405,7 @@ public class MultiNodeTask {
                     handleFailure(ss, rrn, new BinaryErrInfo(((MySQLChannel) c), bin, source, rrn), 1, exeTime, sql);
                     return;
                 case EOFPacket.FIELD_COUNT:
-                    if(runData.get(rrn.getName()).decrementAndGet()==0){
+                    if (runData.get(rrn.getName()).decrementAndGet() == 0) {
                         c.setRunning(false);
                     }
                     // 忽略自动提交
@@ -480,6 +485,7 @@ public class MultiNodeTask {
                     LOGGER.warn("exception happens in success notification: " + ss.getSource(), e);
                 }
             } finally {
+
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("final exeTime-->" + exeTime.get() + ",nodeCount:" + nodeCount);
                 }
@@ -517,7 +523,6 @@ public class MultiNodeTask {
                     // 多节点情况下以非事务模式执行
                     ok.write(source);
                 }
-
                 source.recycle(buffer);
             } catch (Exception e) {
                 LOGGER.warn("exception happens in success notification: " + ss.getSource(), e);

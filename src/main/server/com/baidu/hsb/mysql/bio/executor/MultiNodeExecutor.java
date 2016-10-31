@@ -125,7 +125,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
      */
     public void execute(RouteResultsetNode[] nodes, final boolean autocommit,
                         final BlockingSession ss, final int flag, final String sql) {
-        // 初始化
+         // 初始化
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
