@@ -157,7 +157,7 @@ public abstract class AbstractConnection implements NIOConnection {
         int got = channel.read(buffer);
         lastReadTime = TimeUtil.currentTimeMillis();
         if (got < 0) {
-            return;
+            throw new EOFException();
         }
         netInBytes += got;
         processor.addNetInBytes(got);
