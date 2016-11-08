@@ -28,7 +28,7 @@ public class SelectVersionComment {
 
     static {
         try {
-            VERSION_COMMENT = "Heisenberg Server-1.0.5 author:BAIDU_xiongzhao@baidu.com (private)email:brucest0078@gmail.com".getBytes("GBK");
+            VERSION_COMMENT = "Heisenberg Server-1.0.6 author:BAIDU_xiongzhao@baidu.com (private)email:brucest0078@gmail.com".getBytes("GBK");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
