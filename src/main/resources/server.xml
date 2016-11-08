@@ -17,7 +17,7 @@
 		<property name="clusterHeartbeatUser">_HEARTBEAT_USER_</property>
 		<property name="clusterHeartbeatPass">_HEARTBEAT_PASS_</property>
 		<property name="dataNodeHeartbeatPeriod">15000</property>
-		<property name="isBackNIO">true</property>
+		<property name="isBackNIO">false</property>
 	</system>
 
 	<!-- 用户访问定义，用户名、密码、schema等信息。 -->
