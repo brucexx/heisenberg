@@ -52,7 +52,18 @@ public final class HeisenbergStartup {
             if (StringUtil.isEmpty(System.getProperty("hsb.log.home"))) {
                 System.setProperty("hsb.log.home", System.getProperty("hsb.home"));
             }
+            File file=new File(System.getProperty("hsb.log.home"));
+            if(!file.exists() || !file.isDirectory()){
+                 file.mkdirs();
+            }
+            file=new File(System.getProperty("hsb.home"));
+            if(!file.exists() || !file.isDirectory()){
+                file.mkdirs();
+           }
+  
             System.out.println("hsb.home-->"+System.getProperty("hsb.home"));
+            System.out.println("hsb.log.home-->"+System.getProperty("hsb.log.home"));
+
             String fp = null;
 
             if (hasSelfConfigPath()) {
