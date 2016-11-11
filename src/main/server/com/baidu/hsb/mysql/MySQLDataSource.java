@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.baidu.hsb.config.Alarms;
 import com.baidu.hsb.config.model.config.DataSourceConfig;
+import com.baidu.hsb.exception.ErrorPacketException;
 import com.baidu.hsb.heartbeat.MySQLHeartbeat;
 import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.ChannelFactory;
@@ -118,11 +119,12 @@ public final class MySQLDataSource implements DataSource{
         lock.lock();
         try {
             // 当活跃资源大于等于池大小时，记录告警信息。
-            if (activeCount.get() + idleCount.get() >= size * 0.8) {
+            if (activeCount.get() + idleCount.get() >= size) {
                 StringBuilder s = new StringBuilder();
                 s.append(Alarms.DEFAULT).append("[name=").append(name).append(",active=");
                 s.append(activeCount).append(",idleCount=").append(idleCount).append(",size=").append(size).append(']');
                 ALARM.error(s.toString());
+                throw new ErrorPacketException("Too many connections, plz add the poolsize or adjust your machine load! ");
             }
 
             // 检查池中是否有可用资源
@@ -161,6 +163,7 @@ public final class MySQLDataSource implements DataSource{
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getName() + "[" + getIndex() + "]activeCount[" + activeCount + "]create new connection-->");
         }
+        
         // 创建新的资源
         Channel c = factory.make(this);
         try {

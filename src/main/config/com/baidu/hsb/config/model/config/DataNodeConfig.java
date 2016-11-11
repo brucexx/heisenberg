@@ -22,8 +22,7 @@ public final class DataNodeConfig {
     private String name;
     private String dataSource;
     private int poolSize = DEFAULT_POOL_SIZE; // 保持后端数据通道的默认最大值
-    private int coreSize = DEFAULT_CORE_SIZE;// 数据库的复用池
-    private long waitTimeout = DEFAULT_WAIT_TIMEOUT; // 取得新连接的等待超时时间
+     private long waitTimeout = DEFAULT_WAIT_TIMEOUT; // 取得新连接的等待超时时间
     private long idleTimeout = DEFAULT_IDLE_TIMEOUT; // 连接池中连接空闲超时时间
 
     // heartbeat config
@@ -34,13 +33,7 @@ public final class DataNodeConfig {
     private int slaveReadWeight;
     private boolean needWR = false;
 
-    public int getCoreSize() {
-        return coreSize;
-    }
-
-    public void setCoreSize(int coreSize) {
-        this.coreSize = coreSize;
-    }
+    
 
     /**
      * Getter method for property <tt>needWR</tt>.

@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import com.baidu.hsb.HeisenbergConfig;
 import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
+import com.baidu.hsb.config.util.ByteUtil;
 import com.baidu.hsb.config.util.LoggerUtil;
 import com.baidu.hsb.exception.UnknownDataNodeException;
 import com.baidu.hsb.mysql.MySQLDataNode;
@@ -50,7 +51,7 @@ import com.baidu.hsb.util.StringUtil;
  * @version $Id: MultiNodeTask.java, v 0.1 2014年9月11日 下午8:19:03 HI:brucest0078 Exp $
  */
 public class MultiNodeTask {
-    private static final Logger LOGGER = Logger.getLogger(MultiNodeExecutor.class);
+    private static final Logger LOGGER = Logger.getLogger(MultiNodeTask.class);
     private static final int RECEIVE_CHUNK_SIZE = 16 * 1024;
 
     private AtomicBoolean isFail = new AtomicBoolean(false);
@@ -87,17 +88,18 @@ public class MultiNodeTask {
     private int flag;
     private String sql;
     private Map<String, AtomicInteger> runData = new HashMap<String, AtomicInteger>();
+    private byte[] funcCachedData;
 
     public MultiNodeTask(RouteResultsetNode[] nodes, final boolean autocommit, final BlockingSession ss, final int flag,
             final String sql) {
         this.taskName = DateUtil.formatCurrent(DateUtil.LONG_FORMAT) + StringUtil.getRandomString(5);
-//        System.out.println(taskName+"start>>");
+        // System.out.println(taskName+"start>>");
         this.nodes = nodes;
         this.autocommit = autocommit;
         this.ss = ss;
         this.sql = sql;
         this.flag = flag;
-
+        this.funcCachedData = new byte[0];
         this.isFail.set(false);
         this.unfinishedNodeCount = 0;
         this.nodeCount = 0;
@@ -309,7 +311,7 @@ public class MultiNodeTask {
                             final MySQLChannel mc = (MySQLChannel) c;
                             if (fieldEOF.get()) {
                                 for (;;) {
-//                                    System.out.println(taskName+" eof recv++");
+                                    // System.out.println(taskName+" eof recv++");
                                     bin = mc.receive();
                                     switch (bin.data[0]) {
                                         case ErrorPacket.FIELD_COUNT:
@@ -318,7 +320,7 @@ public class MultiNodeTask {
                                                     sql);
                                             continue extSql;
                                         case EOFPacket.FIELD_COUNT:
-//                                            System.out.println(taskName+" eof data++");
+                                            // System.out.println(taskName+" eof data++");
                                             handleRowData(rrn, c, ss, exeTime, sql);
                                             continue extSql;
                                         default:
@@ -359,6 +361,7 @@ public class MultiNodeTask {
                                                     FieldPacket field = PacketUtil.getField(bin, fieldName.toString());
                                                     headerList.add(field);
                                                     break;
+
                                                 default:
                                                     headerList.add(bin);
                                             }
@@ -422,14 +425,20 @@ public class MultiNodeTask {
                     handleSuccessEOF(ss, rrn, bin, exeTime, sql);
                     return;
                 default:
-                    bin.packetId = ++packetId;// ROWS
-                    buffer = bin.write(buffer, source);
-                    size += bin.packetLength;
-                    if (size > RECEIVE_CHUNK_SIZE) {
-                        // LOGGER.info(rrn.getName() + "hasNext-->");
-                        handleNext(rrn, c, ss, exeTime, sql);
-                        return;
+                    if (flag == RouteResultset.SUM_FLAG || flag == RouteResultset.MAX_FLAG
+                            || flag == RouteResultset.MIN_FLAG) {
+                        funcCachedData = ByteUtil.calc(funcCachedData, bin.getData(), flag);
+                    } else {
+                        bin.packetId = ++packetId;// ROWS
+                        buffer = bin.write(buffer, source);
+                        size += bin.packetLength;
+                        if (size > RECEIVE_CHUNK_SIZE) {
+                            // LOGGER.info(rrn.getName() + "hasNext-->");
+                            handleNext(rrn, c, ss, exeTime, sql);
+                            return;
+                        }
                     }
+
             }
         }
     }
@@ -478,6 +487,13 @@ public class MultiNodeTask {
                     if (source.isAutocommit()) {
                         ss.release();
                     }
+                    if (flag == RouteResultset.SUM_FLAG || flag == RouteResultset.MAX_FLAG
+                            || flag == RouteResultset.MIN_FLAG) {
+                        BinaryPacket data = new BinaryPacket();
+                        data.packetId = ++packetId;
+                        data.data = funcCachedData;
+                        buffer = data.write(buffer, source);
+                    }
 
                     bin.packetId = ++packetId;// LAST_EOF
                     source.write(bin.write(buffer, source));
@@ -489,7 +505,7 @@ public class MultiNodeTask {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("final exeTime-->" + exeTime.get() + ",nodeCount:" + nodeCount);
                 }
-                LoggerUtil.printDigest(LOGGER, (exeTime.get() / nodeCount), sql);
+                LoggerUtil.printDigest(LOGGER,(exeTime.get() / nodeCount), sql);
             }
         }
     }

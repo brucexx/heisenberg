@@ -167,16 +167,16 @@ public class StreamUtil {
         if (length < 0)
             throw new EOFException();
         switch (length) {
-        case 251:
-            return NULL_LENGTH;
-        case 252:
-            return readUB2(in);
-        case 253:
-            return readUB3(in);
-        case 254:
-            return readLong(in);
-        default:
-            return length;
+            case 251:
+                return NULL_LENGTH;
+            case 252:
+                return readUB2(in);
+            case 253:
+                return readUB3(in);
+            case 254:
+                return readLong(in);
+            default:
+                return length;
         }
     }
 

@@ -10,8 +10,7 @@
 		<property name="dataSource">
 			<dataSourceRef>bankDataMasterDN$0-9</dataSourceRef>
 		</property>
-		<property name="poolSize">256</property>
-		<property name="coreSize">5</property>
+		<property name="poolSize">20</property>
 		<property name="heartbeatSQL">select user()</property>
 	</dataNode>
 	<dataSource name="bankDataMasterDN" type="mysql">
