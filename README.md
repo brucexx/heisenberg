@@ -1,4 +1,7 @@
 heisenberg
+
+High performance distributed  database for mysql, define shardings by velocity&groovy scripts, 
+can be expanded nodes flexible...
 ==========
 
 强大好用的mysql分库分表中间件，改编自cobar, 结合了cobar和TDDL的优势，让其分片策略变为分库表策略，节约了大量连接
