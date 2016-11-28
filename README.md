@@ -16,7 +16,7 @@ can be expanded nodes flexible...
 Heisenberg服务器通过管理命令可以查看，如连接数，线程池，结点等，并可以调整
 采用velocity的分库分表脚本进行自定义分库表，相当的灵活
 
-邮箱:brucest0078@gmail.com
+邮箱:brucest0078@gmail.com 或183320433@qq.com
 
 1.0
 正式发版
