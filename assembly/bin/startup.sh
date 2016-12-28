@@ -10,6 +10,25 @@ usage() {
 	echo "    -h - show this help"
 	exit -1
 }
+
+check_jvm_status(){
+    echo "start jvm checking...";
+ 	GREP_COUNT=0;
+	COUNT_DONW=10;
+	while [[ $GREP_COUNT -lt $COUNT_DONW ]]
+	do
+	    PID=`sed -n "1,1p" $1`;
+	    echo " pid-->$PID"
+	    GREP_COUNT=$[GREP_COUNT + 1];
+		if [ ! -z "$PID" ]; then
+		    return 0;
+		fi
+		sleep 1s
+	done
+	return -1;
+}
+
+
 LOG_BASE_DIR=""
 CONFIG_DIR=""
 DEBUG_MODE="0";
@@ -58,11 +77,7 @@ cd `dirname "$0"`/..
 
 
 HSB_HOME=`pwd`
-if [ ! -z "$LOG_BASE_DIR" ] ; then 
-  if [ ! -d $LOG_BASE_DIR/logs ] ; then
-     mkdir -p $LOG_BASE_DIR/logs
-  fi
-fi
+
 cd $CURR_DIR
 if [ -z "$HSB_HOME" ] ; then
     echo
@@ -70,10 +85,17 @@ if [ -z "$HSB_HOME" ] ; then
     echo
     exit 1
 fi
-LOG_HOME="$HSB_HOME/logs"
-if [ ! -z "$LOG_BASE_DIR" ] ; then 
-  LOG_HOME="$LOG_BASE_DIR/logs"
+if [ ! -d "$LOG_BASE_DIR" ] ; then
+  LOG_BASE_DIR="$HSB_HOME/logs"
+   echo "\033[32m log_folder not specified,default:$LOG_BASE_DIR \033[0m"
+   [ ! -d "$LOG_BASE_DIR" ] && mkdir -p "$LOG_BASE_DIR"
 fi
+if [ ! -d "$CONFIG_DIR" ] ;then
+echo "\033[31m config_folder must be specified! \033[0m"
+exit 1
+fi
+
+
 
 
 #set JAVA_OPTS
@@ -90,7 +112,7 @@ JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
 JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
 JAVA_OPTS="$JAVA_OPTS -Dsun.net.inetaddr.ttl=5"
 #GC Log Options
-JAVA_OPTS="$JAVA_OPTS -Xloggc:$LOG_HOME/gc.log"
+JAVA_OPTS="$JAVA_OPTS -Xloggc:$LOG_BASE_DIR/gc.log"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDateStamps"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
@@ -114,18 +136,35 @@ done
 #startup Server
 RUN_CMD="\"$JAVA_HOME/bin/java\""
 RUN_CMD="$RUN_CMD -Dhsb.home=\"$HSB_HOME\""
-if [ ! -z "$LOG_BASE_DIR" ] ; then 
+if [ ! -z "$LOG_BASE_DIR" ] ; then
   RUN_CMD="$RUN_CMD -Dhsb.log.home=\"$LOG_BASE_DIR\""
 fi
 
 RUN_CMD="$RUN_CMD -classpath \"$HSB_CLASSPATH\""
 RUN_CMD="$RUN_CMD $JAVA_OPTS"
 RUN_CMD="$RUN_CMD com.baidu.hsb.HeisenbergStartup "
-if [ ! -z "$CONFIG_DIR" ] ; then 
-  RUN_CMD="$RUN_CMD -conf $CONFIG_DIR"
-fi
+#if [ ! -z "$CONFIG_DIR" ] ; then
+#  RUN_CMD="$RUN_CMD -c $CONFIG_DIR"
+#fi
 RUN_CMD="$RUN_CMD $@"
-RUN_CMD="$RUN_CMD >> \"$HSB_HOME/logs/console.log\" 2>&1 &"
+RUN_CMD="$RUN_CMD >> \"$LOG_BASE_DIR/console.log\" 2>&1 & "
 echo $RUN_CMD
 eval $RUN_CMD
+if [ $? -ne 0 ]; then
+  echo "\033[31m  process exception!exit! \033[0m"
+else
+  echo "" > $CONFIG_DIR/pid
+  echo "\033[32m config_folder:$CONFIG_DIR \033[0m"
+  echo "\033[32m log_dir:$LOG_BASE_DIR \033[0m"
+  echo "$CONFIG_DIR" >>$CONFIG_DIR/pid
+  echo "$LOG_BASE_DIR" >>$CONFIG_DIR/pid
+  echo "checking jvm status...."
+  check_jvm_status $CONFIG_DIR/pid $!
+  if [ $? -ne 0 ]; then
+     echo "\033[31m  java process exception.. exit! \033[0m"
+     exit -1;
+  fi
+  echo "\033[32m heisenberg instance started... \033[0m"
+fi
+exit $?
 #==============================================================================

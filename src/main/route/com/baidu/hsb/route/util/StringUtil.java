@@ -29,7 +29,7 @@ public class StringUtil extends StringUtils {
     /** 默认中文编码字符集 */
     public static final String  DEFAULT_CHINESE_CHARSET = "GBK";
 
-    private static final String LINE_END                = System.getProperty("line.separator");
+    public static final String LINE_END                = System.getProperty("line.separator");
 
     /**
      * 扩展并左对齐字符串，用指定字符串填充右边。

@@ -13,3 +13,4 @@ tar czf heisenberg-server.tgz *
 cd ../../
 
 cp target/heisenberg-server-1.0.6/heisenberg-server.tgz output/
+rm -rf ./target
