@@ -9,6 +9,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -95,13 +96,21 @@ public final class HeisenbergStartup {
 
             String fp = null;
             String pidFile = null;
+            String conf=null;
             if (hasSelfConfigPath()) {
-                fp = new File(getConfigPath()).getPath() + File.separator + "hsb.properties";
-                pidFile = new File(getConfigPath()).getPath() + File.separator + "pid";
-            }  
-            System.out.println("hsb.conf-->" + getConfigPath());
-           
-            HeisenbergContext.load(fp);
+                conf=new File(getConfigPath()).getPath();
+                fp = conf + File.separator + "hsb.properties";
+                pidFile = conf + File.separator + "pid";
+            }else{
+                conf=HeisenbergStartup.class.getResource("/").getPath();
+                URL uri = HeisenbergStartup.class.getResource("/hsb.properties");
+                fp = uri.getPath();
+            }
+            System.out.println("hsb.conf-->" + conf);
+            if(StringUtil.isNotEmpty(fp)){
+                System.out.println("loading properties file["+fp+"]");
+                HeisenbergContext.load(fp);
+            }
 
             // init
             HeisenbergServer server = HeisenbergServer.getInstance();
@@ -110,15 +119,16 @@ public final class HeisenbergStartup {
             // startup
             server.startup();
             //pid
-            File _pidFile=new File(pidFile); 
-            String[] content={PID,getConfigPath(),System.getProperty("hsb.log.home")};
-            if (_pidFile.exists()) {
-                content=FileUtils.readFileToString(_pidFile).split(com.baidu.hsb.route.util.StringUtil.LINE_END);
-                content[0]=PID;
+            if(StringUtil.isNotEmpty(pidFile)){
+                File _pidFile=new File(pidFile); 
+                String[] content={PID,getConfigPath(),System.getProperty("hsb.log.home")};
+                if (_pidFile!=null && _pidFile.exists()) {
+                    content=FileUtils.readFileToString(_pidFile).split(com.baidu.hsb.route.util.StringUtil.LINE_END);
+                    content[0]=PID;
+                }
+                FileUtils.write(_pidFile, StringUtil.join(content,com.baidu.hsb.route.util.StringUtil.LINE_END));
+                System.out.println("PID["+PID+"] has been written!");
             }
-            FileUtils.write(_pidFile, StringUtil.join(content,com.baidu.hsb.route.util.StringUtil.LINE_END));
-            System.out.println("PID["+PID+"] has been written!");
-            
             
         } catch (Throwable e) {
             SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);

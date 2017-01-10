@@ -398,7 +398,7 @@ public class MultiNodeTask {
             final String sql) throws IOException {
         final ServerConnection source = ss.getSource();
         BinaryPacket bin = null;
-        int size = 0;
+//        int size = 0;
         for (;;) {
             bin = ((MySQLChannel) c).receive();
             // System.out.println(rrn.getName() + "rowData-->");
@@ -431,12 +431,12 @@ public class MultiNodeTask {
                     } else {
                         bin.packetId = ++packetId;// ROWS
                         buffer = bin.write(buffer, source);
-                        size += bin.packetLength;
-                        if (size > RECEIVE_CHUNK_SIZE) {
-                            // LOGGER.info(rrn.getName() + "hasNext-->");
-                            handleNext(rrn, c, ss, exeTime, sql);
-                            return;
-                        }
+//                        size += bin.packetLength;
+//                        if (size > RECEIVE_CHUNK_SIZE) {
+//                            // LOGGER.info(rrn.getName() + "hasNext-->");
+//                            handleNext(rrn, c, ss, exeTime, sql);
+//                            return;
+//                        }
                     }
 
             }
