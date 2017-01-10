@@ -299,7 +299,7 @@ public final class SingleNodeExecutor extends NodeExecutor {
         final ServerConnection sc = ss.getSource();
         this.packetId = id;
         BinaryPacket bin = null;
-        int size = 0;
+//        int size = 0;
         try {
             for (;;) {
                 bin = mc.receive();
@@ -328,11 +328,11 @@ public final class SingleNodeExecutor extends NodeExecutor {
                     default:
                         bin.packetId = ++packetId;// ROWS
                         bb = bin.write(bb, sc);
-                        size += bin.packetLength;
-                        if (size > RECEIVE_CHUNK_SIZE) {
-                            handleNext(rrn, ss, mc, bb, packetId);
-                            return;
-                        }
+//                        size += bin.packetLength;
+//                        if (size > RECEIVE_CHUNK_SIZE) {
+//                            handleNext(rrn, ss, mc, bb, packetId);
+//                            return;
+//                        }
                 }
             }
         } catch (IOException e) {
