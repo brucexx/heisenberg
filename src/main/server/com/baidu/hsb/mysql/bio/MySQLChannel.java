@@ -554,13 +554,7 @@ public final class MySQLChannel implements Channel {
     }
 
     private void killChannel() {
-        MySQLChannel killChannel = null;
-        try {
-            killChannel = (MySQLChannel) dataSource.getChannel();
-        } catch (Exception e) {
-            LOGGER.error("killProcess failure for getting channel", e);
-            return;
-        }
+        MySQLChannel killChannel = this;
         CommandPacket killPacket = new CommandPacket();
         killPacket.packetId = 0;
         killPacket.command = MySQLPacket.COM_QUERY;
