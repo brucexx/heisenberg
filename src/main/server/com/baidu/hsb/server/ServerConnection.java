@@ -83,9 +83,10 @@ public class ServerConnection extends FrontendConnection {
      * 设置是否需要中断当前事务
      */
     public void setTxInterrupt() {
-        if (!autocommit && !txInterrupted) {
-            txInterrupted = true;
-        }
+        //直接把错误传给上面即可
+//        if (!autocommit && !txInterrupted) {
+//            txInterrupted = true;
+//        }
     }
 
     public void setSession(BlockingSession session) {
