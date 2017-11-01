@@ -75,7 +75,7 @@ public class VelocityUtil {
                             context.put(entry.getKey(), obj);
                             Velocity.evaluate(context, writer, StringUtil.EMPTY, dbRule);
                             dbIndex = StringUtil.trim(writer.toString());
-                            if (StringUtil.isEmpty(dbIndex)) {
+                            if (StringUtil.isBlank(dbIndex)) {
                                 continue;
                             }
                             idxs.add(NumberUtils.toInt(dbIndex));
