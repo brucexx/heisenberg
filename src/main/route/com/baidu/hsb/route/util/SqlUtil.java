@@ -143,9 +143,9 @@ public class SqlUtil {
                 String s = sql.substring(eIdx, eIdx + 1);
                 String s1 = sql.substring(sIdx - 1, sIdx);
                 if ((s.equals(",") || s.equals(".") || s.equals(" ") || s.equals("\t")
-                     || s.equals("\r") || s.equals("\n") || s.equals("("))
+                     || s.equals("\r") || s.equals("\n") || s.equals("(") || s.equals("`"))
                     && (s1.equals(",") || s1.equals(".") || s1.equals(" ") || s1.equals("\t")
-                        || s1.equals("\r") || s1.equals("\n"))) {
+                        || s1.equals("\r") || s1.equals("\n"))|| s1.equals("`")) {
                     m.appendReplacement(sb, logic);
                 }
             }
@@ -168,6 +168,8 @@ public class SqlUtil {
         //        System.out.println(replaceSqlTb(sql, "trans_tb", "trans_tb1") + "-->");
         System.out.println(replaceSqlTb("insert into t_crowdfunding_trans(id) values('22')",
             "t_crowdfunding_trans", "t_crowdfunding_trans_55_6"));
+        System.out.println(replaceSqlTb("select count(*) from `keyword`",
+            "keyword", "keyword_01"));
 
     }
 }
