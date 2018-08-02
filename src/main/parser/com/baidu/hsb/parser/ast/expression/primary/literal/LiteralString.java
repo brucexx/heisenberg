@@ -19,13 +19,14 @@ public class LiteralString extends Literal {
     private final boolean nchars;
 
     /**
-     * @param string content of string, excluded of head and tail "'". e.g. for
-     *            string token of "'don\\'t'", argument of string is "don\\'t"
+     * @param string content of string, excluded of head and tail "'". e.g. for string token of "'don\\'t'", argument of
+     *            string is "don\\'t"
      */
     public LiteralString(String introducer, String string, boolean nchars) {
         super();
         this.introducer = introducer;
-        if (string == null) throw new IllegalArgumentException("argument string is null!");
+        if (string == null)
+            throw new IllegalArgumentException("argument string is null!");
         this.string = string;
         this.nchars = nchars;
     }
@@ -61,32 +62,33 @@ public class LiteralString extends Literal {
             char c = chars[i];
             if (c == '\\') {
                 switch (c = chars[++i]) {
-                case '0':
-                    sb.append('\0');
-                    break;
-                case 'b':
-                    sb.append('\b');
-                    break;
-                case 'n':
-                    sb.append('\n');
-                    break;
-                case 'r':
-                    sb.append('\r');
-                    break;
-                case 't':
-                    sb.append('\t');
-                    break;
-                case 'Z':
-                    sb.append((char) 26);
-                    break;
-                default:
-                    sb.append(c);
+                    case '0':
+                        sb.append('\0');
+                        break;
+                    case 'b':
+                        sb.append('\b');
+                        break;
+                    case 'n':
+                        sb.append('\n');
+                        break;
+                    case 'r':
+                        sb.append('\r');
+                        break;
+                    case 't':
+                        sb.append('\t');
+                        break;
+                    case 'Z':
+                        sb.append((char) 26);
+                        break;
+                    default:
+                        sb.append(c);
                 }
             } else if (c == '\'') {
                 ++i;
                 sb.append('\'');
             } else {
-                if (toUppercase && c >= 'a' && c <= 'z') c -= 32;
+                if (toUppercase && c >= 'a' && c <= 'z')
+                    c -= 32;
                 sb.append(c);
             }
         }
@@ -95,12 +97,25 @@ public class LiteralString extends Literal {
 
     @Override
     public Object evaluationInternal(Map<? extends Object, ? extends Object> parameters) {
-        if (string == null) return null;
+        if (string == null)
+            return null;
         return getUnescapedString();
     }
 
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.expression.primary.literal.Literal#getValue()
+     */
+    @Override
+    public String getValue() {
+        if (string == null)
+            return null;
+        return getUnescapedString();
     }
 }

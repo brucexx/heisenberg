@@ -4,13 +4,14 @@
  */
 package com.baidu.hsb.parser.util;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
  * @author xiongzhao@baidu.com
  */
-public interface BinaryOperandCalculator {
+public interface BinaryOperandCalculator extends Serializable{
     Number calculate(Integer integer1, Integer integer2);
 
     Number calculate(Long long1, Long long2);

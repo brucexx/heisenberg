@@ -84,4 +84,12 @@ public class IntervalPrimary extends Literal {
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    /* (non-Javadoc)
+     * @see com.baidu.hsb.parser.ast.expression.primary.literal.Literal#getValue()
+     */
+    @Override
+    public String getValue() {
+        return unit.name();
+    }
 }

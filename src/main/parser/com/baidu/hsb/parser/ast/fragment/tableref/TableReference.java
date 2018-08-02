@@ -4,7 +4,10 @@
  */
 package com.baidu.hsb.parser.ast.fragment.tableref;
 
+import java.util.List;
+
 import com.baidu.hsb.parser.ast.ASTNode;
+import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 
 /**
  * @author xiongzhao@baidu.com
@@ -17,15 +20,13 @@ public interface TableReference extends ASTNode {
     /**
      * remove last condition element is success
      * 
-     * @return {@link java.util.List List&lt;String&gt;} or
-     *         {@link com.baidu.hsb.parser.ast.expression.Expression
+     * @return {@link java.util.List List&lt;String&gt;} or {@link com.baidu.hsb.parser.ast.expression.Expression
      *         Expression}. null if last condition element cannot be removed.
      */
     Object removeLastConditionElement();
 
     /**
-     * @return true if and only if there is one table (not subquery) in table
-     *         reference
+     * @return true if and only if there is one table (not subquery) in table reference
      */
     public boolean isSingleTable();
 
@@ -33,4 +34,11 @@ public interface TableReference extends ASTNode {
      * @return precedences are defined in {@link TableReference}
      */
     int getPrecedence();
+
+    /**
+     * 获取所有的table Identifer
+     * @return
+     */
+    public List<Identifier> getTables();
+
 }

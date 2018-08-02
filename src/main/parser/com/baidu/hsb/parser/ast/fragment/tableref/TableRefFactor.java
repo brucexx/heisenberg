@@ -62,4 +62,16 @@ public class TableRefFactor extends AliasableTableReference {
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.fragment.tableref.TableReference#getTables()
+     */
+    @Override
+    public List<Identifier> getTables() {
+        List<Identifier> list = new ArrayList<Identifier>();
+        list.add(table);
+        return list;
+    }
 }

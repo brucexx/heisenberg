@@ -42,14 +42,14 @@ import com.baidu.hsb.util.SplitUtil;
  */
 @SuppressWarnings("unchecked")
 public class XMLSchemaLoader implements SchemaLoader {
-    //private final static String                 DEFAULT_DTD = "/schema.dtd";
-    private final static String                 DEFAULT_XML = "/schema.xml";
+    // private final static String DEFAULT_DTD = "/schema.dtd";
+    private final static String DEFAULT_XML = "/schema.xml";
 
-    private final Map<String, TableRuleConfig>  tableRules;
+    private final Map<String, TableRuleConfig> tableRules;
 
     private final Map<String, DataSourceConfig> dataSources;
-    private final Map<String, DataNodeConfig>   dataNodes;
-    private final Map<String, SchemaConfig>     schemas;
+    private final Map<String, DataNodeConfig> dataNodes;
+    private final Map<String, SchemaConfig> schemas;
 
     public XMLSchemaLoader(String configPath) {
         String schemaFile = null;
@@ -85,14 +85,12 @@ public class XMLSchemaLoader implements SchemaLoader {
 
     @Override
     public Map<String, DataSourceConfig> getDataSources() {
-        return (Map<String, DataSourceConfig>) (dataSources.isEmpty() ? Collections.emptyMap()
-            : dataSources);
+        return (Map<String, DataSourceConfig>) (dataSources.isEmpty() ? Collections.emptyMap() : dataSources);
     }
 
     @Override
     public Map<String, DataNodeConfig> getDataNodes() {
-        return (Map<String, DataNodeConfig>) (dataNodes.isEmpty() ? Collections.emptyMap()
-            : dataNodes);
+        return (Map<String, DataNodeConfig>) (dataNodes.isEmpty() ? Collections.emptyMap() : dataNodes);
     }
 
     @Override
@@ -100,10 +98,10 @@ public class XMLSchemaLoader implements SchemaLoader {
         return (Map<String, SchemaConfig>) (schemas.isEmpty() ? Collections.emptyMap() : schemas);
     }
 
-    //    @Override
-    //    public Set<RuleConfig> listRuleConfig() {
-    //        return rules;
-    //    }
+    // @Override
+    // public Set<RuleConfig> listRuleConfig() {
+    // return rules;
+    // }
 
     private void load(String xmlFile, boolean isCp) {
         InputStream xml = null;
@@ -149,26 +147,27 @@ public class XMLSchemaLoader implements SchemaLoader {
             if (schemaElement.hasAttribute("group")) {
                 group = schemaElement.getAttribute("group").trim();
             }
-            Map<String, TableConfig> tables = loadTables(schemaElement);
+            Map<String, TableConfig> tables = loadTables(schemaElement,dataNode);
             if (schemas.containsKey(name)) {
                 throw new ConfigException("schema " + name + " duplicated!");
             }
             boolean keepSqlSchema = false;
             if (schemaElement.hasAttribute("keepSqlSchema")) {
-                keepSqlSchema = Boolean.parseBoolean(schemaElement.getAttribute("keepSqlSchema")
-                    .trim());
+                keepSqlSchema = Boolean.parseBoolean(schemaElement.getAttribute("keepSqlSchema").trim());
             }
             schemas.put(name, new SchemaConfig(name, dataNode, group, keepSqlSchema, tables));
         }
     }
 
-    private Map<String, TableConfig> loadTables(Element node) {
+    private Map<String, TableConfig> loadTables(Element node,String dn) {
         Map<String, TableConfig> tables = new HashMap<String, TableConfig>();
         NodeList nodeList = node.getElementsByTagName("table");
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element tableElement = (Element) nodeList.item(i);
             String name = tableElement.getAttribute("name");
-            String dataNode = tableElement.getAttribute("dataNode");
+            String alias = tableElement.getAttribute("shardName");
+
+            String dataNode =  StringUtil.defaultIfBlank(tableElement.getAttribute("dataNode"), dn) ;
             TableRuleConfig tableRule = null;
             if (tableElement.hasAttribute("rule")) {
                 String ruleName = tableElement.getAttribute("rule");
@@ -183,22 +182,39 @@ public class XMLSchemaLoader implements SchemaLoader {
             }
 
             String[] tableNames = SplitUtil.split(name, ',', true);
+            String[] _alias = SplitUtil.split(alias, ';', true);
+            if (tableNames.length != _alias.length && StringUtil.isNotBlank(alias)) {
+                throw new ConfigException("alias '" + alias + "' length not equals tablenames");
+            }
+            if (StringUtil.isBlank(alias)) {
+                _alias = new String[tableNames.length];
+            }
+
+            int c = -1;
             for (String tableName : tableNames) {
+                c++;
                 //
                 RealTableCache.put(tableName);
                 //
-                TableConfig table = new TableConfig(tableName, dataNode, tableRule, ruleRequired);
+                TableConfig table = new TableConfig(tableName, dataNode,
+                        _alias[c] == null ? StringUtil.EMPTY : _alias[c], tableRule, ruleRequired);
                 checkDataNodeExists(table.getDataNodes());
                 if (tables.containsKey(table.getNameUp())) {
                     throw new ConfigException("table " + tableName + " duplicated!");
                 }
+                for (String k : StringUtil.split(_alias[c], ',')) {
+                    if (StringUtil.isNotBlank(k)) {
+                        tables.put(StringUtil.upperCase(k), table);
+                    }
+                }
+
                 tables.put(table.getNameUp(), table);
             }
         }
         return tables;
     }
 
-    private void checkDataNodeExists(String... nodes) {
+    private void checkDataNodeExists(String...nodes) {
         if (nodes == null || nodes.length < 1) {
             return;
         }
@@ -220,8 +236,8 @@ public class XMLSchemaLoader implements SchemaLoader {
                 Element dsElement = findPropertyByName(element, "dataSource");
                 Element rwRule = findPropertyByName(element, "rwRule");
                 if (dsElement == null) {
-                    throw new NullPointerException("dataNode xml Element with name of "
-                                                   + dnNamePrefix + " has no dataSource Element");
+                    throw new NullPointerException(
+                            "dataNode xml Element with name of " + dnNamePrefix + " has no dataSource Element");
                 }
 
                 NodeList dataSourceList = dsElement.getElementsByTagName("dataSourceRef");
@@ -304,8 +320,8 @@ public class XMLSchemaLoader implements SchemaLoader {
                 String dsType = element.getAttribute("type");
                 Element locElement = findPropertyByName(element, "location");
                 if (locElement == null) {
-                    throw new NullPointerException("dataSource xml Element with name of "
-                                                   + dsNamePrefix + " has no location Element");
+                    throw new NullPointerException(
+                            "dataSource xml Element with name of " + dsNamePrefix + " has no location Element");
                 }
                 NodeList locationList = locElement.getElementsByTagName("location");
                 int dsIndex = 0;
@@ -314,18 +330,15 @@ public class XMLSchemaLoader implements SchemaLoader {
                     int colonIndex = locStr.indexOf(':');
                     int slashIndex = locStr.indexOf('/');
                     String dsHost = locStr.substring(0, colonIndex).trim();
-                    int dsPort = Integer.parseInt(locStr.substring(colonIndex + 1, slashIndex)
-                        .trim());
-                    String[] schemas = SplitUtil.split(locStr.substring(slashIndex + 1).trim(),
-                        ',', '$', '-');
+                    int dsPort = Integer.parseInt(locStr.substring(colonIndex + 1, slashIndex).trim());
+                    String[] schemas = SplitUtil.split(locStr.substring(slashIndex + 1).trim(), ',', '$', '-');
                     for (String dsSchema : schemas) {
                         DataSourceConfig dsConf = new DataSourceConfig();
                         ParameterMapping.mapping(dsConf, ConfigUtil.loadElements(element));
                         if (dsConf.isNeedEncrypt()) {
-                            dsConf.setPassword(KeyPairGen.decrypt(HeisenbergContext.getPubKey(),
-                                dsConf.getPassword()));
+                            dsConf.setPassword(KeyPairGen.decrypt(HeisenbergContext.getPubKey(), dsConf.getPassword()));
                         }
-                        //System.out.println("pwd-->"+dsConf.getPassword());
+                        // System.out.println("pwd-->"+dsConf.getPassword());
                         dscList.add(dsConf);
                         switch (dsIndex) {
                             case 0:

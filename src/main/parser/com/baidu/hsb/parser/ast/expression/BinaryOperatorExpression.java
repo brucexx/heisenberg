@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public abstract class BinaryOperatorExpression extends AbstractExpression {
     protected final Expression leftOprand;
-    protected final Expression rightOprand;
+    protected Expression rightOprand;
     protected final int precedence;
     protected final boolean leftCombine;
 
@@ -59,5 +59,10 @@ public abstract class BinaryOperatorExpression extends AbstractExpression {
     public Object evaluationInternal(Map<? extends Object, ? extends Object> parameters) {
         return UNEVALUATABLE;
     }
+
+    public void setRightOprand(Expression rightOprand) {
+        this.rightOprand = rightOprand;
+    }
+    
 
 }

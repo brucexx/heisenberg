@@ -4,6 +4,8 @@
  */
 package com.baidu.hsb.parser.visitor;
 
+import java.io.Serializable;
+
 import com.baidu.hsb.parser.ast.expression.BinaryOperatorExpression;
 import com.baidu.hsb.parser.ast.expression.PolyadicOperatorExpression;
 import com.baidu.hsb.parser.ast.expression.UnaryOperatorExpression;
@@ -130,7 +132,7 @@ import com.baidu.hsb.parser.ast.stmt.mts.MTSSetTransactionStatement;
 /**
  * @author xiongzhao@baidu.com
  */
-public interface SQLASTVisitor {
+public interface SQLASTVisitor extends Serializable{
 
     void visit(BetweenAndExpression node);
 

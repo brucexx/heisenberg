@@ -19,7 +19,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * @author xiongzhao@baidu.com
  */
-public class DMLUpdateStatement extends DMLStatement {
+public class DMLUpdateStatement extends DMLStatement implements DMLCondition {
     private final boolean lowPriority;
     private final boolean ignore;
     private final TableReferences tableRefs;
@@ -29,10 +29,11 @@ public class DMLUpdateStatement extends DMLStatement {
     private final Limit limit;
 
     public DMLUpdateStatement(boolean lowPriority, boolean ignore, TableReferences tableRefs,
-                              List<Pair<Identifier, Expression>> values, Expression where, OrderBy orderBy, Limit limit) {
+            List<Pair<Identifier, Expression>> values, Expression where, OrderBy orderBy, Limit limit) {
         this.lowPriority = lowPriority;
         this.ignore = ignore;
-        if (tableRefs == null) throw new IllegalArgumentException("argument tableRefs is null for update stmt");
+        if (tableRefs == null)
+            throw new IllegalArgumentException("argument tableRefs is null for update stmt");
         this.tableRefs = tableRefs;
         if (values == null || values.size() <= 0) {
             this.values = Collections.emptyList();
@@ -77,5 +78,27 @@ public class DMLUpdateStatement extends DMLStatement {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getTables()
+     */
+    @Override
+    public TableReferences getTables() {
+        return tableRefs;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getWhereCondition()
+     */
+    @Override
+    public List<Expression> getWhereCondition() {
+        List<Expression> list = new ArrayList<Expression>();
+        list.add(where);
+        return list;
     }
 }

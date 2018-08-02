@@ -4,26 +4,27 @@
 
 	<!-- 系统参数定义，服务端口、管理端口，处理器个数、线程池等。 -->
 	<system>
-		<!-- 设置mysqlServer连接NIO -->
-		<property name="isBackNIO">false</property>
-		<property name="serverPort">8176</property>
-		<property name="managerPort">8177</property>
+		<property name="serverPort">8045</property>
+		<property name="managerPort">4321</property>
 		<property name="initExecutor">16</property>
 		<property name="timerExecutor">4</property>
 		<property name="managerExecutor">4</property>
-		<property name="processors">16</property>
-		<property name="processorHandler">32</property>
-		<property name="processorExecutor">32</property>
+		<property name="processors">8</property>
+		<property name="processorHandler">16</property>
+		<property name="processorExecutor">16</property>
 		<property name="clusterHeartbeatUser">_HEARTBEAT_USER_</property>
 		<property name="clusterHeartbeatPass">_HEARTBEAT_PASS_</property>
-		<property name="dataNodeHeartbeatPeriod">15000</property>
-		<property name="isBackNIO">false</property>
+		<property name="dataNodeHeartbeatPeriod">300000</property>
 	</system>
 
 	<!-- 用户访问定义，用户名、密码、schema等信息。 -->
-	<user name="root">
-		<property name="password">st0078</property>
-		<property name="schemas">bank_data_master_shard</property>
+<!-- 	<user name="hsb">
+		<property name="password">hsb</property>
+		<property name="schemas">price_prod</property>
+	</user> -->
+	<user name="test">
+		<property name="password">test</property>
+		<property name="schemas">test</property>
 	</user>
 
 </heisenberg:server>

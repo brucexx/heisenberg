@@ -29,8 +29,10 @@ public class LiteralHexadecimal extends Literal {
      */
     public LiteralHexadecimal(String introducer, char[] string, int offset, int size, String charset) {
         super();
-        if (string == null || offset + size > string.length) throw new IllegalArgumentException("hex text is invalid");
-        if (charset == null) throw new IllegalArgumentException("charset is null");
+        if (string == null || offset + size > string.length)
+            throw new IllegalArgumentException("hex text is invalid");
+        if (charset == null)
+            throw new IllegalArgumentException("charset is null");
         this.introducer = introducer;
         this.charset = charset;
         this.string = string;
@@ -63,6 +65,16 @@ public class LiteralHexadecimal extends Literal {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.expression.primary.literal.Literal#getValue()
+     */
+    @Override
+    public String getValue() {
+        return getText();
     }
 
 }

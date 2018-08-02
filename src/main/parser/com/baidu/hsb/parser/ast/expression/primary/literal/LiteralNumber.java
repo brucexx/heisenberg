@@ -18,7 +18,8 @@ public class LiteralNumber extends Literal {
 
     public LiteralNumber(Number number) {
         super();
-        if (number == null) throw new IllegalArgumentException("number is null!");
+        if (number == null)
+            throw new IllegalArgumentException("number is null!");
         this.number = number;
     }
 
@@ -34,6 +35,16 @@ public class LiteralNumber extends Literal {
 
     public Number getNumber() {
         return number;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.expression.primary.literal.Literal#getValue()
+     */
+    @Override
+    public String getValue() {
+        return number.toString();
     }
 
 }

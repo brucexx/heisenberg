@@ -5,6 +5,7 @@
 package com.baidu.hsb.parser.ast.expression.primary;
 
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
+import com.baidu.hsb.route.util.StringUtil;
 
 /**
  * @author xiongzhao@baidu.com
@@ -45,8 +46,8 @@ public class Identifier extends PrimaryExpression {
     /** null if no parent */
     protected Identifier parent;
     /** e.g. "id1", "`id1`" */
-    protected final String idText;
-    protected final String idTextUpUnescape;
+    protected String idText;
+    protected String idTextUpUnescape;
 
     public Identifier(Identifier parent, String idText) {
         this(parent, idText, idText.toUpperCase());
@@ -77,12 +78,10 @@ public class Identifier extends PrimaryExpression {
     public static final int PARENT_IGNORED = 2;
 
     /**
-     * @param level At most how many levels left after trim, must be a positive
-     *            integer. e.g. level = 2 for "schema1.tb1.c1", "tb1.c1" is left
-     * @param trimSchema upper-case. Assumed that top trimmed parent is schema,
-     *            if that equals given schema, do not trim
-     * @return {@link #PARENT_ABSENT} or {@link #PARENT_TRIMED}or
-     *         {@link #PARENT_IGNORED}
+     * @param level At most how many levels left after trim, must be a positive integer. e.g. level = 2 for
+     *            "schema1.tb1.c1", "tb1.c1" is left
+     * @param trimSchema upper-case. Assumed that top trimmed parent is schema, if that equals given schema, do not trim
+     * @return {@link #PARENT_ABSENT} or {@link #PARENT_TRIMED}or {@link #PARENT_IGNORED}
      */
     public int trimParent(int level, String trimSchema) {
         Identifier id = this;
@@ -113,6 +112,14 @@ public class Identifier extends PrimaryExpression {
 
     public String getIdText() {
         return idText;
+    }
+
+    public void setIdText(String idText) {
+        if (StringUtil.isNotBlank(idText)) {
+            this.idText = "`" + unescapeName(idText) + "`";
+            this.idTextUpUnescape = unescapeName(this.idText, true);
+
+        }
     }
 
     public String getIdTextUpUnescape() {
@@ -147,7 +154,8 @@ public class Identifier extends PrimaryExpression {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
+        if (obj == this)
+            return true;
         if (obj instanceof Identifier) {
             Identifier that = (Identifier) obj;
             return objEquals(this.parent, that.parent) && objEquals(this.idText, that.idText);
@@ -156,8 +164,10 @@ public class Identifier extends PrimaryExpression {
     }
 
     private static boolean objEquals(Object obj, Object obj2) {
-        if (obj == obj2) return true;
-        if (obj == null) return obj2 == null;
+        if (obj == obj2)
+            return true;
+        if (obj == null)
+            return obj2 == null;
         return obj.equals(obj2);
     }
 

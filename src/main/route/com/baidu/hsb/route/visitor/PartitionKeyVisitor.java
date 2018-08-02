@@ -155,12 +155,17 @@ import com.baidu.hsb.util.SmallSet;
  */
 public final class PartitionKeyVisitor implements SQLASTVisitor {
 
-    private static final Set<Class<? extends Expression>> VERDICT_PASS_THROUGH_WHERE     = new HashSet<Class<? extends Expression>>(
-                                                                                             6);
-    private static final Set<Class<? extends Expression>> GROUP_FUNC_PASS_THROUGH_SELECT = new HashSet<Class<? extends Expression>>(
-                                                                                             5);
-    private static final Set<Class<? extends Expression>> PARTITION_OPERAND_SINGLE       = new HashSet<Class<? extends Expression>>(
-                                                                                             3);
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -193895072592523879L;
+    
+    private static final Set<Class<? extends Expression>> VERDICT_PASS_THROUGH_WHERE =
+            new HashSet<Class<? extends Expression>>(6);
+    private static final Set<Class<? extends Expression>> GROUP_FUNC_PASS_THROUGH_SELECT =
+            new HashSet<Class<? extends Expression>>(5);
+    private static final Set<Class<? extends Expression>> PARTITION_OPERAND_SINGLE =
+            new HashSet<Class<? extends Expression>>(3);
     static {
         VERDICT_PASS_THROUGH_WHERE.add(LogicalAndExpression.class);
         VERDICT_PASS_THROUGH_WHERE.add(LogicalOrExpression.class);
@@ -192,7 +197,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
 
     public static boolean isPartitionKeyOperandSingle(Expression expr, ASTNode parent) {
         return parent == null && expr instanceof ReplacableExpression
-               && PARTITION_OPERAND_SINGLE.contains(expr.getClass());
+                && PARTITION_OPERAND_SINGLE.contains(expr.getClass());
     }
 
     public static boolean isPartitionKeyOperandIn(Expression expr, ASTNode parent) {
@@ -200,30 +205,27 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
     }
 
     // ---output------------------------------------------------------------------
-    public static final int                                                       GROUP_CANCEL       = -1;
-    public static final int                                                       GROUP_NON          = 0;
-    public static final int                                                       GROUP_SUM          = 1;
-    public static final int                                                       GROUP_MIN          = 2;
-    public static final int                                                       GROUP_MAX          = 3;
-    private boolean                                                               dual               = false;
-    private int                                                                   groupFuncType      = GROUP_NON;
-    private long                                                                  limitSize          = -1L;
-    private long                                                                  limitOffset        = -1L;
-    private boolean                                                               tableMetaRead;
-    private boolean                                                               rewriteField       = false;
-    private boolean                                                               schemaTrimmed      = false;
-    private boolean                                                               customedSchema     = false;
+    public static final int GROUP_CANCEL = -1;
+    public static final int GROUP_NON = 0;
+    public static final int GROUP_SUM = 1;
+    public static final int GROUP_MIN = 2;
+    public static final int GROUP_MAX = 3;
+    private boolean dual = false;
+    private int groupFuncType = GROUP_NON;
+    private long limitSize = -1L;
+    private long limitOffset = -1L;
+    private boolean tableMetaRead;
+    private boolean rewriteField = false;
+    private boolean schemaTrimmed = false;
+    private boolean customedSchema = false;
     /** {tableNameUp -&gt; {columnNameUp -&gt; columnValues}}, obj[] never null */
-    private Map<String, Map<String, List<Object>>>                                columnValue        = new HashMap<String, Map<String, List<Object>>>(
-                                                                                                         2,
-                                                                                                         1);
+    private Map<String, Map<String, List<Object>>> columnValue = new HashMap<String, Map<String, List<Object>>>(2, 1);
     /** {table -&gt; {column -&gt; {value -&gt; [(expr,parentExpr)]}}} */
     private Map<String, Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>>> columnValueIndex;
-    private Map<String, String>                                                   tableAlias         = new HashMap<String, String>(
-                                                                                                         4,
-                                                                                                         1);
+    private Map<String, String> tableAlias = new HashMap<String, String>(4, 1);
 
-    private static final String[]                                                 EMPTY_STRING_ARRAY = new String[0];
+
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     public boolean isDual() {
         return dual;
@@ -279,8 +281,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
     }
 
     /**
-     * @return {@link #GROUP_NON} or {@link #GROUP_SUM}or {@link #GROUP_MIN}or
-     *         {@link #GROUP_MAX}
+     * @return {@link #GROUP_NON} or {@link #GROUP_SUM}or {@link #GROUP_MIN}or {@link #GROUP_MAX}
      */
     public int getGroupFuncType() {
         return groupFuncType;
@@ -294,8 +295,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
     public Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> getColumnIndex(String tableNameUp) {
         if (columnValueIndex == null)
             return Collections.emptyMap();
-        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> index = columnValueIndex
-            .get(tableNameUp);
+        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> index = columnValueIndex.get(tableNameUp);
         if (index == null || index.isEmpty())
             return Collections.emptyMap();
         return index;
@@ -327,16 +327,14 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         columnValue.put(tableNameUp, colMap);
     }
 
-    private void addColumnValueIndex(String table, String column, Object value, Expression expr,
-                                     ASTNode parent) {
+    private void addColumnValueIndex(String table, String column, Object value, Expression expr, ASTNode parent) {
         Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colMap = ensureColumnValueIndexByTable(table);
-        Map<Object, Set<Pair<Expression, ASTNode>>> valMap = ensureColumnValueIndexObjMap(colMap,
-            column);
+        Map<Object, Set<Pair<Expression, ASTNode>>> valMap = ensureColumnValueIndexObjMap(colMap, column);
         addIntoColumnValueIndex(valMap, value, expr, parent);
     }
 
-    private void addIntoColumnValueIndex(Map<Object, Set<Pair<Expression, ASTNode>>> valMap,
-                                         Object value, Expression expr, ASTNode parent) {
+    private void addIntoColumnValueIndex(Map<Object, Set<Pair<Expression, ASTNode>>> valMap, Object value,
+            Expression expr, ASTNode parent) {
         Set<Pair<Expression, ASTNode>> exprSet = valMap.get(value);
         if (exprSet == null) {
             // exprSet = new HashSet<Pair<Expression, ASTNode>>(2, 1);
@@ -349,11 +347,9 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
 
     private Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> ensureColumnValueIndexByTable(String table) {
         if (columnValueIndex == null) {
-            columnValueIndex = new HashMap<String, Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>>>(
-                2, 1);
+            columnValueIndex = new HashMap<String, Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>>>(2, 1);
         }
-        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colMap = columnValueIndex
-            .get(table);
+        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colMap = columnValueIndex.get(table);
         if (colMap == null) {
             colMap = new HashMap<String, Map<Object, Set<Pair<Expression, ASTNode>>>>(2, 1);
             columnValueIndex.put(table, colMap);
@@ -361,8 +357,8 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         return colMap;
     }
 
-    private Map<Object, Set<Pair<Expression, ASTNode>>> ensureColumnValueIndexObjMap(Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colMap,
-                                                                                     String column) {
+    private Map<Object, Set<Pair<Expression, ASTNode>>> ensureColumnValueIndexObjMap(
+            Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colMap, String column) {
         Map<Object, Set<Pair<Expression, ASTNode>>> valMap = colMap.get(column);
         if (valMap == null) {
             valMap = new HashMap<Object, Set<Pair<Expression, ASTNode>>>(2, 1);
@@ -371,8 +367,8 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         return valMap;
     }
 
-    private void addColumnValue(String tableNameUp, String columnNameUp, Object value,
-                                Expression expr, ASTNode parent) {
+    private void addColumnValue(String tableNameUp, String columnNameUp, Object value, Expression expr,
+            ASTNode parent) {
         Map<String, List<Object>> colVals = ensureColumnValueByTable(tableNameUp);
         ensureColumnValueList(colVals, columnNameUp).add(value);
         addColumnValueIndex(tableNameUp, columnNameUp, value, expr, parent);
@@ -398,12 +394,12 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
 
     // ---temp
     // state------------------------------------------------------------------
-    private final Map<Object, Object>      evaluationParameter = Collections.emptyMap();
+    private final Map<Object, Object> evaluationParameter = Collections.emptyMap();
     private final Map<String, TableConfig> tablesRuleConfig;
-    private boolean                        verdictColumn       = true;
-    private int                            idLevel             = 2;
-    private boolean                        verdictGroupFunc    = true;
-    private String                         trimSchema;
+    private boolean verdictColumn = true;
+    private int idLevel = 2;
+    private boolean verdictGroupFunc = true;
+    private String trimSchema;
 
     public PartitionKeyVisitor(Map<String, TableConfig> tables) {
         if (tables == null || tables.isEmpty()) {
@@ -430,8 +426,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         return false;
     }
 
-    private void visitChild(int idLevel, boolean verdictColumn, boolean verdictGroupFunc,
-                            ASTNode... nodes) {
+    private void visitChild(int idLevel, boolean verdictColumn, boolean verdictGroupFunc, ASTNode...nodes) {
         if (nodes == null || nodes.length <= 0)
             return;
         int oldLevel = this.idLevel;
@@ -453,7 +448,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
     }
 
     private void visitChild(int idLevel, boolean verdictColumn, boolean verdictGroupFunc,
-                            List<? extends ASTNode> nodes) {
+            List<? extends ASTNode> nodes) {
         if (nodes == null || nodes.isEmpty())
             return;
         int oldLevel = this.idLevel;
@@ -586,7 +581,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
             }
         }
 
-        Expression where = node.getWhereCondition();
+        Expression where = node.getWhereCondition().get(0);
         visitChild(2, verdictColumn, false, where);
 
         if (tr == null) {
@@ -616,14 +611,15 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         }
 
         Map<String, List<Object>> colVals = ensureColumnValueByTable(tableName);
-        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colValsIndex = ensureColumnValueIndexByTable(tableName);
+        Map<String, Map<Object, Set<Pair<Expression, ASTNode>>>> colValsIndex =
+                ensureColumnValueIndexByTable(tableName);
         if (collist != null) {
             for (int i = 0; i < collist.size(); ++i) {
                 String colName = collist.get(i).getIdTextUpUnescape();
                 if (isRuledColumn(tableName, colName)) {
                     List<Object> valueList = ensureColumnValueList(colVals, colName);
-                    Map<Object, Set<Pair<Expression, ASTNode>>> valMap = ensureColumnValueIndexObjMap(
-                        colValsIndex, colName);
+                    Map<Object, Set<Pair<Expression, ASTNode>>> valMap =
+                            ensureColumnValueIndexObjMap(colValsIndex, colName);
                     for (RowExpression row : rows) {
                         Expression expr = row.getRowExprList().get(i);
                         Object value = expr == null ? null : expr.evaluation(evaluationParameter);
@@ -737,8 +733,7 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
             if (isRuledColumn(table, col.getIdTextUpUnescape())) {
                 Object e1 = snd.evaluation(evaluationParameter);
                 Object e2 = trd.evaluation(evaluationParameter);
-                if (e1 != Expression.UNEVALUATABLE && e2 != Expression.UNEVALUATABLE && e1 != null
-                    && e2 != null) {
+                if (e1 != Expression.UNEVALUATABLE && e2 != Expression.UNEVALUATABLE && e1 != null && e2 != null) {
                     if (compareEvaluatedValue(e1, e2)) {
                         addColumnValue(table, col.getIdTextUpUnescape(), e1, node, null);
                     }
@@ -773,12 +768,10 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
             if (isRuledColumn(table, col.getIdTextUpUnescape())) {
                 switch (node.getMode()) {
                     case ComparisionIsExpression.IS_FALSE:
-                        addColumnValue(table, col.getIdTextUpUnescape(), LiteralBoolean.FALSE,
-                            node, null);
+                        addColumnValue(table, col.getIdTextUpUnescape(), LiteralBoolean.FALSE, node, null);
                         break;
                     case ComparisionIsExpression.IS_TRUE:
-                        addColumnValue(table, col.getIdTextUpUnescape(), LiteralBoolean.TRUE, node,
-                            null);
+                        addColumnValue(table, col.getIdTextUpUnescape(), LiteralBoolean.TRUE, node, null);
                         break;
                     case ComparisionIsExpression.IS_NULL:
                         addColumnValue(table, col.getIdTextUpUnescape(), null, node, null);
@@ -813,11 +806,9 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
 
         if (verdictColumn) {
             if (left instanceof Identifier) {
-                comparisionEquals((Identifier) left, right.evaluation(evaluationParameter), false,
-                    node);
+                comparisionEquals((Identifier) left, right.evaluation(evaluationParameter), false, node);
             } else if (right instanceof Identifier) {
-                comparisionEquals((Identifier) right, left.evaluation(evaluationParameter), false,
-                    node);
+                comparisionEquals((Identifier) right, left.evaluation(evaluationParameter), false, node);
             }
         }
     }
@@ -830,11 +821,9 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
 
         if (verdictColumn) {
             if (left instanceof Identifier) {
-                comparisionEquals((Identifier) left, right.evaluation(evaluationParameter), true,
-                    node);
+                comparisionEquals((Identifier) left, right.evaluation(evaluationParameter), true, node);
             } else if (right instanceof Identifier) {
-                comparisionEquals((Identifier) right, left.evaluation(evaluationParameter), true,
-                    node);
+                comparisionEquals((Identifier) right, left.evaluation(evaluationParameter), true, node);
             }
         }
     }
@@ -854,17 +843,15 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
         Expression right = node.getRightOprand();
         visitChild(2, false, false, left, right);
 
-        if (verdictColumn && !node.isNot() && left instanceof Identifier
-            && right instanceof InExpressionList) {
+        if (verdictColumn && !node.isNot() && left instanceof Identifier && right instanceof InExpressionList) {
             Identifier col = (Identifier) left;
             String colName = col.getIdTextUpUnescape();
             String table = tableAlias.get(col.getLevelUnescapeUpName(2));
 
             if (isRuledColumn(table, colName)) {
-                List<Object> valList = ensureColumnValueList(ensureColumnValueByTable(table),
-                    colName);
-                Map<Object, Set<Pair<Expression, ASTNode>>> valMap = ensureColumnValueIndexObjMap(
-                    ensureColumnValueIndexByTable(table), colName);
+                List<Object> valList = ensureColumnValueList(ensureColumnValueByTable(table), colName);
+                Map<Object, Set<Pair<Expression, ASTNode>>> valMap =
+                        ensureColumnValueIndexObjMap(ensureColumnValueIndexByTable(table), colName);
                 InExpressionList inlist = (InExpressionList) right;
                 for (Expression expr : inlist.getList()) {
                     Object value = expr.evaluation(evaluationParameter);
@@ -991,6 +978,19 @@ public final class PartitionKeyVisitor implements SQLASTVisitor {
     @Override
     public void visit(SubqueryFactor node) {
         QueryExpression query = node.getSubquery();
+        tableAlias.put(node.getAliasUnescapeUppercase(), node.getAliasUnescapeUppercase());
+        //
+//        if (query instanceof DMLCondition) {
+//            DMLCondition c = (DMLCondition) query;
+//            for (TableReference tr : c.getTables().getTableReferenceList()) {
+//                if (tr instanceof AliasableTableReference) {
+//                    AliasableTableReference aTr = (AliasableTableReference) tr;
+//                    if (StringUtil.isBlank(aTr.getAlias())) {
+//                        aTr.setAlias(node.getAlias());
+//                    }
+//                }
+//            }
+//        }
         visitChild(2, verdictColumn, verdictGroupFunc, query);
     }
 

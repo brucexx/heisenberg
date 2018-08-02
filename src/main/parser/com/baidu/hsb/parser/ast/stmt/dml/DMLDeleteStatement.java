@@ -18,7 +18,7 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * @author xiongzhao@baidu.com
  */
-public class DMLDeleteStatement extends DMLStatement {
+public class DMLDeleteStatement extends DMLStatement implements DMLCondition {
     private final boolean lowPriority;
     private final boolean quick;
     private final boolean ignore;
@@ -29,19 +29,19 @@ public class DMLDeleteStatement extends DMLStatement {
     private final OrderBy orderBy;
     private final Limit limit;
 
-    //------- single-row delete------------
+    // ------- single-row delete------------
     public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, Identifier tableName)
             throws SQLSyntaxErrorException {
         this(lowPriority, quick, ignore, tableName, null, null, null);
     }
 
-    public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, Identifier tableName, Expression where)
-            throws SQLSyntaxErrorException {
+    public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, Identifier tableName,
+            Expression where) throws SQLSyntaxErrorException {
         this(lowPriority, quick, ignore, tableName, where, null, null);
     }
 
     public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, Identifier tableName,
-                              Expression where, OrderBy orderBy, Limit limit) throws SQLSyntaxErrorException {
+            Expression where, OrderBy orderBy, Limit limit) throws SQLSyntaxErrorException {
         this.lowPriority = lowPriority;
         this.quick = quick;
         this.ignore = ignore;
@@ -53,14 +53,14 @@ public class DMLDeleteStatement extends DMLStatement {
         this.limit = limit;
     }
 
-    //------- multi-row delete------------
+    // ------- multi-row delete------------
     public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, List<Identifier> tableNameList,
-                              TableReferences tableRefs) throws SQLSyntaxErrorException {
+            TableReferences tableRefs) throws SQLSyntaxErrorException {
         this(lowPriority, quick, ignore, tableNameList, tableRefs, null);
     }
 
     public DMLDeleteStatement(boolean lowPriority, boolean quick, boolean ignore, List<Identifier> tableNameList,
-                              TableReferences tableRefs, Expression whereCondition) throws SQLSyntaxErrorException {
+            TableReferences tableRefs, Expression whereCondition) throws SQLSyntaxErrorException {
         this.lowPriority = lowPriority;
         this.quick = quick;
         this.ignore = ignore;
@@ -88,10 +88,6 @@ public class DMLDeleteStatement extends DMLStatement {
         return tableRefs;
     }
 
-    public Expression getWhereCondition() {
-        return whereCondition;
-    }
-
     public OrderBy getOrderBy() {
         return orderBy;
     }
@@ -115,5 +111,27 @@ public class DMLDeleteStatement extends DMLStatement {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getTables()
+     */
+    @Override
+    public TableReferences getTables() {
+        return tableRefs;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getWhereCondition()
+     */
+    @Override
+    public List<Expression> getWhereCondition() {
+        List<Expression> list = new ArrayList<Expression>();
+        list.add(whereCondition);
+        return list;
     }
 }

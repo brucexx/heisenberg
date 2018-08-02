@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.baidu.hsb.HeisenbergServer;
 import com.baidu.hsb.config.ErrorCode;
 import com.baidu.hsb.mysql.SecurityUtil;
 import com.baidu.hsb.net.FrontendConnection;
@@ -59,15 +60,15 @@ public class FrontendAuthenticator implements NIOHandler {
 
         // check schema
         switch (checkSchema(auth.database, auth.user)) {
-        case ErrorCode.ER_BAD_DB_ERROR:
-            failure(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + auth.database + "'");
-            break;
-        case ErrorCode.ER_DBACCESS_DENIED_ERROR:
-            String s = "Access denied for user '" + auth.user + "' to database '" + auth.database + "'";
-            failure(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
-            break;
-        default:
-            success(auth);
+            case ErrorCode.ER_BAD_DB_ERROR:
+                failure(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + auth.database + "'");
+                break;
+            case ErrorCode.ER_DBACCESS_DENIED_ERROR:
+                String s = "Access denied for user '" + auth.user + "' to database '" + auth.database + "'";
+                failure(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
+                break;
+            default:
+                success(auth);
         }
     }
 
@@ -131,7 +132,12 @@ public class FrontendAuthenticator implements NIOHandler {
     protected void success(AuthPacket auth) {
         source.setAuthenticated(true);
         source.setUser(auth.user);
-        source.setSchema(auth.database);
+        if (auth.database == null) {
+            if (HeisenbergServer.getInstance().getConfig().getSchemas().size() > 0) {
+                source.setSchema(HeisenbergServer.getInstance().getConfig().getSchemas().keySet().iterator().next());
+            }
+        }
+        // source.setSchema(auth.database);
         source.setCharsetIndex(auth.charsetIndex);
         source.setHandler(new FrontendCommandHandler(source));
         if (LOGGER.isInfoEnabled()) {

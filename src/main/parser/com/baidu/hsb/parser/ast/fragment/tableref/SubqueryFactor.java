@@ -4,7 +4,12 @@
  */
 package com.baidu.hsb.parser.ast.fragment.tableref;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.baidu.hsb.parser.ast.expression.misc.QueryExpression;
+import com.baidu.hsb.parser.ast.expression.primary.Identifier;
+import com.baidu.hsb.parser.ast.stmt.dml.DMLCondition;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
@@ -15,8 +20,10 @@ public class SubqueryFactor extends AliasableTableReference {
 
     public SubqueryFactor(QueryExpression subquery, String alias) {
         super(alias);
-        if (alias == null) throw new IllegalArgumentException("alias is required for subquery factor");
-        if (subquery == null) throw new IllegalArgumentException("subquery is null");
+        if (alias == null)
+            throw new IllegalArgumentException("alias is required for subquery factor");
+        if (subquery == null)
+            throw new IllegalArgumentException("subquery is null");
         this.subquery = subquery;
     }
 
@@ -43,4 +50,21 @@ public class SubqueryFactor extends AliasableTableReference {
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.fragment.tableref.TableReference#getTables()
+     */
+    @Override
+    public List<Identifier> getTables() {
+        // 子查询不返回
+        List<Identifier> list = new ArrayList<Identifier>();
+        if (subquery instanceof DMLCondition) {
+            DMLCondition c = (DMLCondition) subquery;
+            list.addAll(c.getTables().getTables());
+        }
+        return list;
+    }
+
 }

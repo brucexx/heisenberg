@@ -20,6 +20,10 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
  * @version $Id: InExpressionList.java, v 0.1 2013年12月26日 下午6:18:54 HI:brucest0078 Exp $
  */
 public class InExpressionList extends AbstractExpression {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 357692662600146322L;
     private List<Expression> list;
 
     public InExpressionList(List<Expression> list) {

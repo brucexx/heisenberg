@@ -14,6 +14,7 @@ import static com.baidu.hsb.server.parser.ServerParseSet.TX_READ_COMMITTED;
 import static com.baidu.hsb.server.parser.ServerParseSet.TX_READ_UNCOMMITTED;
 import static com.baidu.hsb.server.parser.ServerParseSet.TX_REPEATED_READ;
 import static com.baidu.hsb.server.parser.ServerParseSet.TX_SERIALIZABLE;
+import static com.baidu.hsb.server.parser.ServerParseSet.CHARACTER_SET;
 
 import org.apache.log4j.Logger;
 
@@ -80,6 +81,7 @@ public final class SetHandler {
                 c.writeErrMessage(ErrorCode.ER_UNKNOWN_CHARACTER_SET, "Unknown charset '" + charset + "'");
             }
             break;
+        case CHARACTER_SET:
         case CHARACTER_SET_CLIENT:
         case CHARACTER_SET_CONNECTION:
         case CHARACTER_SET_RESULTS:

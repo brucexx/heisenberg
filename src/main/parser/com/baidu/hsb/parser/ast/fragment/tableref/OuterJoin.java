@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.baidu.hsb.parser.ast.expression.Expression;
+import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
@@ -17,6 +18,11 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
  * @author xiongzhao@baidu.com
  */
 public class OuterJoin implements TableReference {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private static List<String> ensureListType(List<String> list) {
         if (list == null) return null;
         if (list.isEmpty()) return Collections.emptyList();
@@ -90,6 +96,17 @@ public class OuterJoin implements TableReference {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /* (non-Javadoc)
+     * @see com.baidu.hsb.parser.ast.fragment.tableref.TableReference#getTables()
+     */
+    @Override
+    public List<Identifier> getTables() {
+        List<Identifier> list = new ArrayList<Identifier>();
+        list.addAll(leftTableRef.getTables());
+        list.addAll(rightTableRef.getTables());
+        return list;
     }
 
 }

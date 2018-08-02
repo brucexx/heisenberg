@@ -4,7 +4,9 @@
  */
 package com.baidu.hsb.route.util;
 
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
@@ -12,6 +14,8 @@ import java.util.zip.CRC32;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 
 /**
  * 
@@ -20,20 +24,19 @@ import org.apache.commons.lang.StringUtils;
  */
 public class StringUtil extends StringUtils {
 
-    /**  判断字符串是否为16进制数字 */
-    public static final Pattern HAX_PATTERN             = Pattern.compile("^[0-9a-fA-F]+$");
+    /** 判断字符串是否为16进制数字 */
+    public static final Pattern HAX_PATTERN = Pattern.compile("^[0-9a-fA-F]+$");
 
-    /**  判断字符串是否为数字 */
-    public static final Pattern NUMBER_PATTERN          = Pattern.compile("^[0-9]+$");
+    /** 判断字符串是否为数字 */
+    public static final Pattern NUMBER_PATTERN = Pattern.compile("^[0-9]+$");
 
     /** 默认中文编码字符集 */
-    public static final String  DEFAULT_CHINESE_CHARSET = "GBK";
+    public static final String DEFAULT_CHINESE_CHARSET = "GBK";
 
-    public static final String LINE_END                = System.getProperty("line.separator");
+    public static final String LINE_END = System.getProperty("line.separator");
 
     /**
-     * 扩展并左对齐字符串，用指定字符串填充右边。
-     * 新增对中文字符串的支持，注意方法名称为<code>alignLeft<b>s</b></code>
+     * 扩展并左对齐字符串，用指定字符串填充右边。 新增对中文字符串的支持，注意方法名称为<code>alignLeft<b>s</b></code>
      * 
      * <pre>
      * StringUtil.alignLeft(null, *, *)      = null
@@ -85,8 +88,7 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 扩展并右对齐字符串，用指定字符串填充左边。
-     * 新增对中文字符串的支持，注意方法名称为<code>alignRight<b>s</b></code>
+     * 扩展并右对齐字符串，用指定字符串填充左边。 新增对中文字符串的支持，注意方法名称为<code>alignRight<b>s</b></code>
      * 
      * <pre>
      * StringUtil.alignRight(null, *, *)      = null
@@ -137,8 +139,7 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 取指定字符串的子串，新增对中文字符串的支持
-     * 注意方法名称为<code>substring<b>s</b></code>   
+     * 取指定字符串的子串，新增对中文字符串的支持 注意方法名称为<code>substring<b>s</b></code>
      *
      * @param str 字符串
      * @param start 起始索引，如果为负数，表示从尾部计算
@@ -207,8 +208,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 在字符串中查找指定字符集合中的字符，并返回第一个匹配的起始索引。 如果字符串为<code>null</code>，则返回<code>-1</code>。
-     * 如果字符集合为<code>null</code>或空，也返回<code>-1</code>。
+     * 在字符串中查找指定字符集合中的字符，并返回第一个匹配的起始索引。 如果字符串为<code>null</code>，则返回<code>-1</code>。 如果字符集合为<code>null</code>或空，也返回
+     * <code>-1</code>。
+     * 
      * <pre>
      * StringUtil.indexOfAny(null, *,0)                = -1
      * StringUtil.indexOfAny("", *,0)                  = -1
@@ -226,8 +228,7 @@ public class StringUtil extends StringUtils {
      * @return 第一个匹配的索引值。如果字符串为<code>null</code>或未找到，则返回<code>-1</code>
      */
     public static int indexOfAny(String str, char[] searchChars, int startPos) {
-        if ((str == null) || (str.length() == 0) || (searchChars == null)
-            || (searchChars.length == 0)) {
+        if ((str == null) || (str.length() == 0) || (searchChars == null) || (searchChars.length == 0)) {
             return -1;
         }
 
@@ -246,6 +247,7 @@ public class StringUtil extends StringUtils {
 
     /**
      * 过滤要输出到json的字符串，将'和"进行转义输出
+     * 
      * @param input
      * @return
      */
@@ -276,6 +278,7 @@ public class StringUtil extends StringUtils {
 
     /**
      * 过滤要输出到xml的字符串，将<,>,&,"进行转义输出
+     * 
      * @param string
      * @return
      */
@@ -313,10 +316,8 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 根据url获取系统名称
-     * 如果url里面包括系统名就返回，否则直接返回域名
-     * 如http://bops.alipay.com 返回bops
-     * http://www.alipay.com  返回  alipay.com
+     * 根据url获取系统名称 如果url里面包括系统名就返回，否则直接返回域名 如http://bops.alipay.com 返回bops http://www.alipay.com 返回 alipay.com
+     * 
      * @param url
      * @return
      * @throws MalformedURLException
@@ -336,8 +337,7 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 获取指定字符串按GBK编码转换成的byte长度
-     * 由于String.getByte方法依赖于操作系统编码，处理中文字符串时建议用此方法
+     * 获取指定字符串按GBK编码转换成的byte长度 由于String.getByte方法依赖于操作系统编码，处理中文字符串时建议用此方法
      * 
      * @param data
      * @return
@@ -354,8 +354,7 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * 获取指定字符串按GBK编码转换成byte的长度
-     * 由于String.getByte方法依赖于操作系统编码，处理中文字符串时建议用此方法
+     * 获取指定字符串按GBK编码转换成byte的长度 由于String.getByte方法依赖于操作系统编码，处理中文字符串时建议用此方法
      * 
      * @param data
      * @return
@@ -400,6 +399,7 @@ public class StringUtil extends StringUtils {
 
     /**
      * 判断字符串是否为16进制数字
+     * 
      * @param input
      * @return
      */
@@ -425,6 +425,7 @@ public class StringUtil extends StringUtils {
 
     /**
      * 将byte[]按指定编码转换为字符串，供velocity中使用
+     * 
      * @param bytes
      * @param charsetName
      * @return
@@ -443,9 +444,26 @@ public class StringUtil extends StringUtils {
         return crc32.getValue() + "";
     }
 
-    public static void main(String[] args) {
-        System.out.println(substring(crc32("123123123123123"), -3, -1));
+    public static String o2Str(Object o) {
+        if (o == null) {
+            return null;
+        }
+        return defaultIfBlank(o.toString(), EMPTY);
+    }
 
+    public static void main(String[] args) {
+        // System.out.println(substring(crc32("123123123123123"), -3, -1));
+        String s = "<person>121212:/aaa/bbb";
+        VelocityContext context = new VelocityContext();
+        Writer writer = new StringWriter();
+        // //Pattern.compile("^[0-9a-fA-F]+$")
+        Velocity.evaluate(context, writer, StringUtil.EMPTY, "$!Pattern.compile(\"^[0-9a-fA-F]+$\")");
+        System.out.println(writer.toString());
+
+        System.out.println(substring(s, s.indexOf(">") + 1, s.indexOf(":")));
+        // $!stringUtil.substring($PARENT_PATH, $!stringUtil.indexOf($PARENT_PATH,">") + 1,
+        // $!stringUtil.indexOf($PARENT_PATH,":"))
+        // $!stringUtil.substring
     }
 
 }

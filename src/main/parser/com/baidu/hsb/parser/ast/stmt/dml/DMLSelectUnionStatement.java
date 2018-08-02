@@ -4,25 +4,27 @@
  */
 package com.baidu.hsb.parser.ast.stmt.dml;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.baidu.hsb.parser.ast.expression.Expression;
 import com.baidu.hsb.parser.ast.fragment.Limit;
 import com.baidu.hsb.parser.ast.fragment.OrderBy;
+import com.baidu.hsb.parser.ast.fragment.tableref.TableReference;
+import com.baidu.hsb.parser.ast.fragment.tableref.TableReferences;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
  * @author xiongzhao@baidu.com
  */
-public class DMLSelectUnionStatement extends DMLQueryStatement {
+public class DMLSelectUnionStatement extends DMLQueryStatement implements DMLCondition {
     /** might be {@link LinkedList} */
     private final List<DMLSelectStatement> selectStmtList;
     /**
-     * <code>Mixed UNION types are treated such that a DISTINCT union overrides any ALL union to its left</code>
-     * <br/>
+     * <code>Mixed UNION types are treated such that a DISTINCT union overrides any ALL union to its left</code> <br/>
      * 0 means all relations of selects are union all<br/>
-     * last index of {@link #selectStmtList} means all relations of selects are
-     * union distinct<br/>
+     * last index of {@link #selectStmtList} means all relations of selects are union distinct<br/>
      */
     private int firstDistinctIndex = 0;
     private OrderBy orderBy;
@@ -71,5 +73,33 @@ public class DMLSelectUnionStatement extends DMLQueryStatement {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getTables()
+     */
+    @Override
+    public TableReferences getTables() {
+        List<TableReference> list = new ArrayList<TableReference>();
+        for (DMLSelectStatement ss : selectStmtList) {
+            list.addAll(ss.getTables().getTableReferenceList());
+        }
+        return new TableReferences(list);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getWhereCondition()
+     */
+    @Override
+    public List<Expression> getWhereCondition() {
+        List<Expression> list = new ArrayList<Expression>();
+        for (DMLSelectStatement ss : selectStmtList) {
+            list.add(ss.getWhere());
+        }
+        return list;
     }
 }

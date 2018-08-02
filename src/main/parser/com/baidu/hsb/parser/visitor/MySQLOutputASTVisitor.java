@@ -125,6 +125,7 @@ import com.baidu.hsb.parser.ast.stmt.dal.ShowTriggers;
 import com.baidu.hsb.parser.ast.stmt.dal.ShowVariables;
 import com.baidu.hsb.parser.ast.stmt.dal.ShowWarnings;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement;
+import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement.AlterSpecification;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLCreateIndexStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLCreateTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLDropIndexStatement;
@@ -132,7 +133,6 @@ import com.baidu.hsb.parser.ast.stmt.ddl.DDLDropTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLRenameTableStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DDLTruncateStatement;
 import com.baidu.hsb.parser.ast.stmt.ddl.DescTableStatement;
-import com.baidu.hsb.parser.ast.stmt.ddl.DDLAlterTableStatement.AlterSpecification;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLCallStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLDeleteStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLInsertStatement;
@@ -1596,7 +1596,7 @@ public final class MySQLOutputASTVisitor implements SQLASTVisitor {
             appendable.append(" FROM ");
             node.getTableRefs().accept(this);
         }
-        Expression where = node.getWhereCondition();
+        Expression where = node.getWhereCondition().get(0);
         if (where != null) {
             appendable.append(" WHERE ");
             where.accept(this);

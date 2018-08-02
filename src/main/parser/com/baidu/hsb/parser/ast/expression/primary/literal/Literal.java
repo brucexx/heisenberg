@@ -10,4 +10,6 @@ import com.baidu.hsb.parser.ast.expression.primary.PrimaryExpression;
  * @author xiongzhao@baidu.com
  */
 public abstract class Literal extends PrimaryExpression {
+
+    public abstract String getValue();
 }

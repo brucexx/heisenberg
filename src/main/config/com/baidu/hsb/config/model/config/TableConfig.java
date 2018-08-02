@@ -7,26 +7,35 @@ package com.baidu.hsb.config.model.config;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
+import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.util.SplitUtil;
 
 /**
  * @author xiongzhao@baidu.com
  */
 public class TableConfig {
-    private final String          name;
-    private final String          nameUp;
-    private final String[]        dataNodes;
+    private final String name;
+    private final String nameUp;
+    private final Set<String> tableAlias;
+    private final String[] dataNodes;
     private final TableRuleConfig rule;
-    private final Set<String>     columnIndex;
-    private final boolean         ruleRequired;
+    private final Set<String> columnIndex;
+    private final boolean ruleRequired;
 
-    public TableConfig(String name, String dataNode, TableRuleConfig rule, boolean ruleRequired) {
+    public TableConfig(String name, String dataNode, String alias, TableRuleConfig rule, boolean ruleRequired) {
         if (name == null) {
             throw new IllegalArgumentException("table name is null");
         }
+        tableAlias = new TreeSet<String>();
         this.name = name;
         this.nameUp = name.toUpperCase();
+        if (StringUtil.isNotBlank(alias)) {
+            for (String s : StringUtil.split(alias, ',')) {
+                tableAlias.add(StringUtil.upperCase(s));
+            }
+        }
         this.dataNodes = SplitUtil.split(dataNode, ',', '$', '-', '[', ']');
         if (this.dataNodes == null || this.dataNodes.length <= 0) {
             throw new IllegalArgumentException("invalid table dataNodes: " + dataNode);

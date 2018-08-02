@@ -4,12 +4,18 @@
  */
 package com.baidu.hsb.parser.util;
 
+import java.io.Serializable;
+
 /**
  * 
  * @author xiongzhao@baidu.com
  */
-public final class Pair<K, V> {
+public final class Pair<K, V> implements Serializable{
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 2962585754285588513L;
     private final K key;
     private final V value;
 

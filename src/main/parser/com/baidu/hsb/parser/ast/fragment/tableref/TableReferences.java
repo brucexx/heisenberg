@@ -8,6 +8,7 @@ import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.baidu.hsb.parser.ast.expression.primary.Identifier;
 import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 
 /**
@@ -17,7 +18,8 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
  */
 public class TableReferences implements TableReference {
     protected static List<TableReference> ensureListType(List<TableReference> list) {
-        if (list instanceof ArrayList) return list;
+        if (list instanceof ArrayList)
+            return list;
         return new ArrayList<TableReference>(list);
     }
 
@@ -30,9 +32,9 @@ public class TableReferences implements TableReference {
         return list;
     }
 
-    public TableReferences(List<TableReference> list) throws SQLSyntaxErrorException {
+    public TableReferences(List<TableReference> list) throws RuntimeException {
         if (list == null || list.isEmpty()) {
-            throw new SQLSyntaxErrorException("at least one table reference");
+            throw new RuntimeException("at least one table reference");
         }
         this.list = ensureListType(list);
     }
@@ -68,6 +70,20 @@ public class TableReferences implements TableReference {
     @Override
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.fragment.tableref.TableReference#getTables()
+     */
+    @Override
+    public List<Identifier> getTables() {
+        List<Identifier> list = new ArrayList<Identifier>();
+        for (TableReference tr : this.list) {
+            list.addAll(tr.getTables());
+        }
+        return list;
     }
 
 }

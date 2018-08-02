@@ -4,6 +4,7 @@
  */
 package com.baidu.hsb.parser.ast.stmt.dml;
 
+import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,33 +21,35 @@ import com.baidu.hsb.parser.visitor.SQLASTVisitor;
 /**
  * @author xiongzhao@baidu.com
  */
-public class DMLSelectStatement extends DMLQueryStatement {
+public class DMLSelectStatement extends DMLQueryStatement implements DMLCondition {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1996835118012429666L;
+
+
     public static enum SelectDuplicationStrategy {
         /** default */
-        ALL,
-        DISTINCT,
-        DISTINCTROW
+        ALL, DISTINCT, DISTINCTROW
     }
 
     public static enum QueryCacheStrategy {
-        UNDEF,
-        SQL_CACHE,
-        SQL_NO_CACHE
+        UNDEF, SQL_CACHE, SQL_NO_CACHE
     }
 
     public static enum SmallOrBigResult {
-        UNDEF,
-        SQL_SMALL_RESULT,
-        SQL_BIG_RESULT
+        UNDEF, SQL_SMALL_RESULT, SQL_BIG_RESULT
     }
 
     public static enum LockMode {
-        UNDEF,
-        FOR_UPDATE,
-        LOCK_IN_SHARE_MODE
+        UNDEF, FOR_UPDATE, LOCK_IN_SHARE_MODE
     }
 
-    public static final class SelectOption {
+    public static final class SelectOption implements Serializable{
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -4798990346920817131L;
         public SelectDuplicationStrategy resultDup = SelectDuplicationStrategy.ALL;
         public boolean highPriority = false;
         public boolean straightJoin = false;
@@ -77,7 +80,8 @@ public class DMLSelectStatement extends DMLQueryStatement {
     /** string: id | `id` | 'id' */
     private final List<Pair<Expression, String>> selectExprList;
     private final TableReferences tables;
-    private final Expression where;
+    private Expression where;
+
     private final GroupBy group;
     private final Expression having;
     private final OrderBy order;
@@ -88,9 +92,9 @@ public class DMLSelectStatement extends DMLQueryStatement {
      */
     @SuppressWarnings("unchecked")
     public DMLSelectStatement(SelectOption option, List<Pair<Expression, String>> selectExprList,
-                              TableReferences tables, Expression where, GroupBy group, Expression having,
-                              OrderBy order, Limit limit) {
-        if (option == null) throw new IllegalArgumentException("argument 'option' is null");
+            TableReferences tables, Expression where, GroupBy group, Expression having, OrderBy order, Limit limit) {
+        if (option == null)
+            throw new IllegalArgumentException("argument 'option' is null");
         this.option = option;
         if (selectExprList == null || selectExprList.isEmpty()) {
             this.selectExprList = Collections.emptyList();
@@ -118,7 +122,8 @@ public class DMLSelectStatement extends DMLQueryStatement {
 
     /** @performance slow */
     public List<Expression> getSelectExprListWithoutAlias() {
-        if (selectExprList == null || selectExprList.isEmpty()) return Collections.emptyList();
+        if (selectExprList == null || selectExprList.isEmpty())
+            return Collections.emptyList();
         List<Expression> list = new ArrayList<Expression>(selectExprList.size());
         for (Pair<Expression, String> p : selectExprList) {
             if (p != null && p.getKey() != null) {
@@ -156,4 +161,18 @@ public class DMLSelectStatement extends DMLQueryStatement {
     public void accept(SQLASTVisitor visitor) {
         visitor.visit(this);
     }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.parser.ast.stmt.dml.DMLCondition#getWhereCondition()
+     */
+    @Override
+    public List<Expression> getWhereCondition() {
+        List<Expression> list = new ArrayList<Expression>();
+        list.add(where);
+        return list;
+    }
+
 }
