@@ -41,6 +41,7 @@ Heisenberg服务器通过管理命令可以查看，如连接数，线程池，�
 2.修复读取数据递归问题
 
 1.0.8.1  2018.8.2
+```
 1.使用expression完美支持分片替换问题
 2.支持insert批量以及select in的分片替换，以及支持嵌套问题
 mysql> explain insert into `test` (id,name) values (1,'brucexx'),('2','brucexx');
@@ -96,4 +97,4 @@ mysql> explain select t.name from (select * from test ) as t  left join test  on
 | local_node | SELECT t.name FROM (SELECT * FROM `test_01`) AS T LEFT JOIN `test_01` ON t.id = test.id WHERE t.id = 1 |
 +------------+--------------------------------------------------------------------------------------------------------+
 1 row in set (0.01 sec)
-
+````
