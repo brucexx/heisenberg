@@ -4,6 +4,8 @@ High performance distributed  database for mysql, define shardings by velocity&g
 can be expanded nodes flexible...
 ==========
 
+***有一些问题汇总先搞到QA.md了，实在没时间***
+
 强大好用的mysql分库分表中间件，改编自cobar, 结合了cobar和TDDL的优势，让其分片策略变为分库表策略，节约了大量连接
 
 其优点： 分库分表与应用脱离，分库表如同使用单库表一样
