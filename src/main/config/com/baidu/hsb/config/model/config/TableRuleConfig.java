@@ -25,21 +25,21 @@ import com.baidu.hsb.route.util.StringUtil;
  */
 public class TableRuleConfig {
 
-    private static final Logger        LOGGER   = Logger.getLogger(TableRuleConfig.class);
+    private static final Logger LOGGER = Logger.getLogger(TableRuleConfig.class);
 
-    private final String               name;
-    private final List<String>         columns;
-    private final List<String>         dbRuleArray;
-    private final List<String>         tbRuleArray;
-    private final String               tbPrefix;
+    private final String name;
+    private final List<String> columns;
+    private final List<String> dbRuleArray;
+    private final List<String> tbRuleArray;
+    private final String tbPrefix;
     private Map<Integer, List<String>> tbMap;
-    //key tbPrefix value=dataNodeIndex
-    private Map<String, Integer>       tbIndexMap;
-    private boolean                    forceHit = false;
+    // key tbPrefix value=dataNodeIndex
+    private Map<String, Integer> tbIndexMap;
+    private boolean forceHit = false;
 
     @SuppressWarnings("unchecked")
-    public TableRuleConfig(String name, String forceHit, String[] columns,
-                           List<String> dbRuleArray, List<String> tbRuleArray, String tbPrefix) {
+    public TableRuleConfig(String name, String forceHit, String[] columns, List<String> dbRuleArray,
+            List<String> tbRuleArray, String tbPrefix) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -51,9 +51,9 @@ public class TableRuleConfig {
         if (dbRuleArray == null || dbRuleArray.isEmpty()) {
             throw new IllegalArgumentException("dbRuleArray is empty!");
         }
-        //        if (tbRuleArray == null || tbRuleArray.isEmpty()) {
-        //            throw new IllegalArgumentException("tbRuleArray is empty!");
-        //        }
+        // if (tbRuleArray == null || tbRuleArray.isEmpty()) {
+        // throw new IllegalArgumentException("tbRuleArray is empty!");
+        // }
 
         this.columns = Collections.unmodifiableList(Arrays.asList(columns));
         this.dbRuleArray = dbRuleArray;
@@ -81,6 +81,7 @@ public class TableRuleConfig {
             }
         } catch (Exception e) {
             LOGGER.error("init table rule error!", e);
+            throw e;
         }
     }
 

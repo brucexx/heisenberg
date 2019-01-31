@@ -4,7 +4,7 @@
  */
 package com.baidu.hsb.server.handler;
 
-import com.baidu.hsb.config.ErrorCode;
+import com.baidu.hsb.net.mysql.OkPacket;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.parser.ServerParse;
 import com.baidu.hsb.server.parser.ServerParseStart;
@@ -16,11 +16,14 @@ public final class StartHandler {
 
     public static void handle(String stmt, ServerConnection c, int offset) {
         switch (ServerParseStart.parse(stmt, offset)) {
-        case ServerParseStart.TRANSACTION:
-            c.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unsupported statement");
-            break;
-        default:
-            c.execute(stmt, ServerParse.START);
+            case ServerParseStart.TRANSACTION:
+                // 暂时只用于分布式事务
+                c.write(c.writeToBuffer(OkPacket.OK, c.allocate()));
+                c.execute(stmt, ServerParse.START);
+                // c.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unsupported statement");
+                break;
+            default:
+                c.execute(stmt, ServerParse.START);
         }
     }
 

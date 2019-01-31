@@ -2,13 +2,24 @@
 
 <heisenberg:schema xmlns:heisenberg="https://github.com/brucexx/heisenberg">
 	<schema name="test" dataNode="local_node">
-		<table name="test" dataNode="local_node" shardName="t" rule="rule2"/>
+		<table name="test" dataNode="local_node1$0-3" shardName="t" rule="rule2"/>
 	</schema>
  
 
 	<dataNode name="local_node">
 		<property name="dataSource">
-			<dataSourceRef>localDB</dataSourceRef>
+			<dataSourceRef>localDB$0</dataSourceRef>
+			<!-- slave,暂无 -->
+			<!-- dataSourceRef>ds_shard_slave$0-3</dataSourceRef -->
+		</property>
+		<property name="poolSize">5</property>
+		<property name="coreSize">5</property>
+		<property name="heartbeatSQL">select user()</property>
+	</dataNode>
+	
+	<dataNode name="local_node1">
+		<property name="dataSource">
+			<dataSourceRef>localDB$0-3</dataSourceRef>
 			<!-- slave,暂无 -->
 			<!-- dataSourceRef>ds_shard_slave$0-3</dataSourceRef -->
 		</property>
@@ -20,9 +31,10 @@
 
 	<dataSource name="localDB" type="mysql">
 		<property name="location">
-			<location>127.0.0.1:3306/test</location>
+			<location>127.0.0.1:3306/test$0-3</location>
 		</property>
 		<property name="user">root</property>
 		<property name="password"></property>
 	</dataSource>
+	
 </heisenberg:schema>

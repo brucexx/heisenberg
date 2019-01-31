@@ -159,16 +159,16 @@ public class NonBlockingSession implements Session {
                 new Terminator().nextInvocation(singleNodeHandler).nextInvocation(multiNodeHandler)
                         .nextInvocation(commitHandler).nextInvocation(rollbackHandler)
                         .nextInvocation(new Terminatable() {
-                    @Override
-                    public void terminate(Runnable runnable) {
-                        clearConnections(false);
-                    }
-                }).nextInvocation(new Terminatable() {
-                    @Override
-                    public void terminate(Runnable runnable) {
-                        terminating.set(false);
-                    }
-                }).invoke();
+                            @Override
+                            public void terminate(Runnable runnable) {
+                                clearConnections(false);
+                            }
+                        }).nextInvocation(new Terminatable() {
+                            @Override
+                            public void terminate(Runnable runnable) {
+                                terminating.set(false);
+                            }
+                        }).invoke();
             }
         });
     }
@@ -327,6 +327,18 @@ public class NonBlockingSession implements Session {
             default:
                 return false;
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.baidu.hsb.server.session.Session#multiExecute(com.baidu.hsb.route.RouteResultset, java.lang.String[],
+     * int)
+     */
+    @Override
+    public void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback s, FailCondCallback f) {
+        // TODO Auto-generated method stub
+
     }
 
 }

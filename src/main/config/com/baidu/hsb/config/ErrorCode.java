@@ -530,5 +530,7 @@ public interface ErrorCode {
     int ER_MULTI_QUERY_TIMEOUT                     = 1495;
     int ER_MULTI_EXEC_ERROR                        = 1496;
     int ER_EXEC_ERROR                              = 1497;
+    int ER_XA_SAVE_REDIS_ERROR                     = 1498;
+    int ER_XA_CONTEXT_MISSING                      = 1499;
 
 }

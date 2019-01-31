@@ -42,6 +42,7 @@ import com.baidu.hsb.route.RouteResultset;
 import com.baidu.hsb.route.RouteResultsetNode;
 import com.baidu.hsb.route.util.DateUtil;
 import com.baidu.hsb.server.ServerConnection;
+import com.baidu.hsb.server.parser.ServerParse;
 import com.baidu.hsb.server.session.BlockingSession;
 import com.baidu.hsb.util.StringUtil;
 
@@ -51,22 +52,22 @@ import com.baidu.hsb.util.StringUtil;
  * @version $Id: MultiNodeTask.java, v 0.1 2014年9月11日 下午8:19:03 HI:brucest0078 Exp $
  */
 public class MultiNodeTask {
-    private static final Logger LOGGER = Logger.getLogger(MultiNodeTask.class);
-    private static final int RECEIVE_CHUNK_SIZE = 16 * 1024;
+    protected static final Logger LOGGER = Logger.getLogger(MultiNodeTask.class);
+    protected static final int RECEIVE_CHUNK_SIZE = 16 * 1024;
 
-    private AtomicBoolean isFail = new AtomicBoolean(false);
-    private int unfinishedNodeCount;
-    private int errno;
-    private String errMessage;
-    private AtomicBoolean fieldEOF = new AtomicBoolean(false);
-    private byte packetId;
-    private long affectedRows;
-    private long insertId;
-    private ByteBuffer buffer;
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition taskFinished = lock.newCondition();
-    private String taskName = "";
-    private final DefaultCommitExecutor icExecutor = new DefaultCommitExecutor() {
+    protected AtomicBoolean isFail = new AtomicBoolean(false);
+    protected int unfinishedNodeCount;
+    protected int errno;
+    protected String errMessage;
+    protected AtomicBoolean fieldEOF = new AtomicBoolean(false);
+    protected byte packetId;
+    protected long affectedRows;
+    protected long insertId;
+    protected ByteBuffer buffer;
+    protected ReentrantLock lock = new ReentrantLock();
+    protected Condition taskFinished = lock.newCondition();
+    protected String taskName = "";
+    protected DefaultCommitExecutor icExecutor = new DefaultCommitExecutor() {
         @Override
         protected String getErrorMessage() {
             return "Internal commit";
@@ -78,20 +79,21 @@ public class MultiNodeTask {
         }
 
     };
-    private long nodeCount = 0;
-    private long totalCount = 0;
+    protected long nodeCount = 0;
+    protected long totalCount = 0;
 
-    private AtomicLong exeTime = new AtomicLong(0);
-    private RouteResultsetNode[] nodes;
-    private boolean autocommit;
-    private BlockingSession ss;
-    private int flag;
-    private String sql;
-    private Map<String, AtomicInteger> runData = new HashMap<String, AtomicInteger>();
-    private byte[] funcCachedData;
+    protected AtomicLong exeTime = new AtomicLong(0);
+    protected RouteResultsetNode[] nodes;
+    protected boolean autocommit;
+    protected BlockingSession ss;
+    protected int flag;
+    protected String sql;
+    protected Map<String, AtomicInteger> runData = new HashMap<String, AtomicInteger>();
+    protected byte[] funcCachedData;
+    protected int type;
 
     public MultiNodeTask(RouteResultsetNode[] nodes, final boolean autocommit, final BlockingSession ss, final int flag,
-            final String sql) {
+            final String sql, int type) {
         this.taskName = DateUtil.formatCurrent(DateUtil.LONG_FORMAT) + StringUtil.getRandomString(5);
         // System.out.println(taskName+"start>>");
         this.nodes = nodes;
@@ -99,6 +101,7 @@ public class MultiNodeTask {
         this.ss = ss;
         this.sql = sql;
         this.flag = flag;
+        this.type = type;
         this.funcCachedData = new byte[0];
         this.isFail.set(false);
         this.unfinishedNodeCount = 0;
@@ -167,7 +170,7 @@ public class MultiNodeTask {
         }
     }
 
-    private boolean decrementCountAndIsZero(int c) {
+    protected boolean decrementCountAndIsZero(int c) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -231,7 +234,7 @@ public class MultiNodeTask {
         });
     }
 
-    private void killServerTask(RouteResultsetNode rrn, BlockingSession ss) {
+    protected void killServerTask(RouteResultsetNode rrn, BlockingSession ss) {
 
         ConcurrentMap<RouteResultsetNode, Channel> target = ss.getTarget();
         Channel c = target.get(rrn);
@@ -240,7 +243,7 @@ public class MultiNodeTask {
         }
     }
 
-    private void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn, final BlockingSession ss,
+    protected void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn, final BlockingSession ss,
             final ServerConnection sc, final boolean autocommit, final int flag, final String sql,
             final AtomicLong exeTime) {
         // 取得数据通道
@@ -267,7 +270,7 @@ public class MultiNodeTask {
     /**
      * 执行
      */
-    private void execute0(RouteResultsetNode rrn, Channel c, boolean autocommit, BlockingSession ss, int flag,
+    protected void execute0(RouteResultsetNode rrn, Channel c, boolean autocommit, BlockingSession ss, int flag,
             final String sql, final AtomicLong exeTime) {
 
         ServerConnection sc = ss.getSource();
@@ -398,7 +401,7 @@ public class MultiNodeTask {
             final String sql) throws IOException {
         final ServerConnection source = ss.getSource();
         BinaryPacket bin = null;
-//        int size = 0;
+        // int size = 0;
         for (;;) {
             bin = ((MySQLChannel) c).receive();
             // System.out.println(rrn.getName() + "rowData-->");
@@ -431,12 +434,12 @@ public class MultiNodeTask {
                     } else {
                         bin.packetId = ++packetId;// ROWS
                         buffer = bin.write(buffer, source);
-//                        size += bin.packetLength;
-//                        if (size > RECEIVE_CHUNK_SIZE) {
-//                            // LOGGER.info(rrn.getName() + "hasNext-->");
-//                            handleNext(rrn, c, ss, exeTime, sql);
-//                            return;
-//                        }
+                        // size += bin.packetLength;
+                        // if (size > RECEIVE_CHUNK_SIZE) {
+                        // // LOGGER.info(rrn.getName() + "hasNext-->");
+                        // handleNext(rrn, c, ss, exeTime, sql);
+                        // return;
+                        // }
                     }
 
             }
@@ -505,7 +508,7 @@ public class MultiNodeTask {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("final exeTime-->" + exeTime.get() + ",nodeCount:" + nodeCount);
                 }
-                LoggerUtil.printDigest(LOGGER,(exeTime.get() / nodeCount), sql);
+                LoggerUtil.printDigest(LOGGER, (exeTime.get() / nodeCount), sql);
             }
         }
     }
@@ -513,7 +516,7 @@ public class MultiNodeTask {
     /**
      * @throws nothing never throws any exception
      */
-    private void handleSuccessOK(BlockingSession ss, RouteResultsetNode rrn, boolean autocommit, OkPacket ok) {
+    protected void handleSuccessOK(BlockingSession ss, RouteResultsetNode rrn, boolean autocommit, OkPacket ok) {
         if (decrementCountAndIsZero(1)) {
             if (isFail.get()) {
                 notifyFailure(ss);
@@ -534,10 +537,14 @@ public class MultiNodeTask {
                     } else {
                         ss.release();
                         ok.write(source);
+                        // 写入事件
+                        source.writeCode(true, 0);
                     }
                 } else {
                     // 多节点情况下以非事务模式执行
                     ok.write(source);
+                    // 写入事件
+                    source.writeCode(true, 0);
                 }
                 source.recycle(buffer);
             } catch (Exception e) {
@@ -576,8 +583,14 @@ public class MultiNodeTask {
      * 
      * @throws nothing never throws any exception
      */
-    private void notifyFailure(BlockingSession ss) {
+    protected void notifyFailure(BlockingSession ss) {
         try {
+            if (ss.getSource().isDtmOn() && type == ServerParse.XA && errno == 1399) {
+                ss.getSource().writeCode(true, errno);
+                ServerConnection c = ss.getSource();
+                c.write(ss.getSource().writeToBuffer(OkPacket.OK, c.allocate()));
+                return;
+            }
             // 清理
             ss.clear();
 
@@ -590,6 +603,7 @@ public class MultiNodeTask {
             err.errno = errno;
             err.message = StringUtil.encode(errMessage, sc.getCharset());
             sc.write(err.write(buffer, sc));
+            sc.writeCode(false, errno);
         } catch (Exception e) {
             LOGGER.warn("exception happens in failure notification: " + ss.getSource(), e);
         }

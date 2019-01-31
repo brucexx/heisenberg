@@ -8,7 +8,7 @@ import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.route.RouteResultset;
 
 /**
- * @author xiongzhao@baidu.com 
+ * @author xiongzhao@baidu.com
  */
 public interface Session {
 
@@ -25,7 +25,16 @@ public interface Session {
     /**
      * 开启一个会话执行
      */
-    void execute(RouteResultset rrs,String sql, int type);
+    void execute(RouteResultset rrs, String sql, int type);
+
+    /**
+     * 开户一个会话连续执行多条语句
+     * 
+     * @param rrs
+     * @param sql
+     * @param type
+     */
+    void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback s, FailCondCallback f);
 
     /**
      * 提交一个会话执行
@@ -40,8 +49,7 @@ public interface Session {
     /**
      * 取消一个正在执行中的会话
      * 
-     * @param sponsor
-     *            如果发起者为null，则表示由自己发起。
+     * @param sponsor 如果发起者为null，则表示由自己发起。
      */
     void cancel(FrontendConnection sponsor);
 

@@ -23,6 +23,8 @@ public final class ServerParseSet {
     public static final int CHARACTER_SET_CONNECTION = 9;
     public static final int CHARACTER_SET_RESULTS = 10;
     public static final int CHARACTER_SET = 11;
+    public static final int DTM_ON = 12;
+    public static final int DTM_OFF = 13;
 
     public static int parse(String stmt, int offset) {
         int i = offset;
@@ -52,6 +54,9 @@ public final class ServerParseSet {
                 case 'T':
                 case 't':
                     return transaction(stmt, i);
+                case 'D':
+                case 'd':
+                    return dtm(stmt, i);
                 default:
                     return OTHER;
             }
@@ -679,6 +684,66 @@ public final class ServerParseSet {
             }
         }
         return OTHER;
+    }
+
+    /**
+     * dtm属性
+     * 
+     * @param stmt
+     * @param offset
+     * @return
+     */
+    private static int dtm(String stmt, int offset) {
+        if (stmt.length() > offset + 2) {
+            char c1 = stmt.charAt(++offset);
+            char c2 = stmt.charAt(++offset);
+            if ((c1 == 'T' || c1 == 't') && (c2 == 'M' || c2 == 'm')) {
+                while (stmt.length() > ++offset) {
+                    switch (stmt.charAt(offset)) {
+                        case ' ':
+                        case '\r':
+                        case '\n':
+                        case '\t':
+                            continue;
+                        case '=':
+                            return dtmValues(stmt, offset);
+                        default:
+                            return OTHER;
+                    }
+                }
+            }
+        }
+        return OTHER;
+    }
+
+    private static int dtmValues(String stmt, int offset) {
+        for (;;) {
+            offset++;
+            if (stmt.length() <= offset) {
+                return OTHER;
+            }
+            switch (stmt.charAt(offset)) {
+                case ' ':
+                case '\r':
+                case '\n':
+                case '\t':
+                    continue;
+                case '1':
+                    if (stmt.length() == ++offset || ParseUtil.isEOF(stmt.charAt(offset))) {
+                        return DTM_ON;
+                    } else {
+                        return OTHER;
+                    }
+                case '0':
+                    if (stmt.length() == ++offset || ParseUtil.isEOF(stmt.charAt(offset))) {
+                        return DTM_OFF;
+                    } else {
+                        return OTHER;
+                    }
+                default:
+                    return OTHER;
+            }
+        }
     }
 
 }

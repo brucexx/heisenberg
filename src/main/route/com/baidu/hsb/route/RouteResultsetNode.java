@@ -10,12 +10,12 @@ package com.baidu.hsb.route;
  * @author xiongzhao@baidu.com
  * @version $Id: RouteResultsetNode.java, v 0.1 2013年12月31日 下午1:14:25 HI:brucest0078 Exp $
  */
-public final class RouteResultsetNode {
+public final class RouteResultsetNode implements Comparable<RouteResultsetNode> {
     public final static Integer DEFAULT_REPLICA_INDEX = -1;
 
-    private final String        name;                      // 数据节点名称
-    private final int           replicaIndex;              // 数据源编号
-    private final String[]      statement;                 // 执行的语句
+    private final String name; // 数据节点名称
+    private final int replicaIndex; // 数据源编号
+    private final String[] statement; // 执行的语句
 
     public RouteResultsetNode(String name, String[] statement) {
         this(name, DEFAULT_REPLICA_INDEX, statement);
@@ -92,6 +92,16 @@ public final class RouteResultsetNode {
             return str2 == null;
         }
         return str1.equals(str2);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(RouteResultsetNode o) {
+        return this.getName().compareTo(o.getName());
     }
 
 }

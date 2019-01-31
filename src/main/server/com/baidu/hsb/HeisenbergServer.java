@@ -5,8 +5,12 @@
 package com.baidu.hsb;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,6 +26,7 @@ import com.baidu.hsb.net.NIOAcceptor;
 import com.baidu.hsb.net.NIOConnector;
 import com.baidu.hsb.net.NIOProcessor;
 import com.baidu.hsb.parser.recognizer.mysql.lexer.MySQLLexer;
+import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.server.ServerConnectionFactory;
 import com.baidu.hsb.statistic.SQLRecorder;
 import com.baidu.hsb.util.ExecutorUtil;
@@ -29,32 +34,33 @@ import com.baidu.hsb.util.NameableExecutor;
 import com.baidu.hsb.util.TimeUtil;
 
 /**
- * @author xiongzhao@baidu.com  
+ * @author xiongzhao@baidu.com
  */
 public class HeisenbergServer {
-    public static final String            NAME               = "Heisenberg";
-    private static final long             LOG_WATCH_DELAY    = 60000L;
-    private static final long             TIME_UPDATE_PERIOD = 20L;
-    private static final HeisenbergServer INSTANCE           = new HeisenbergServer();
-    private static final Logger           LOGGER             = Logger
-                                                                 .getLogger(HeisenbergServer.class);
+    public static final String NAME = "Heisenberg";
+    private static final long LOG_WATCH_DELAY = 60000L;
+    private static final long TIME_UPDATE_PERIOD = 20L;
+    private static final Logger LOGGER = Logger.getLogger(HeisenbergServer.class);
+
+    private static final HeisenbergServer INSTANCE = new HeisenbergServer();
 
     public static final HeisenbergServer getInstance() {
         return INSTANCE;
     }
 
     private final HeisenbergConfig config;
-    private final Timer            timer;
+    private final Timer timer;
     private final NameableExecutor managerExecutor;
     private final NameableExecutor timerExecutor;
     private final NameableExecutor initExecutor;
-    private final SQLRecorder      sqlRecorder;
-    private final AtomicBoolean    isOnline;
-    private final long             startupTime;
-    private NIOProcessor[]         processors;
-    private NIOConnector           connector;
-    private NIOAcceptor            manager;
-    private NIOAcceptor            server;
+    private final SQLRecorder sqlRecorder;
+    private final AtomicBoolean isOnline;
+    private final long startupTime;
+    private NIOProcessor[] processors;
+    private NIOConnector connector;
+    private NIOAcceptor manager;
+    private NIOAcceptor server;
+    private String macAddr;
 
     private HeisenbergServer() {
         this.config = new HeisenbergConfig();
@@ -67,6 +73,74 @@ public class HeisenbergServer {
         this.sqlRecorder = new SQLRecorder(system.getSqlRecordCount());
         this.isOnline = new AtomicBoolean(true);
         this.startupTime = TimeUtil.currentTimeMillis();
+        macAddr = macAddr();
+        // 如无mac, 降级为ip
+        if (StringUtil.isEmpty(macAddr)) {
+            macAddr = getIpAddress();
+        }
+        if (StringUtil.isEmpty(macAddr)) {
+            throw new RuntimeException("无法获取本地mac");
+        }
+    }
+
+    public String getHostKey() {
+        return macAddr;
+    }
+
+    private String macAddr() {
+        try {
+            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+            byte[] mac = null;
+            while (allNetInterfaces.hasMoreElements()) {
+                NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+                if (netInterface.isLoopback() || netInterface.isVirtual() || netInterface.isPointToPoint()
+                        || !netInterface.isUp()) {
+                    continue;
+                } else {
+                    mac = netInterface.getHardwareAddress();
+                    if (mac != null) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < mac.length; i++) {
+                            sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+                        }
+                        if (sb.length() > 0) {
+                            LOGGER.info("本机mac地址为:" + macAddr);
+                            return sb.toString();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("MAC地址获取失败", e);
+        }
+        return "";
+    }
+
+    // 获取ip地址
+    private static String getIpAddress() {
+        try {
+            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+            InetAddress ip = null;
+            while (allNetInterfaces.hasMoreElements()) {
+                NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+                if (netInterface.isLoopback() || netInterface.isVirtual() || netInterface.isPointToPoint()
+                        || !netInterface.isUp()) {
+                    continue;
+                } else {
+                    Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        ip = addresses.nextElement();
+                        if (ip != null && ip instanceof Inet4Address) {
+                            LOGGER.info("ip地址为:" + ip.getHostAddress());
+                            return ip.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("IP地址获取失败", e);
+        }
+        return "";
     }
 
     public HeisenbergConfig getConfig() {
@@ -206,13 +280,13 @@ public class HeisenbergServer {
 
                     @Override
                     public void run() {
-                        //初始化是否成功检查
+                        // 初始化是否成功检查
                         Map<String, MySQLDataNode> dataNodes = config.getDataNodes();
                         for (MySQLDataNode node : dataNodes.values()) {
                             node.init(1, 0);
-                            if(LOGGER.isDebugEnabled()){
-                                System.out.println("node:"+node.getName());
-                              node.printDsConnCount();
+                            if (LOGGER.isDebugEnabled()) {
+                                System.out.println("node:" + node.getName());
+                                node.printDsConnCount();
                             }
                         }
                     }

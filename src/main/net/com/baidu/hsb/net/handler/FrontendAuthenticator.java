@@ -90,7 +90,6 @@ public class FrontendAuthenticator implements NIOHandler {
         if (password == null || password.length == 0) {
             return false;
         }
-
         // encrypt
         byte[] encryptPass = null;
         try {

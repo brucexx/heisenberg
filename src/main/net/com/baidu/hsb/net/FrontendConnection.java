@@ -9,6 +9,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observer;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -389,6 +392,23 @@ public abstract class FrontendConnection extends AbstractConnection {
         flag |= Capabilities.CLIENT_SECURE_CONNECTION;
         return flag;
     }
+
+    public void addListeners(Observer o) {
+        obList.add(o);
+    }
+
+    // 用于监听收到的错误码
+    public void writeCode(boolean isSuc, int code) {
+        if (obList.size() == 0)
+            return;
+        String[] data = new String[] { new String("" + isSuc), code + "" };
+        for (Observer o : obList) {
+            // 通知
+            o.update(null, data);
+        }
+    }
+
+    protected List<Observer> obList = new ArrayList<Observer>();
 
     protected boolean isConnectionReset(Throwable t) {
         if (t instanceof IOException) {

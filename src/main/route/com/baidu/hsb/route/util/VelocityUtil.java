@@ -188,30 +188,22 @@ public class VelocityUtil {
     }
 
     public static void main(String[] args) throws IOException {
-        System.out.println(Integer.MAX_VALUE);
-        // String tpl = "#set($start=$stringUtil.indexOf($PARENT_PATH,\">\"))"
-        // + "#set($start=$start+1)"
-        // + "#set($end=$stringUtil.indexOf($PARENT_PATH,\":\"))"
-        // + "#set($cuid=$stringUtil.substring($PARENT_PATH,$start,$end))"
-        // + "#set($Integer=0)"
-        // + "#set($cuid=$Integer.parseInt($cuid))"
-        // + "#set($sub_str=$cuid%20+\"\")"
-        // + "#set($prefix=\"_\"+$stringUtil.alignRights($sub_str,2,\"0\"))"
-        // + "$!prefix";
-        //
-        // Writer writer = new StringWriter();
-        // try {
-        // VelocityContext context = getContext();
-        // context.put("PARENT_PATH", "<person>4411242511:/我的wik");
-        // Velocity.evaluate(context, writer, "", tpl);
-        // System.out.println(writer.toString());
-        // } catch (ParseErrorException e) {
-        // throw e;
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // } finally {
-        // writer.close();
-        // }
+         
+        String tpl = "#set($t=$numberUtil.toInt($ORDER_ID) % 4)##\r\n$!t";
+        //tpl="#set($sub_str=$numberUtil.toInt($ORDER_ID))##$sub_str";
+        Writer writer = new StringWriter();
+        try {
+            VelocityContext context = getContext();
+            context.put("ORDER_ID", "12345");
+            Velocity.evaluate(context, writer, "", tpl);
+            System.out.println(writer.toString());
+        } catch (ParseErrorException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            writer.close();
+        }
 
     }
 }

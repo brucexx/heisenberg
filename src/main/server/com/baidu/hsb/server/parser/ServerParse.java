@@ -28,48 +28,68 @@ public final class ServerParse {
     public static final int USE = 14;
     public static final int EXPLAIN = 15;
     public static final int KILL_QUERY = 16;
+    public static final int XA = 17;
+
+    public static boolean isTransType(int type) {
+        return (type == DELETE || type == INSERT || type == REPLACE || type == ROLLBACK || type == SELECT
+                || type == UPDATE);
+    }
 
     public static int parse(String stmt) {
         for (int i = 0; i < stmt.length(); ++i) {
             switch (stmt.charAt(i)) {
-            case ' ':
-            case '\t':
-            case '\r':
-            case '\n':
-                continue;
-            case '/':
-            case '#':
-                i = ParseUtil.comment(stmt, i);
-                continue;
-            case 'B':
-            case 'b':
-                return beginCheck(stmt, i);
-            case 'C':
-            case 'c':
-                return commitCheck(stmt, i);
-            case 'D':
-            case 'd':
-                return deleteCheck(stmt, i);
-            case 'E':
-            case 'e':
-                return explainCheck(stmt, i);
-            case 'I':
-            case 'i':
-                return insertCheck(stmt, i);
-            case 'R':
-            case 'r':
-                return rCheck(stmt, i);
-            case 'S':
-            case 's':
-                return sCheck(stmt, i);
-            case 'U':
-            case 'u':
-                return uCheck(stmt, i);
-            case 'K':
-            case 'k':
-                return killCheck(stmt, i);
-            default:
-                return OTHER;
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    continue;
+                case '/':
+                case '#':
+                    i = ParseUtil.comment(stmt, i);
+                    continue;
+                case 'B':
+                case 'b':
+                    return beginCheck(stmt, i);
+                case 'C':
+                case 'c':
+                    return commitCheck(stmt, i);
+                case 'D':
+                case 'd':
+                    return deleteCheck(stmt, i);
+                case 'E':
+                case 'e':
+                    return explainCheck(stmt, i);
+                case 'I':
+                case 'i':
+                    return insertCheck(stmt, i);
+                case 'R':
+                case 'r':
+                    return rCheck(stmt, i);
+                case 'S':
+                case 's':
+                    return sCheck(stmt, i);
+                case 'U':
+                case 'u':
+                    return uCheck(stmt, i);
+                case 'K':
+                case 'k':
+                    return killCheck(stmt, i);
+                case 'X':
+                case 'x':
+                    return xaCheck(stmt, i);
+                default:
+                    return OTHER;
+            }
+        }
+        return OTHER;
+    }
+
+    static int xaCheck(String stmt, int offset) {
+        if (stmt.length() > offset + "A ".length()) {
+            char c1 = stmt.charAt(++offset);
+            char c7 = stmt.charAt(++offset);
+            if ((c1 == 'A' || c1 == 'a') && (c7 == ' ' || c7 == '\t' || c7 == '\r' || c7 == '\n')) {
+                return (offset << 8) | EXPLAIN;
             }
         }
         return OTHER;
@@ -105,16 +125,16 @@ public final class ServerParse {
                     && (c4 == ' ' || c4 == '\t' || c4 == '\r' || c4 == '\n')) {
                 while (stmt.length() > ++offset) {
                     switch (stmt.charAt(offset)) {
-                    case ' ':
-                    case '\t':
-                    case '\r':
-                    case '\n':
-                        continue;
-                    case 'Q':
-                    case 'q':
-                        return killQueryCheck(stmt, offset);
-                    default:
-                        return (offset << 8) | KILL;
+                        case ' ':
+                        case '\t':
+                        case '\r':
+                        case '\n':
+                            continue;
+                        case 'Q':
+                        case 'q':
+                            return killQueryCheck(stmt, offset);
+                        default:
+                            return (offset << 8) | KILL;
                     }
                 }
                 return OTHER;
@@ -135,13 +155,13 @@ public final class ServerParse {
                     && (c4 == 'Y' || c4 == 'y') && (c5 == ' ' || c5 == '\t' || c5 == '\r' || c5 == '\n')) {
                 while (stmt.length() > ++offset) {
                     switch (stmt.charAt(offset)) {
-                    case ' ':
-                    case '\t':
-                    case '\r':
-                    case '\n':
-                        continue;
-                    default:
-                        return (offset << 8) | KILL_QUERY;
+                        case ' ':
+                        case '\t':
+                        case '\r':
+                        case '\n':
+                            continue;
+                        default:
+                            return (offset << 8) | KILL_QUERY;
                     }
                 }
                 return OTHER;
@@ -158,7 +178,8 @@ public final class ServerParse {
             char c3 = stmt.charAt(++offset);
             char c4 = stmt.charAt(++offset);
             if ((c1 == 'E' || c1 == 'e') && (c2 == 'G' || c2 == 'g') && (c3 == 'I' || c3 == 'i')
-                    && (c4 == 'N' || c4 == 'n') && (stmt.length() == ++offset || ParseUtil.isEOF(stmt.charAt(offset)))) {
+                    && (c4 == 'N' || c4 == 'n')
+                    && (stmt.length() == ++offset || ParseUtil.isEOF(stmt.charAt(offset)))) {
                 return BEGIN;
             }
         }
@@ -221,14 +242,14 @@ public final class ServerParse {
     static int rCheck(String stmt, int offset) {
         if (stmt.length() > ++offset) {
             switch (stmt.charAt(offset)) {
-            case 'E':
-            case 'e':
-                return replaceCheck(stmt, offset);
-            case 'O':
-            case 'o':
-                return rollabckCheck(stmt, offset);
-            default:
-                return OTHER;
+                case 'E':
+                case 'e':
+                    return replaceCheck(stmt, offset);
+                case 'O':
+                case 'o':
+                    return rollabckCheck(stmt, offset);
+                default:
+                    return OTHER;
             }
         }
         return OTHER;
@@ -273,20 +294,20 @@ public final class ServerParse {
     static int sCheck(String stmt, int offset) {
         if (stmt.length() > ++offset) {
             switch (stmt.charAt(offset)) {
-            case 'A':
-            case 'a':
-                return savepointCheck(stmt, offset);
-            case 'E':
-            case 'e':
-                return seCheck(stmt, offset);
-            case 'H':
-            case 'h':
-                return showCheck(stmt, offset);
-            case 'T':
-            case 't':
-                return startCheck(stmt, offset);
-            default:
-                return OTHER;
+                case 'A':
+                case 'a':
+                    return savepointCheck(stmt, offset);
+                case 'E':
+                case 'e':
+                    return seCheck(stmt, offset);
+                case 'H':
+                case 'h':
+                    return showCheck(stmt, offset);
+                case 'T':
+                case 't':
+                    return startCheck(stmt, offset);
+                default:
+                    return OTHER;
             }
         }
         return OTHER;
@@ -315,20 +336,20 @@ public final class ServerParse {
     static int seCheck(String stmt, int offset) {
         if (stmt.length() > ++offset) {
             switch (stmt.charAt(offset)) {
-            case 'L':
-            case 'l':
-                return selectCheck(stmt, offset);
-            case 'T':
-            case 't':
-                if (stmt.length() > ++offset) {
-                    char c = stmt.charAt(offset);
-                    if (c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == '/' || c == '#') {
-                        return (offset << 8) | SET;
+                case 'L':
+                case 'l':
+                    return selectCheck(stmt, offset);
+                case 'T':
+                case 't':
+                    if (stmt.length() > ++offset) {
+                        char c = stmt.charAt(offset);
+                        if (c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == '/' || c == '#') {
+                            return (offset << 8) | SET;
+                        }
                     }
-                }
-                return OTHER;
-            default:
-                return OTHER;
+                    return OTHER;
+                default:
+                    return OTHER;
             }
         }
         return OTHER;
@@ -382,32 +403,32 @@ public final class ServerParse {
     static int uCheck(String stmt, int offset) {
         if (stmt.length() > ++offset) {
             switch (stmt.charAt(offset)) {
-            case 'P':
-            case 'p':
-                if (stmt.length() > offset + 5) {
-                    char c1 = stmt.charAt(++offset);
-                    char c2 = stmt.charAt(++offset);
-                    char c3 = stmt.charAt(++offset);
-                    char c4 = stmt.charAt(++offset);
-                    char c5 = stmt.charAt(++offset);
-                    if ((c1 == 'D' || c1 == 'd') && (c2 == 'A' || c2 == 'a') && (c3 == 'T' || c3 == 't')
-                            && (c4 == 'E' || c4 == 'e') && (c5 == ' ' || c5 == '\t' || c5 == '\r' || c5 == '\n')) {
-                        return UPDATE;
+                case 'P':
+                case 'p':
+                    if (stmt.length() > offset + 5) {
+                        char c1 = stmt.charAt(++offset);
+                        char c2 = stmt.charAt(++offset);
+                        char c3 = stmt.charAt(++offset);
+                        char c4 = stmt.charAt(++offset);
+                        char c5 = stmt.charAt(++offset);
+                        if ((c1 == 'D' || c1 == 'd') && (c2 == 'A' || c2 == 'a') && (c3 == 'T' || c3 == 't')
+                                && (c4 == 'E' || c4 == 'e') && (c5 == ' ' || c5 == '\t' || c5 == '\r' || c5 == '\n')) {
+                            return UPDATE;
+                        }
                     }
-                }
-                break;
-            case 'S':
-            case 's':
-                if (stmt.length() > offset + 2) {
-                    char c1 = stmt.charAt(++offset);
-                    char c2 = stmt.charAt(++offset);
-                    if ((c1 == 'E' || c1 == 'e') && (c2 == ' ' || c2 == '\t' || c2 == '\r' || c2 == '\n')) {
-                        return (offset << 8) | USE;
+                    break;
+                case 'S':
+                case 's':
+                    if (stmt.length() > offset + 2) {
+                        char c1 = stmt.charAt(++offset);
+                        char c2 = stmt.charAt(++offset);
+                        if ((c1 == 'E' || c1 == 'e') && (c2 == ' ' || c2 == '\t' || c2 == '\r' || c2 == '\n')) {
+                            return (offset << 8) | USE;
+                        }
                     }
-                }
-                break;
-            default:
-                return OTHER;
+                    break;
+                default:
+                    return OTHER;
             }
         }
         return OTHER;

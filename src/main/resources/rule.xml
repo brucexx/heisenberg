@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rule>
-	<tableRule name="rule1" forceHit="true" unless="SELECT,INSERT,UPDATE,DELETE,CALL">
+	<tableRule name="rule1" forceHit="true"
+		unless="SELECT,INSERT,UPDATE,DELETE,CALL">
 		<columns>INQUIRY_ID</columns>
 		<dbRuleList>
 			<dbRule><![CDATA[
                        #set($sub_str="0")
-                       #!substr
+                       $!substr
                     ]]>
 			</dbRule>
 		</dbRuleList>
@@ -21,29 +22,29 @@
 				<![CDATA[ 
                     def map = [:];
                     def list = [];
-                    for(int j=0; j<2; j++) {
-                            list.add("_0"+j);
+                    for(int i=0; i<3; i++){
+                      list.add("_01");
+                         map.put(0,list);
                     }
-                    map.put(0,list);
+                  
                     return map; 
                 ]]>
 		</tbPrefix>
 	</tableRule>
-	<tableRule name="rule2" forceHit="true" unless="SELECT,INSERT,UPDATE,DELETE,CALL">
-		<columns>ID</columns>
+	<tableRule name="rule2" forceHit="true"
+		unless="SELECT,INSERT,UPDATE,DELETE,CALL">
+		<columns>ORDER_ID</columns>
 		<dbRuleList>
 			<dbRule><![CDATA[
-                       #set($sub_str="0")
-                       #!substr
+                      #set($t=$numberUtil.toInt($ORDER_ID) % 4)##
+                      $!t
                     ]]>
 			</dbRule>
 		</dbRuleList>
 		<tbRuleList>
 			<tbRule><![CDATA[
-					   #set($mId=$ID+"")
-                       #set($sub_str=$!numberUtil.toInt($mId)%4+"")
-                       #set($prefix="_0"+$sub_str)
-                       $!prefix
+                       #set($sub_str="")##
+                       $!sub_str
                     ]]>
 			</tbRule>
 		</tbRuleList>
@@ -51,13 +52,14 @@
 				<![CDATA[ 
                     def map = [:];
                     def list = [];
-                    for(int j=0; j<4; j++) {
-                            list.add("_0"+j);
+                    for(int i=0; i<4; i++){
+                      list.add("");
+                         map.put(i,list);
                     }
-                    map.put(0,list);
+                  
                     return map; 
                 ]]>
 		</tbPrefix>
 	</tableRule>
-	
+
 </rule>
