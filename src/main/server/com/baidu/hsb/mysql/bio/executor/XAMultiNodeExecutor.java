@@ -22,7 +22,6 @@ import com.baidu.hsb.mysql.MySQLDataNode;
 import com.baidu.hsb.mysql.PacketUtil;
 import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.MySQLChannel;
-import com.baidu.hsb.mysql.bio.executor.MultiNodeTask.ErrInfo;
 import com.baidu.hsb.net.mysql.BinaryPacket;
 import com.baidu.hsb.net.mysql.EOFPacket;
 import com.baidu.hsb.net.mysql.ErrorPacket;
@@ -32,9 +31,11 @@ import com.baidu.hsb.net.mysql.OkPacket;
 import com.baidu.hsb.route.RouteResultset;
 import com.baidu.hsb.route.RouteResultsetNode;
 import com.baidu.hsb.server.ServerConnection;
+import com.baidu.hsb.server.parser.ServerParse;
 import com.baidu.hsb.server.session.BlockingSession;
 import com.baidu.hsb.server.session.FailCondCallback;
 import com.baidu.hsb.server.session.SucCondCallback;
+import com.baidu.hsb.util.StringUtil;
 
 /**
  * 多节点多sql任务器
@@ -42,12 +43,13 @@ import com.baidu.hsb.server.session.SucCondCallback;
  * @author brucexx
  *
  */
-public class MultiNodeMultiSqlTask extends MultiNodeTask {
+public class XAMultiNodeExecutor extends MultiNodeTask {
 
     private SucCondCallback sc = null;
     private FailCondCallback fc = null;
 
     private String[] m_sql;
+    private boolean needAck = true;
 
     /**
      * @param nodes
@@ -57,12 +59,13 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
      * @param sql
      * @param type
      */
-    public MultiNodeMultiSqlTask(RouteResultsetNode[] nodes, boolean autocommit, BlockingSession ss, int flag,
-            String[] sql, int type, SucCondCallback sc, FailCondCallback fc) {
+    public XAMultiNodeExecutor(RouteResultsetNode[] nodes, boolean autocommit, BlockingSession ss, int flag,
+            String[] sql, int type, SucCondCallback sc, FailCondCallback fc, boolean needAck) {
         super(nodes, autocommit, ss, flag, null, type);
         this.m_sql = sql;
         this.sc = sc;
         this.fc = fc;
+        this.needAck = needAck;
     }
 
     public void execute() {
@@ -130,7 +133,7 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
         }
         long s = System.currentTimeMillis();
 
-        extSql: for (final String stmt : sql) {
+        extSql: for (final String stmt : rrn.getStatement()) {
 
             try {
                 // 执行并等待返回
@@ -138,7 +141,7 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
                 // System.out.println(rrn.getName() + ",sql[" + stmt + "]");
                 // LOGGER.info("node[" + rrn.getName()+"],sql["+stmt+"],recv=>"+ByteUtil.formatByte(bin.data)+"<=");
                 // 接收和处理数据
-                final ReentrantLock lock = MultiNodeMultiSqlTask.this.lock;
+                final ReentrantLock lock = XAMultiNodeExecutor.this.lock;
                 lock.lock();
                 try {
                     switch (bin.data[0]) {
@@ -278,13 +281,17 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
                         icExecutor.commit(ok, ss, ss.getTarget().size());
                     } else {
                         ss.release();
-                        ok.write(source);
+                        if (needAck) {
+                            ok.write(source);
+                        }
+
                         // 写入事件
                         source.writeCode(true, 0);
                     }
                 } else {
                     // 多节点情况下以非事务模式执行
-                    ok.write(source);
+                    if (needAck)
+                        ok.write(source);
                     // 写入事件
                     source.writeCode(true, 0);
                 }
@@ -344,7 +351,8 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
                     }
 
                     bin.packetId = ++packetId;// LAST_EOF
-                    source.write(bin.write(buffer, source));
+                    if (needAck)
+                        source.write(bin.write(buffer, source));
                 } catch (Exception e) {
                     LOGGER.warn("exception happens in success notification: " + ss.getSource(), e);
                 }
@@ -456,6 +464,42 @@ public class MultiNodeMultiSqlTask extends MultiNodeTask {
         }
         if (decrementCountAndIsZero(c)) {
             notifyFailure(ss);
+        }
+    }
+
+    /**
+     * 通知，执行异常
+     * 
+     * @throws nothing never throws any exception
+     */
+    protected void notifyFailure(BlockingSession ss) {
+        try {
+
+            if (ss.getSource().isDtmOn() && type == ServerParse.XA && errno == 1399) {
+                ss.getSource().writeCode(true, errno);
+                ServerConnection c = ss.getSource();
+                c.write(ss.getSource().writeToBuffer(OkPacket.OK, c.allocate()));
+                return;
+            }
+
+            if (this.fc != null) {
+                fc.condition(errno, errMessage);
+            }
+            // 清理
+            ss.clear();
+
+            ServerConnection sc = ss.getSource();
+            sc.setTxInterrupt();
+
+            // 通知
+            ErrorPacket err = new ErrorPacket();
+            err.packetId = ++packetId;// ERROR_PACKET
+            err.errno = errno;
+            err.message = StringUtil.encode(errMessage, sc.getCharset());
+            sc.write(err.write(buffer, sc));
+            sc.writeCode(false, errno);
+        } catch (Exception e) {
+            LOGGER.warn("exception happens in failure notification: " + ss.getSource(), e);
         }
     }
 

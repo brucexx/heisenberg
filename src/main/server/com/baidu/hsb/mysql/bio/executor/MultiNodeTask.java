@@ -585,6 +585,7 @@ public class MultiNodeTask {
      */
     protected void notifyFailure(BlockingSession ss) {
         try {
+            
             if (ss.getSource().isDtmOn() && type == ServerParse.XA && errno == 1399) {
                 ss.getSource().writeCode(true, errno);
                 ServerConnection c = ss.getSource();

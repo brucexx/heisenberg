@@ -12,10 +12,6 @@ public interface FailCondCallback {
     /**
      * 前置条件
      */
-    void condition();
+    void condition(int code, String msg);
 
-    /**
-     * 结果
-     */
-    void result();
 }

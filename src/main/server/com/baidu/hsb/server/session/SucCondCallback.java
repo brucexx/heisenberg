@@ -11,5 +11,4 @@ public interface SucCondCallback {
 
     void condition();
 
-    void result();
 }

@@ -15,10 +15,17 @@ public final class RouteResultsetNode implements Comparable<RouteResultsetNode> 
 
     private final String name; // 数据节点名称
     private final int replicaIndex; // 数据源编号
-    private final String[] statement; // 执行的语句
+    private String[] statement; // 执行的语句
 
     public RouteResultsetNode(String name, String[] statement) {
         this(name, DEFAULT_REPLICA_INDEX, statement);
+    }
+
+    /**
+     * @param statement the statement to set
+     */
+    public void setStatement(String[] statement) {
+        this.statement = statement;
     }
 
     public RouteResultsetNode(String name, int index, String[] statement) {

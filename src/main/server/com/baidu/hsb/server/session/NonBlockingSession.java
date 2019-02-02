@@ -336,7 +336,8 @@ public class NonBlockingSession implements Session {
      * int)
      */
     @Override
-    public void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback s, FailCondCallback f) {
+    public void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback s, FailCondCallback f,
+            boolean needAck) {
         // TODO Auto-generated method stub
 
     }

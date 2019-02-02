@@ -28,15 +28,6 @@ public interface Session {
     void execute(RouteResultset rrs, String sql, int type);
 
     /**
-     * 开户一个会话连续执行多条语句
-     * 
-     * @param rrs
-     * @param sql
-     * @param type
-     */
-    void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback s, FailCondCallback f);
-
-    /**
      * 提交一个会话执行
      */
     void commit();

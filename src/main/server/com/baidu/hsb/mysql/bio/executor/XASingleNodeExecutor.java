@@ -36,8 +36,6 @@ import com.baidu.hsb.route.util.StringUtil;
 import com.baidu.hsb.server.ServerConnection;
 import com.baidu.hsb.server.parser.ServerParse;
 import com.baidu.hsb.server.session.BlockingSession;
-import com.baidu.hsb.server.session.FailCondCallback;
-import com.baidu.hsb.server.session.SucCondCallback;
 
 /**
  * 一个连接多个执行，必须要保证这N个操作的类型一致
@@ -45,21 +43,28 @@ import com.baidu.hsb.server.session.SucCondCallback;
  * @author brucexx
  *
  */
-public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
+public class XASingleNodeExecutor extends SingleNodeExecutor {
 
-    private SucCondCallback sc = null;
-    private FailCondCallback fc = null;
+    protected static Logger LOGGER = Logger.getLogger(XASingleNodeExecutor.class);
 
-    protected static Logger LOGGER = Logger.getLogger(SingleNodeMultiSqlExecutor.class);
+    private String xId;
+
+    private boolean IS_DEBUG = true;
+
+    private int op;
+
+    public XASingleNodeExecutor() {
+    }
 
     /**
      * 单数据节点执行
      */
-    public void execute(RouteResultsetNode rrn, BlockingSession ss, int flag, String[] sql, int type, SucCondCallback s,
-            FailCondCallback f) {
-        this.sc = sc;
-        this.fc = f;
-        this.type = type;
+    public void execute(RouteResultsetNode rrn, BlockingSession ss, int flag, String oSql, String xId, int op) {
+        //
+        LOGGER.info("start xId:" + xId + "," + (op == 0 ? "[start]" : "[commit]"));
+
+        this.xId = xId;
+        this.op = op;
         // 初始化
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -78,11 +83,15 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
         final AtomicLong exeTime = new AtomicLong(0);
         // 单节点处理
         Channel c = ss.getTarget().get(rrn);
-        if (c != null) {
+        if (c != null && !c.isRunning() && c.isClosed()) {
+            if (IS_DEBUG) {
+                //
+                LOGGER.info("复用之。。。");
+            }
             c.setRunning(true);
-            bindingExecute(rrn, ss, c, flag, sql, exeTime);
+            bindingExecute(rrn, ss, c, flag, oSql, exeTime);
         } else {
-            newExecute(rrn, ss, flag, sql, exeTime);
+            newExecute(rrn, ss, flag, oSql, exeTime);
         }
     }
 
@@ -113,7 +122,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                 try {
                     c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
                 } catch (Exception e) {
-                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+                    LOGGER.error(new StringBuilder().append(sc).append(rrn).toString(), e);
                     String msg = e.getMessage();
                     handleError(ErrorCode.ER_BAD_DB_ERROR, msg == null ? e.getClass().getSimpleName() : msg, ss);
                     return;
@@ -142,12 +151,12 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
     /**
      * 已绑定数据通道的执行
      */
-    protected void bindingExecute(final RouteResultsetNode rrn, final BlockingSession ss, final Channel c,
-            final int flag, final String[] sql, final AtomicLong exeTime) {
+    public void bindingExecute(final RouteResultsetNode rrn, final BlockingSession ss, final Channel c, final int flag,
+            final String oSql, final AtomicLong exeTime) {
         ss.getSource().getProcessor().getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                execute0(rrn, ss, c, flag, sql, exeTime);
+                execute0(rrn, ss, c, flag, oSql, exeTime);
             }
         });
     }
@@ -155,7 +164,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
     /**
      * 数据通道执行
      */
-    protected void execute0(RouteResultsetNode rrn, BlockingSession ss, Channel c, int flag, final String[] sql,
+    public void execute0(RouteResultsetNode rrn, BlockingSession ss, Channel c, int flag, final String[] sql,
             final AtomicLong exeTime) {
         final ServerConnection sc = ss.getSource();
         long s = System.currentTimeMillis();
@@ -172,7 +181,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
         try {
             // 这里收集多个成功因子
             AtomicInteger ai = new AtomicInteger(sql.length);
-            for (String stmt : sql) {
+            for (String stmt : rrn.getStatement()) {
                 try {
                     BinaryPacket bin = mc.execute(stmt, rrn, sc, sc.isAutocommit());
 
@@ -180,17 +189,6 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                     switch (bin.data[0]) {
                         case OkPacket.FIELD_COUNT: {
                             if (ai.decrementAndGet() == 0) {
-                                if (this.sc != null) {
-                                    // 这里用于联合执行完的结果，主要是redis保存分片，如果出错,将给上层返回，用于rollback
-                                    try {
-                                        this.sc.condition();
-                                    } catch (Exception e) {
-                                        LOGGER.error(stmt + "保存分片出错", e);
-                                        handleError(ErrorCode.ER_XA_SAVE_REDIS_ERROR, "保存xa状态出错", ss);
-                                        break;
-                                    }
-                                }
-                                mc.setRunning(false);
                                 if (mc.isAutocommit()) {
                                     ss.clear();
                                 }
@@ -198,31 +196,43 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                                 bin.packetId = ++packetId;// OK_PACKET
                                 // set lastInsertId
                                 setLastInsertId(bin, sc);
-                                sc.write(bin.write(sc.allocate(), sc));
+                                // 如果
+                                if (sucNeedAck(stmt)) {
+                                    sc.write(bin.write(sc.allocate(), sc));
+                                }
+                                mc.setRunning(false);
                             }
                             break;
                         }
                         case ErrorPacket.FIELD_COUNT: {
-                            LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc));
-                            mc.setRunning(false);
+                            LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc) + "[" + stmt + "]");
                             if (mc.isAutocommit()) {
                                 ss.clear();
                             }
                             endRunning();
-                            bin.packetId = ++packetId;// ERROR_PACKET
-                            sc.write(bin.write(sc.allocate(), sc));
+                            // bin.packetId = ++packetId;// ERROR_PACKET
+                            ErrorPacket err = new ErrorPacket();
+                            err.read(bin);
+                            err.packetId = ++packetId;
+
+                            if (failNeedAck(stmt, err.errno,
+                                    com.baidu.hsb.util.StringUtil.decode(err.message, mc.getCharset()))) {
+                                sc.write(err.write(sc.allocate(), sc));
+                            }
+
+                            mc.setRunning(false);
                             break;
                         }
                         default: // HEADER|FIELDS|FIELD_EOF|ROWS|LAST_EOF
-                            handleResultSet(rrn, ss, mc, bin, flag, ai);
+                            handleResultSet(rrn, ss, mc, bin, flag, ai, stmt);
                     }
                 } catch (IOException e) {
-                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+                    LOGGER.error(new StringBuilder().append(sc).append(rrn).toString(), e);
                     c.close();
                     String msg = e.getMessage();
                     handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
                 } catch (RuntimeException e) {
-                    LOGGER.warn(new StringBuilder().append(sc).append(rrn).toString(), e);
+                    LOGGER.error(new StringBuilder().append(sc).append(rrn).toString(), e);
                     c.close();
                     String msg = e.getMessage();
                     handleError(ErrorCode.ER_YES, msg == null ? e.getClass().getSimpleName() : msg, ss);
@@ -241,11 +251,32 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
 
     }
 
+    private boolean sucNeedAck(String stmt) {
+        // xa start 只有执行原生的时候才需要ack
+        if (!XAUtil.isXaStart(stmt) && op == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean failNeedAck(String stmt, int code, String msg) {
+        if (IS_DEBUG) {
+            LOGGER.info("err:" + code + ",msg:" + msg);
+        }
+        if (!XAUtil.isXAOp(stmt)) {
+            return true;
+        }
+        if (XAUtil.isXAOp(stmt) && code == 1399) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 处理结果集数据
      */
     protected void handleResultSet(RouteResultsetNode rrn, BlockingSession ss, MySQLChannel mc, BinaryPacket bin,
-            int flag, AtomicInteger ai) throws IOException {
+            int flag, AtomicInteger ai, String stmt) throws IOException {
         final ServerConnection sc = ss.getSource();
 
         bin.packetId = ++packetId;// HEADER
@@ -255,14 +286,16 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
             bin = mc.receive();
             switch (bin.data[0]) {
                 case ErrorPacket.FIELD_COUNT: {
-                    LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc));
+                    LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc) + "[" + stmt + "]");
                     mc.setRunning(false);
                     if (mc.isAutocommit()) {
                         ss.clear();
                     }
                     endRunning();
                     bin.packetId = ++packetId;// ERROR_PACKET
-                    sc.write(bin.write(sc.allocate(), sc));
+                    if (failNeedAck(stmt, ErrorCode.ER_PARSE_ERROR)) {
+                        sc.write(bin.write(sc.allocate(), sc));
+                    }
                     return;
                 }
                 case EOFPacket.FIELD_COUNT: {
@@ -273,7 +306,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                     }
                     bb = bin.write(bb, sc);
                     headerList = null;
-                    handleRowData(rrn, ss, mc, bb, packetId, ai);
+                    handleRowData(rrn, ss, mc, bb, packetId, ai, stmt);
                     return;
                 }
                 default:
@@ -296,7 +329,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
      * 处理RowData数据
      */
     protected void handleRowData(RouteResultsetNode rrn, BlockingSession ss, MySQLChannel mc, ByteBuffer bb, byte id,
-            AtomicInteger ai) throws IOException {
+            AtomicInteger ai, String stmt) throws IOException {
         final ServerConnection sc = ss.getSource();
         this.packetId = id;
         BinaryPacket bin = null;
@@ -306,7 +339,7 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                 bin = mc.receive();
                 switch (bin.data[0]) {
                     case ErrorPacket.FIELD_COUNT:
-                        LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc));
+                        LOGGER.warn(mc.getErrLog(rrn.getLogger(), mc.getErrMessage(bin), sc) + "[" + stmt + "]");
                         mc.setRunning(false);
                         if (mc.isAutocommit()) {
                             ss.clear();
@@ -314,7 +347,9 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                         endRunning();
                         bin.packetId = ++packetId;// ERROR_PACKET
                         bb = bin.write(bb, sc);
-                        sc.write(bb);
+                        erroCallBack(ErrorCode.ER_PARSE_ERROR, "error fieldcount");
+                        if (needAck)
+                            sc.write(bb);
                         return;
                     case EOFPacket.FIELD_COUNT:
                         // 这里
@@ -336,7 +371,8 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
                             endRunning();
                             bin.packetId = ++packetId;// LAST_EOF
                             bb = bin.write(bb, sc);
-                            sc.write(bb);
+                            if (needAck)
+                                sc.write(bb);
                             return;
                         }
                     default:
@@ -355,6 +391,10 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
         }
     }
 
+    private void handleSuc() {
+
+    }
+
     /**
      * 执行异常处理
      */
@@ -365,6 +405,8 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
             c.write(ss.getSource().writeToBuffer(OkPacket.OK, c.allocate()));
             return;
         }
+        erroCallBack(errno, message);
+
         endRunning();
 
         // 清理
@@ -378,7 +420,8 @@ public class SingleNodeMultiSqlExecutor extends SingleNodeExecutor {
         err.packetId = ++packetId;// ERROR_PACKET
         err.errno = errno;
         err.message = com.baidu.hsb.util.StringUtil.encode(message, sc.getCharset());
-        err.write(sc);
+        if (needAck)
+            err.write(sc);
         sc.writeCode(false, errno);
 
     }

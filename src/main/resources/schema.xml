@@ -31,7 +31,7 @@
 
 	<dataSource name="localDB" type="mysql">
 		<property name="location">
-			<location>127.0.0.1:3306/test$0-3</location>
+			<location>192.168.15.101:3306/test$0-3</location>
 		</property>
 		<property name="user">root</property>
 		<property name="password"></property>

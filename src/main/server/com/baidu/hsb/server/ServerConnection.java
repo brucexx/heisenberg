@@ -7,9 +7,12 @@ package com.baidu.hsb.server;
 import java.io.EOFException;
 import java.nio.channels.SocketChannel;
 import java.sql.SQLNonTransientException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import com.baidu.hsb.HeisenbergServer;
@@ -246,7 +249,24 @@ public class ServerConnection extends FrontendConnection {
         xaSession.record(sql, rrn);
     }
 
-    private void xaStart(RouteResultsetNode[] rrn) {
+    /**
+     * 复制一遍datanode
+     * 
+     * @param sql
+     * @param rrn
+     * @return
+     */
+    private RouteResultset genRrs(RouteResultsetNode[] rrn, String...sql) {
+        RouteResultsetNode[] rn_cp = new RouteResultsetNode[rrn.length];
+        for (int i = 0; i < rrn.length; i++) {
+            rn_cp[i] = new RouteResultsetNode(rrn[i].getName(), rrn[i].getReplicaIndex(), sql);
+        }
+        RouteResultset rrs = new RouteResultset(sql[0]);
+        rrs.setNodes(rn_cp);
+        return rrs;
+    }
+
+    private void xaStart(RouteResultsetNode[] rrn, String oldSql) {
         // 查看上下文件
         if (xaSession == null) {
             writeErrMessage(ErrorCode.ER_XA_CONTEXT_MISSING, "XAContext is losing,need to rollback...");
@@ -254,20 +274,74 @@ public class ServerConnection extends FrontendConnection {
         }
         // 很重要
         xaSession.clearResult();
-        String sql = "xa start '" + xaSession.getXid() + "'";
-        RouteResultset rrs = new RouteResultset(sql);
-        rrs.setNodes(rrn);
-        // 先通用执行一把xa start
-        getSession().execute(rrs, sql, ServerParse.XA);
+
         if (IS_DEBUG) {
-            LOGGER.info("xastart...xid:" + xaSession.getXid());
+            LOGGER.info("xastart...xid:" + xaSession.getXid() + ",start...");
         }
-        // 如果有错误除（1399）外，会通知客户端 驱动会rollback过来
-        if (xaSession.getResult() != null && xaSession.getResult()) {
-            if (xaSession.getStatus() == null) {
-                xaSession.setStatus(XAOp.START);
+        String xaStart = "xa start '" + xaSession.getXid() + "'";
+
+        for (RouteResultsetNode rn : rrn) {
+            String[] s = new String[rn.getSqlCount() + 1];
+            s[0] = xaStart;
+            System.arraycopy(rn.getStatement(), 0, s, 1, rn.getSqlCount());
+            rn.setStatement(s);
+        }
+
+        RouteResultset rrs = new RouteResultset(oldSql);
+        rrs.setNodes(rrn);
+        // 先联合执行一把xa start + real sql
+        getSession().multiExecute(rrs, new String[] { xaStart, oldSql }, ServerParse.XA, new SucCondCallback() {
+
+            @Override
+            public void condition() {
+                // do nothing
+
             }
+
+        }, new FailCondCallback() {
+
+            @Override
+            public void condition(int code, String msg) {
+                if (IS_DEBUG) {
+                    LOGGER.info("xastart...xid:" + xaSession.getXid() + "[" + oldSql + "]fail.." + code + "," + msg);
+                }
+                // 直接 end and rollback..
+                xaEndAndRollbackWithOuthAck(rrn);
+            }
+        }, true);
+
+        if (IS_DEBUG) {
+            LOGGER.info("xastart...xid:" + xaSession.getXid() + "[" + oldSql + "]over..");
         }
+
+    }
+
+    private void xaEndAndRollbackWithOuthAck(RouteResultsetNode[] rrn) {
+        if (xaSession == null) {
+            writeErrMessage(ErrorCode.ER_XA_CONTEXT_MISSING, "XAContext is losing, end and rollback fail...");
+            return;
+        }
+        // 来一发end
+        xaSession.clearResult();
+        String[] sql = new String[] { "xa end '" + xaSession.getXid() + "'",
+                "xa rollback '" + xaSession.getXid() + "' start.." };
+
+        // 先联合执行一把xa end + xa prepare
+        getSession().multiExecute(genRrs(rrn, sql), sql, ServerParse.XA, new SucCondCallback() {
+
+            @Override
+            public void condition() {
+                LOGGER.info("end&rollback " + xaSession.getXid() + " suc ");
+            }
+        }, new FailCondCallback() {
+
+            @Override
+            public void condition(int code, String msg) {
+                LOGGER.info("end&rollback " + xaSession.getXid() + " fail,code: " + code + ",msg:" + msg);
+
+            }
+        }, false);
+
     }
 
     private void xaRollback(RouteResultsetNode[] rrn) {
@@ -277,10 +351,9 @@ public class ServerConnection extends FrontendConnection {
         }
         xaSession.clearResult();
         String sql = "xa rollback '" + xaSession.getXid() + "'";
-        RouteResultset rrs = new RouteResultset(sql);
-        rrs.setNodes(rrn);
+
         // 先执行一把xa end
-        getSession().execute(rrs, sql, ServerParse.XA);
+        getSession().execute(genRrs(rrn, sql), sql, ServerParse.XA);
         if (xaSession.getResult() != null && xaSession.getResult()) {
             if (xaSession.getStatus() == null) {
                 xaSession.setStatus(XAOp.ROLLBACK);
@@ -297,16 +370,9 @@ public class ServerConnection extends FrontendConnection {
         xaSession.clearResult();
         String[] sql =
                 new String[] { "xa end '" + xaSession.getXid() + "'", "xa prepare '" + xaSession.getXid() + "'" };
-        // 这里随便
-        RouteResultset rrs = new RouteResultset(sql[0]);
-        rrs.setNodes(rrn);
-        // 先联合执行一把xa end + xa prepare
-        getSession().multiExecute(rrs, sql, ServerParse.XA, new SucCondCallback() {
 
-            @Override
-            public void result() {
-                // do nothing
-            }
+        // 先联合执行一把xa end + xa prepare
+        getSession().multiExecute(genRrs(rrn, sql), sql, ServerParse.XA, new SucCondCallback() {
 
             @Override
             public void condition() {
@@ -317,15 +383,10 @@ public class ServerConnection extends FrontendConnection {
         }, new FailCondCallback() {
 
             @Override
-            public void result() {
+            public void condition(int code, String msg) {
                 // do nothing
             }
-
-            @Override
-            public void condition() {
-                // do nothing
-            }
-        });
+        }, true);
 
         if (xaSession.getResult() != null && xaSession.getResult()) {
             if (xaSession.getStatus() == null) {
@@ -341,10 +402,9 @@ public class ServerConnection extends FrontendConnection {
             return;
         }
         String sql = "xa commit '" + xaSession.getXid() + "'";
-        RouteResultset rrs = new RouteResultset(sql);
-        rrs.setNodes(rrn);
+
         // 先执行一把xa commit
-        getSession().execute(rrs, sql, ServerParse.XA);
+        getSession().execute(genRrs(rrn, sql), sql, ServerParse.XA);
         if (xaSession.getResult() != null && xaSession.getResult()) {
             if (xaSession.getStatus() == null) {
                 xaSession.setStatus(XAOp.COMMIT);
@@ -401,11 +461,11 @@ public class ServerConnection extends FrontendConnection {
         // start就开始保存sql执行，保存路由计划，判断是否已经进入 xa
         if (isDtmOn() && xaSession.isInXa() && ServerParse.isTransType(type)) {
             xaSave(sql, rrs.getNodes());
-            // 执行xastart
-            xaStart(rrs.getNodes());
+            // 联合执行xastart
+            xaStart(rrs.getNodes(), sql);
+        } else {
+            getSession().execute(rrs, sql, type);
         }
-
-        getSession().execute(rrs, sql, type);
 
     }
 

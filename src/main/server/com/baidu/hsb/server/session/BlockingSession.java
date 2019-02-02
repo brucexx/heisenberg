@@ -15,12 +15,12 @@ import com.baidu.hsb.exception.UnknownPacketException;
 import com.baidu.hsb.mysql.bio.Channel;
 import com.baidu.hsb.mysql.bio.MySQLChannel;
 import com.baidu.hsb.mysql.bio.executor.DefaultCommitExecutor;
-import com.baidu.hsb.mysql.bio.executor.MultiNodeMultiSqlTask;
+import com.baidu.hsb.mysql.bio.executor.XAMultiNodeExecutor;
 import com.baidu.hsb.mysql.bio.executor.MultiNodeTask;
 import com.baidu.hsb.mysql.bio.executor.NodeExecutor;
 import com.baidu.hsb.mysql.bio.executor.RollbackExecutor;
 import com.baidu.hsb.mysql.bio.executor.SingleNodeExecutor;
-import com.baidu.hsb.mysql.bio.executor.SingleNodeMultiSqlExecutor;
+import com.baidu.hsb.mysql.bio.executor.XASingleNodeExecutor;
 import com.baidu.hsb.net.FrontendConnection;
 import com.baidu.hsb.net.mysql.BinaryPacket;
 import com.baidu.hsb.net.mysql.ErrorPacket;
@@ -42,9 +42,9 @@ public class BlockingSession implements Session {
     private final ServerConnection source;
     private final ConcurrentHashMap<RouteResultsetNode, Channel> target;
     private final SingleNodeExecutor singleNodeExecutor;
-    private final SingleNodeMultiSqlExecutor singleNodeMultiSqlExecutor;
+    private XASingleNodeExecutor xaSNode;
     private MultiNodeTask task;
-    private MultiNodeMultiSqlTask mTask;
+    private XAMultiNodeExecutor mTask;
     private final DefaultCommitExecutor commitExecutor;
     private final RollbackExecutor rollbackExecutor;
 
@@ -55,7 +55,8 @@ public class BlockingSession implements Session {
         this.source = source;
         this.target = new ConcurrentHashMap<RouteResultsetNode, Channel>();
         this.singleNodeExecutor = new SingleNodeExecutor();
-        this.singleNodeMultiSqlExecutor = new SingleNodeMultiSqlExecutor();
+        xaSNode = new XASingleNodeExecutor();
+
         this.commitExecutor = new DefaultCommitExecutor();
         this.rollbackExecutor = new RollbackExecutor();
     }
@@ -74,18 +75,43 @@ public class BlockingSession implements Session {
         return target;
     }
 
+    /**
+     * 
+     * @param rrs rrs是已经准备好的sql,一条xa 一条原始Sql
+     * @param oldSql
+     * @param type
+     */
+    public void xaStart(RouteResultset rrs, String xId, String oSql, int type) {
+        // 检查路由结果是否为空
+        RouteResultsetNode[] nodes = rrs.getNodes();
+        if (nodes == null || nodes.length == 0) {
+            source.writeErrMessage(ErrorCode.ER_NO_DB_ERROR, "No dataNode selected");
+            return;
+        }
+        if (nodes.length == 1) {
+            xaSNode.execute(rrs.getNodes()[0], this, rrs.getFlag(), oSql, type);
+        }else {
+            
+        }
+       
+    }
+
+    public void commit(RouteResultset rrs, String xId, String[] oldSql, int type) {
+
+    }
+
     /*
      * 多条语句联合执行 (non-Javadoc)
      * 
      * @see com.baidu.hsb.server.session.Session#multiExecute(com.baidu.hsb.route.RouteResultset, java.lang.String[],
      * int)
      */
-    @Override
-    public void multiExecute(RouteResultset rrs, String[] sql, int type, SucCondCallback sc, FailCondCallback f) {
+    public void multiExecute(RouteResultset rrs, String[] oldSql, int type, SucCondCallback sc, FailCondCallback f,
+            boolean needAck) {
         if (LOGGER.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             LOGGER.debug(s.append(source).append(rrs).toString());
-            LOGGER.debug("execute sql-->" + sql);
+            LOGGER.debug("execute sql-->" + StringUtil.join(oldSql, '#'));
         }
 
         // 检查路由结果是否为空
@@ -95,14 +121,14 @@ public class BlockingSession implements Session {
             return;
         }
         // // 选择执行方式
-        if (nodes.length == 1 && nodes[0].getSqlCount() == 1) {
-            singleNodeMultiSqlExecutor.execute(nodes[0], this, rrs.getFlag(), sql, type, sc, f);
+        if (nodes.length == 1) {
+            singleNodeMultiSqlExecutor.execute(nodes[0], this, rrs.getFlag(), oldSql, type, sc, f, needAck);
         } else {
             boolean autocommit = source.isAutocommit();
             if (autocommit && isModifySQL(type)) {
                 autocommit = false;
             }
-            mTask = new MultiNodeMultiSqlTask(nodes, autocommit, this, rrs.getFlag(), sql, type, sc, f);
+            mTask = new XAMultiNodeExecutor(nodes, autocommit, this, rrs.getFlag(), oldSql, type, sc, f, needAck);
             mTask.execute();
         }
 
