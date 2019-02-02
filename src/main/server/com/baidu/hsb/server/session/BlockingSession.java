@@ -89,7 +89,7 @@ public class BlockingSession implements Session {
             return;
         }
         if (nodes.length == 1) {
-            xaSNode.execute(rrs.getNodes()[0], this, rrs.getFlag(), oSql, type);
+            xaSNode.execute(rrs.getNodes()[0], this, rrs.getFlag(), oSql,xId,0);
         }else {
             
         }
