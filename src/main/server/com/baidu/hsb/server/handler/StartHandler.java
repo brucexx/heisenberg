@@ -17,9 +17,14 @@ public final class StartHandler {
     public static void handle(String stmt, ServerConnection c, int offset) {
         switch (ServerParseStart.parse(stmt, offset)) {
             case ServerParseStart.TRANSACTION:
+            	if(c.isDtmOn()) {
+            		c.execute(stmt, ServerParse.START);
+            	}else {
+            		c.write(c.writeToBuffer(OkPacket.OK, c.allocate()));
+            	}
                 // 暂时只用于分布式事务
-                c.write(c.writeToBuffer(OkPacket.OK, c.allocate()));
-                c.execute(stmt, ServerParse.START);
+                //c.write(c.writeToBuffer(OkPacket.OK, c.allocate()));
+                
                 // c.writeErrMessage(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unsupported statement");
                 break;
             default:

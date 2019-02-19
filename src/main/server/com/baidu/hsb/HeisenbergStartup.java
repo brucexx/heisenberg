@@ -77,7 +77,7 @@ public final class HeisenbergStartup {
         long s = System.currentTimeMillis();
         try {
             if (StringUtil.isEmpty(System.getProperty("hsb.home"))) {
-                System.setProperty("hsb.home", "/Users/baidu/tmp/hsb");
+                System.setProperty("hsb.home", "/Users/brucexx/tmp/hsb");
             }
             if (StringUtil.isEmpty(System.getProperty("hsb.log.home"))) {
                 System.setProperty("hsb.log.home", System.getProperty("hsb.home") + "/logs");

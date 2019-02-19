@@ -9,19 +9,19 @@ package com.baidu.hsb.mysql.xa;
  */
 public enum XAOp {
 
-    START(1), END(2), PREPARE(3), COMMIT(4), ROLLBACK(5);
+	START(0), END_PREPARE(1), COMMIT(2), ROLLBACK(3);
 
-    private int code;
+	private int code;
 
-    /**
-     * @return the code
-     */
-    public int getCode() {
-        return code;
-    }
+	/**
+	 * @return the code
+	 */
+	public int getCode() {
+		return code;
+	}
 
-    private XAOp(int code) {
-        this.code = code;
-    }
+	private XAOp(int code) {
+		this.code = code;
+	}
 
 }

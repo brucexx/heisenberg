@@ -36,6 +36,11 @@ public interface Session {
      * 回滚一个会话执行
      */
     void rollback();
+    
+    /**
+     * 给source返回ok pack
+     */
+    void writeOk();
 
     /**
      * 取消一个正在执行中的会话
