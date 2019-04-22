@@ -104,6 +104,9 @@ public class HeisenbergServer {
                             sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
                         }
                         if (sb.length() > 0) {
+							if (macAddr == null) {
+								return StringUtil.EMPTY;
+							}
                             LOGGER.info("本机mac地址为:" + macAddr);
                             return sb.toString();
                         }

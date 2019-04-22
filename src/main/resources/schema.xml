@@ -3,7 +3,7 @@
 <heisenberg:schema
 	xmlns:heisenberg="https://github.com/brucexx/heisenberg">
 	<schema name="test">
-		<table name="test" dataNode="local_node1$0-3" shardName="t"
+		<table name="test" dataNode="local_node1$0-1" 
 			rule="rule2" />
 	</schema>
 
@@ -21,7 +21,7 @@
 
 	<dataNode name="local_node1">
 		<property name="dataSource">
-			<dataSourceRef>localDB$0-3</dataSourceRef>
+			<dataSourceRef>localDB$0-1</dataSourceRef>
 			<!-- slave,暂无 -->
 			<!-- dataSourceRef>ds_shard_slave$0-3</dataSourceRef -->
 		</property>
@@ -36,10 +36,10 @@
 	<dataSource name="localDB" type="mysql">
 		<property name="location">
 			<location>127.0.0.1:3306/test$0-1</location>
-			<location>192.168.33.176:3306/test$2-3</location>
+			<!-- <location>192.168.33.176:3306/test$2-3</location> -->
 		</property>
 		<property name="user">brucexx</property>
-		<property name="password">111111</property>
+		<property name="password">st0078</property>
 	</dataSource>
 
 </heisenberg:schema>
