@@ -78,9 +78,9 @@ public class HeisenbergServer {
         if (StringUtil.isEmpty(macAddr)) {
             macAddr = getIpAddress();
         }
-        if (StringUtil.isEmpty(macAddr)) {
-            throw new RuntimeException("无法获取本地mac");
-        }
+//        if (StringUtil.isEmpty(macAddr)) {
+//            throw new RuntimeException("无法获取本地mac");
+//        }
     }
 
     public String getHostKey() {

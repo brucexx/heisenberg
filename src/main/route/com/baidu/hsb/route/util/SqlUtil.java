@@ -28,6 +28,7 @@ import com.baidu.hsb.parser.ast.fragment.tableref.TableReference;
 import com.baidu.hsb.parser.ast.fragment.tableref.TableReferences;
 import com.baidu.hsb.parser.ast.stmt.SQLStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLCondition;
+import com.baidu.hsb.parser.ast.stmt.dml.DMLDeleteStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLInsertReplaceStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLInsertStatement;
 import com.baidu.hsb.parser.ast.stmt.dml.DMLStatement;
@@ -76,7 +77,7 @@ public class SqlUtil {
 						DMLCondition _ast = (DMLCondition) ast_t;
 						TableReferences tb = _ast.getTables();
 						// 扫描出来需要替换的identifer
-						scanIdentifer(result, tb);
+						scanIdentifer(_ast, result, tb);
 					} else if (ast instanceof DMLInsertStatement) {
 						// 批量插入
 						DMLInsertStatement _ast = (DMLInsertStatement) ast_t;
@@ -254,7 +255,7 @@ public class SqlUtil {
 		TableReferences tb = _ast.getTables();
 		// 扫描出来需要替换的identifer
 		Map<String, List<Identifier>> result = new HashMap<String, List<Identifier>>();
-		scanIdentifer(result, tb);
+		scanIdentifer(_ast, result, tb);
 
 		for (Map.Entry<String, Set<Object>> entry : tbPrefixSet.entrySet()) {
 			String tbPrefix = entry.getKey();
@@ -312,21 +313,32 @@ public class SqlUtil {
 	 * @param result
 	 * @param ref
 	 */
-	private static void scanIdentifer(Map<String, List<Identifier>> result, TableReferences ref) {
-		if (ref == null) {
-			return;
-		}
-		List<TableReference> tList = ref.getTableReferenceList();
-		for (TableReference tr : tList) {
-			for (Identifier table : tr.getTables()) {
-				String k = table.getIdTextUpUnescape();
-				// 可能重名
-				if (result.get(k) == null) {
-					result.put(k, new ArrayList<Identifier>());
+	private static void scanIdentifer(DMLCondition c, Map<String, List<Identifier>> result, TableReferences ref) {
+		if (ref != null) {
+			List<TableReference> tList = ref.getTableReferenceList();
+			for (TableReference tr : tList) {
+				for (Identifier table : tr.getTables()) {
+					String k = table.getIdTextUpUnescape();
+					// 可能重名
+					if (result.get(k) == null) {
+						result.put(k, new ArrayList<Identifier>());
+					}
+					result.get(k).add(table);
 				}
-				result.get(k).add(table);
+			}
+
+		} else {
+			if (c instanceof DMLDeleteStatement) {
+				DMLDeleteStatement dds = (DMLDeleteStatement) c;
+				if (dds.getTableNames().size() > 0) {
+					result.put(dds.getTableNames().get(0).getIdTextUpUnescape(), dds.getTableNames());
+				}
+
+			} else {
+				return;
 			}
 		}
+
 	}
 
 	/**
