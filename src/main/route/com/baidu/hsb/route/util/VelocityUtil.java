@@ -245,23 +245,5 @@ public class VelocityUtil {
 
 	}
 
-	public static void main(String[] args) throws IOException {
 
-		String tpl = "#set($t=$numberUtil.toInt($ORDER_ID) % 4)##\r\n$!t";
-		// tpl="#set($sub_str=$numberUtil.toInt($ORDER_ID))##$sub_str";
-		Writer writer = new StringWriter();
-		try {
-			VelocityContext context = getContext();
-			context.put("ORDER_ID", "12345");
-			Velocity.evaluate(context, writer, "", tpl);
-			System.out.println(writer.toString());
-		} catch (ParseErrorException e) {
-			throw e;
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			writer.close();
-		}
-
-	}
 }
