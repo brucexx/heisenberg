@@ -89,7 +89,7 @@ public class SingleNodeExecutor extends NodeExecutor {
         final AtomicLong exeTime = new AtomicLong(0);
         // 单节点处理
         Channel c = ss.getTarget().get(rrn);
-        if (c != null && !c.isRunning() && !c.isClosed()) {
+        if (c != null && !c.isRunning()) {
             c.setRunning(true);
             bindingExecute(rrn, ss, c, flag, sql, exeTime);
         } else {
