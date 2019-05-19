@@ -159,7 +159,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
         ThreadPoolExecutor exec = ss.getSource().getProcessor().getExecutor();
         for (final RouteResultsetNode rrn : nodes) {
             final Channel c = target.get(rrn);
-            if (c != null && !c.isRunning() && !c.isClosed()) {
+            if (c != null && !c.isRunning()) {
                 c.setRunning(true);
                 exec.execute(new Runnable() {
                     @Override
@@ -450,7 +450,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     /**
-     * @throws nothing never throws any exception
+     * nothing never throws any exception
      */
     private void handleSuccessEOF(BlockingSession ss, final RouteResultsetNode rrn, BinaryPacket bin,
             final AtomicLong exeTime, final String sql) {
@@ -479,7 +479,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     /**
-     * @throws nothing never throws any exception
+     * never throws any exception
      */
     private void handleSuccessOK(BlockingSession ss, RouteResultsetNode rrn, boolean autocommit, OkPacket ok) {
         if (decrementCountAndIsZero(1)) {
@@ -537,7 +537,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 通知，执行异常
      * 
-     * @throws nothing never throws any exception
+     * never throws any exception
      */
     private void notifyFailure(BlockingSession ss) {
         try {
