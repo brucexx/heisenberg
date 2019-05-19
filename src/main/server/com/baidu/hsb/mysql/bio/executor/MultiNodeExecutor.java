@@ -50,34 +50,33 @@ import com.baidu.hsb.util.StringUtil;
  * @author xiongzhao@baidu.com
  */
 public final class MultiNodeExecutor extends NodeExecutor {
-    private static final Logger         LOGGER             = Logger
-                                                               .getLogger(MultiNodeExecutor.class);
-    private static final int            RECEIVE_CHUNK_SIZE = 16 * 1024;
+    private static final Logger LOGGER = Logger.getLogger(MultiNodeExecutor.class);
+    private static final int RECEIVE_CHUNK_SIZE = 16 * 1024;
 
-    private AtomicBoolean               isFail             = new AtomicBoolean(false);
-    private int                         unfinishedNodeCount;
-    private int                         errno;
-    private String                      errMessage;
-    private AtomicBoolean               fieldEOF           = new AtomicBoolean(false);
-    private byte                        packetId;
-    private long                        affectedRows;
-    private long                        insertId;
-    private ByteBuffer                  buffer;
-    private final ReentrantLock         lock               = new ReentrantLock();
-    private final Condition             taskFinished       = lock.newCondition();
-    private final DefaultCommitExecutor icExecutor         = new DefaultCommitExecutor() {
-                                                               @Override
-                                                               protected String getErrorMessage() {
-                                                                   return "Internal commit";
-                                                               }
+    private AtomicBoolean isFail = new AtomicBoolean(false);
+    private int unfinishedNodeCount;
+    private int errno;
+    private String errMessage;
+    private AtomicBoolean fieldEOF = new AtomicBoolean(false);
+    private byte packetId;
+    private long affectedRows;
+    private long insertId;
+    private ByteBuffer buffer;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition taskFinished = lock.newCondition();
+    private final DefaultCommitExecutor icExecutor = new DefaultCommitExecutor() {
+        @Override
+        protected String getErrorMessage() {
+            return "Internal commit";
+        }
 
-                                                               @Override
-                                                               protected Logger getLogger() {
-                                                                   return MultiNodeExecutor.LOGGER;
-                                                               }
+        @Override
+        protected Logger getLogger() {
+            return MultiNodeExecutor.LOGGER;
+        }
 
-                                                           };
-    private long                        nodeCount          = 0;
+    };
+    private long nodeCount = 0;
 
     @Override
     public void terminate() throws InterruptedException {
@@ -120,12 +119,11 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 多数据节点执行
      * 
-     * @param nodes
-     *            never null
+     * @param nodes never null
      */
-    public void execute(RouteResultsetNode[] nodes, final boolean autocommit,
-                        final BlockingSession ss, final int flag, final String sql) {
-         // 初始化
+    public void execute(RouteResultsetNode[] nodes, final boolean autocommit, final BlockingSession ss, final int flag,
+            final String sql) {
+        // 初始化
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -156,18 +154,13 @@ public final class MultiNodeExecutor extends NodeExecutor {
 
         // 多节点处理
         ConcurrentMap<RouteResultsetNode, Channel> target = ss.getTarget();
-        for (RouteResultsetNode rrn : nodes) {
-            Channel c = target.get(rrn);
-            if (c != null) {
-                c.setRunning(true);
-            }
-        }
         final AtomicLong exeTime = new AtomicLong(0);
 
         ThreadPoolExecutor exec = ss.getSource().getProcessor().getExecutor();
         for (final RouteResultsetNode rrn : nodes) {
             final Channel c = target.get(rrn);
-            if (c != null) {
+            if (c != null && !c.isRunning() && !c.isClosed()) {
+                c.setRunning(true);
                 exec.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -183,27 +176,27 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 新通道的执行
      */
-    private void newExecute(final RouteResultsetNode rrn, final boolean autocommit,
-                            final BlockingSession ss, final int flag, final String sql,
-                            final AtomicLong exeTime) {
+    private void newExecute(final RouteResultsetNode rrn, final boolean autocommit, final BlockingSession ss,
+            final int flag, final String sql, final AtomicLong exeTime) {
         final ServerConnection sc = ss.getSource();
 
         // 检查数据节点是否存在
         HeisenbergConfig conf = HeisenbergServer.getInstance().getConfig();
         final MySQLDataNode dn = conf.getDataNodes().get(rrn.getName());
         if (dn == null) {
-            handleFailure(ss, rrn, new SimpleErrInfo(new UnknownDataNodeException(
-                "Unknown dataNode '" + rrn.getName() + "'"), ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
-                rrn.getSqlCount(), exeTime, sql);
+            handleFailure(ss, rrn,
+                    new SimpleErrInfo(new UnknownDataNodeException("Unknown dataNode '" + rrn.getName() + "'"),
+                            ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
+                    rrn.getSqlCount(), exeTime, sql);
             return;
         }
 
-        //提交执行任务
+        // 提交执行任务
         sc.getProcessor().getExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    //5s读取时间，否则超时
+                    // 5s读取时间，否则超时
                     MultiExecutorTask.runTask(new Callable<Boolean>() {
 
                         @Override
@@ -214,16 +207,16 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     }, 5);
                 } catch (InterruptedException e) {
                     killServerTask(rrn, ss);
-                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_NET_READ_INTERRUPTED,
-                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
+                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_NET_READ_INTERRUPTED, sc, rrn),
+                            rrn.getSqlCount(), exeTime, sql);
                 } catch (ExecutionException e) {
                     killServerTask(rrn, ss);
-                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_EXEC_ERROR, sc,
-                        rrn), rrn.getSqlCount(), exeTime, sql);
+                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_EXEC_ERROR, sc, rrn),
+                            rrn.getSqlCount(), exeTime, sql);
                 } catch (TimeoutException e) {
                     killServerTask(rrn, ss);
-                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_QUERY_TIMEOUT,
-                        sc, rrn), rrn.getSqlCount(), exeTime, sql);
+                    handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_MULTI_QUERY_TIMEOUT, sc, rrn),
+                            rrn.getSqlCount(), exeTime, sql);
                 }
 
             }
@@ -239,18 +232,17 @@ public final class MultiNodeExecutor extends NodeExecutor {
 
     }
 
-    private void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn,
-                         final BlockingSession ss, final ServerConnection sc,
-                         final boolean autocommit, final int flag, final String sql,
-                         final AtomicLong exeTime) {
+    private void runTask(final RouteResultsetNode rrn, final MySQLDataNode dn, final BlockingSession ss,
+            final ServerConnection sc, final boolean autocommit, final int flag, final String sql,
+            final AtomicLong exeTime) {
         // 取得数据通道
         int i = rrn.getReplicaIndex();
         Channel c = null;
         try {
             c = (i == DEFAULT_REPLICA_INDEX) ? dn.getChannel() : dn.getChannel(i);
         } catch (final Exception e) {
-            handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn),
-                rrn.getSqlCount(), exeTime, sql);
+            handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_BAD_DB_ERROR, sc, rrn), rrn.getSqlCount(), exeTime,
+                    sql);
             return;
         }
 
@@ -267,8 +259,8 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 执行
      */
-    private void execute0(RouteResultsetNode rrn, Channel c, boolean autocommit,
-                          BlockingSession ss, int flag, final String sql, final AtomicLong exeTime) {
+    private void execute0(RouteResultsetNode rrn, Channel c, boolean autocommit, BlockingSession ss, int flag,
+            final String sql, final AtomicLong exeTime) {
 
         ServerConnection sc = ss.getSource();
         if (isFail.get() || sc.isClosed()) {
@@ -283,8 +275,8 @@ public final class MultiNodeExecutor extends NodeExecutor {
             try {
                 // 执行并等待返回
                 BinaryPacket bin = ((MySQLChannel) c).execute(stmt, rrn, sc, autocommit);
-                //System.out.println(rrn.getName() + ",sql[" + stmt + "]");
-                //LOGGER.info("node[" + rrn.getName()+"],sql["+stmt+"],recv=>"+ByteUtil.formatByte(bin.data)+"<=");
+                // System.out.println(rrn.getName() + ",sql[" + stmt + "]");
+                // LOGGER.info("node[" + rrn.getName()+"],sql["+stmt+"],recv=>"+ByteUtil.formatByte(bin.data)+"<=");
                 // 接收和处理数据
                 final ReentrantLock lock = MultiNodeExecutor.this.lock;
                 lock.lock();
@@ -292,8 +284,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     switch (bin.data[0]) {
                         case ErrorPacket.FIELD_COUNT:
                             c.setRunning(false);
-                            handleFailure(ss, rrn,
-                                new BinaryErrInfo((MySQLChannel) c, bin, sc, rrn), 1, exeTime, sql);
+                            handleFailure(ss, rrn, new BinaryErrInfo((MySQLChannel) c, bin, sc, rrn), 1, exeTime, sql);
                             break;
                         case OkPacket.FIELD_COUNT:
                             OkPacket ok = new OkPacket();
@@ -301,8 +292,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
                             affectedRows += ok.affectedRows;
                             // set lastInsertId
                             if (ok.insertId > 0) {
-                                insertId = (insertId == 0) ? ok.insertId : Math.min(insertId,
-                                    ok.insertId);
+                                insertId = (insertId == 0) ? ok.insertId : Math.min(insertId, ok.insertId);
                             }
                             c.setRunning(false);
                             handleSuccessOK(ss, rrn, autocommit, ok);
@@ -312,14 +302,14 @@ public final class MultiNodeExecutor extends NodeExecutor {
                             if (fieldEOF.get()) {
                                 for (;;) {
                                     bin = mc.receive();
-                                    //                                    LOGGER.info("FIELD_EOF:"
-                                    //                                                + com.baidu.hsb.route.util.ByteUtil
-                                    //                                                    .formatByte(bin.data));
+                                    // LOGGER.info("FIELD_EOF:"
+                                    // + com.baidu.hsb.route.util.ByteUtil
+                                    // .formatByte(bin.data));
                                     switch (bin.data[0]) {
                                         case ErrorPacket.FIELD_COUNT:
                                             c.setRunning(false);
-                                            handleFailure(ss, rrn, new BinaryErrInfo(mc, bin, sc,
-                                                rrn), 1, exeTime, sql);
+                                            handleFailure(ss, rrn, new BinaryErrInfo(mc, bin, sc, rrn), 1, exeTime,
+                                                    sql);
                                             continue extSql;
                                         case EOFPacket.FIELD_COUNT:
                                             handleRowData(rrn, c, ss, exeTime, sql);
@@ -334,12 +324,13 @@ public final class MultiNodeExecutor extends NodeExecutor {
                                 headerList.add(bin);
                                 for (;;) {
                                     bin = mc.receive();
-                                    //LOGGER.info("NO_FIELD_EOF:" + com.baidu.hsb.route.util.ByteUtil.formatByte(bin.data));
+                                    // LOGGER.info("NO_FIELD_EOF:" +
+                                    // com.baidu.hsb.route.util.ByteUtil.formatByte(bin.data));
                                     switch (bin.data[0]) {
                                         case ErrorPacket.FIELD_COUNT:
                                             c.setRunning(false);
-                                            handleFailure(ss, rrn, new BinaryErrInfo(mc, bin, sc,
-                                                rrn), 1, exeTime, sql);
+                                            handleFailure(ss, rrn, new BinaryErrInfo(mc, bin, sc, rrn), 1, exeTime,
+                                                    sql);
                                             continue extSql;
                                         case EOFPacket.FIELD_COUNT:
                                             bin.packetId = ++packetId;// FIELD_EOF
@@ -356,10 +347,8 @@ public final class MultiNodeExecutor extends NodeExecutor {
                                             switch (flag) {
                                                 case RouteResultset.REWRITE_FIELD:
                                                     StringBuilder fieldName = new StringBuilder();
-                                                    fieldName.append("Tables_in_").append(
-                                                        ss.getSource().getSchema());
-                                                    FieldPacket field = PacketUtil.getField(bin,
-                                                        fieldName.toString());
+                                                    fieldName.append("Tables_in_").append(ss.getSource().getSchema());
+                                                    FieldPacket field = PacketUtil.getField(bin, fieldName.toString());
                                                     headerList.add(field);
                                                     break;
                                                 default:
@@ -371,21 +360,18 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     }
                 } finally {
                     lock.unlock();
-                    //                    System.out.println("sql[" + stmt + "]suc pkId:" + bin.packetId);
+                    // System.out.println("sql[" + stmt + "]suc pkId:" + bin.packetId);
                 }
             } catch (final IOException e) {
                 c.close();
-                handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_YES, sc, rrn), 1, exeTime,
-                    sql);
+                handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_YES, sc, rrn), 1, exeTime, sql);
             } catch (final RuntimeException e) {
                 c.close();
-                handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_YES, sc, rrn), 1, exeTime,
-                    sql);
+                handleFailure(ss, rrn, new SimpleErrInfo(e, ErrorCode.ER_YES, sc, rrn), 1, exeTime, sql);
             } finally {
                 long e = System.currentTimeMillis() - s;
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[" + rrn.getName() + "][" + stmt + "]" + "exetime:" + e
-                                 + "ms pre:" + exeTime.get());
+                    LOGGER.debug("[" + rrn.getName() + "][" + stmt + "]" + "exetime:" + e + "ms pre:" + exeTime.get());
                 }
                 exeTime.getAndAdd(e);
             }
@@ -397,19 +383,18 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 处理RowData数据
      */
-    private void handleRowData(final RouteResultsetNode rrn, Channel c, BlockingSession ss,
-                               final AtomicLong exeTime, final String sql) throws IOException {
+    private void handleRowData(final RouteResultsetNode rrn, Channel c, BlockingSession ss, final AtomicLong exeTime,
+            final String sql) throws IOException {
         final ServerConnection source = ss.getSource();
         BinaryPacket bin = null;
         int size = 0;
         for (;;) {
             bin = ((MySQLChannel) c).receive();
-            //System.out.println(rrn.getName() + "rowData-->");
+            // System.out.println(rrn.getName() + "rowData-->");
             switch (bin.data[0]) {
                 case ErrorPacket.FIELD_COUNT:
                     c.setRunning(false);
-                    handleFailure(ss, rrn, new BinaryErrInfo(((MySQLChannel) c), bin, source, rrn),
-                        1, exeTime, sql);
+                    handleFailure(ss, rrn, new BinaryErrInfo(((MySQLChannel) c), bin, source, rrn), 1, exeTime, sql);
                     return;
                 case EOFPacket.FIELD_COUNT:
                     c.setRunning(false);
@@ -430,7 +415,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
                     buffer = bin.write(buffer, source);
                     size += bin.packetLength;
                     if (size > RECEIVE_CHUNK_SIZE) {
-                        //                        LOGGER.info(rrn.getName() + "hasNext-->");
+                        // LOGGER.info(rrn.getName() + "hasNext-->");
                         handleNext(rrn, c, ss, exeTime, sql);
                         return;
                     }
@@ -441,12 +426,12 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 处理下一个任务
      */
-    private void handleNext(final RouteResultsetNode rrn, final Channel c,
-                            final BlockingSession ss, final AtomicLong exeTime, final String sql) {
+    private void handleNext(final RouteResultsetNode rrn, final Channel c, final BlockingSession ss,
+            final AtomicLong exeTime, final String sql) {
         final ServerConnection sc = ss.getSource();
-        //        sc.getProcessor().getExecutor().execute(new Runnable() {
-        //            @Override
-        //            public void run() {
+        // sc.getProcessor().getExecutor().execute(new Runnable() {
+        // @Override
+        // public void run() {
         final ReentrantLock lock = MultiNodeExecutor.this.lock;
         lock.lock();
         try {
@@ -460,16 +445,15 @@ public final class MultiNodeExecutor extends NodeExecutor {
         } finally {
             lock.unlock();
         }
-        //            }
-        //        });
+        // }
+        // });
     }
 
     /**
-     * @throws nothing
-     *             never throws any exception
+     * @throws nothing never throws any exception
      */
-    private void handleSuccessEOF(BlockingSession ss, final RouteResultsetNode rrn,
-                                  BinaryPacket bin, final AtomicLong exeTime, final String sql) {
+    private void handleSuccessEOF(BlockingSession ss, final RouteResultsetNode rrn, BinaryPacket bin,
+            final AtomicLong exeTime, final String sql) {
 
         if (decrementCountAndIsZero(1)) {
             try {
@@ -495,11 +479,9 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     /**
-     * @throws nothing
-     *             never throws any exception
+     * @throws nothing never throws any exception
      */
-    private void handleSuccessOK(BlockingSession ss, RouteResultsetNode rrn, boolean autocommit,
-                                 OkPacket ok) {
+    private void handleSuccessOK(BlockingSession ss, RouteResultsetNode rrn, boolean autocommit, OkPacket ok) {
         if (decrementCountAndIsZero(1)) {
             if (isFail.get()) {
                 notifyFailure(ss);
@@ -533,7 +515,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     private void handleFailure(BlockingSession ss, RouteResultsetNode rrn, ErrInfo errInfo, int c,
-                               final AtomicLong exeTime, final String sql) {
+            final AtomicLong exeTime, final String sql) {
         try {
             // 标记为执行失败，并记录第一次异常信息。
             if (!isFail.getAndSet(true) && errInfo != null) {
@@ -543,8 +525,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
                 errInfo.logErr();
             }
         } catch (Exception e) {
-            LOGGER.warn("handleFailure failed in " + getClass().getSimpleName() + ", source = "
-                        + ss.getSource(), e);
+            LOGGER.warn("handleFailure failed in " + getClass().getSimpleName() + ", source = " + ss.getSource(), e);
         } finally {
             LoggerUtil.printDigest(LOGGER, exeTime.get(), sql);
         }
@@ -556,8 +537,7 @@ public final class MultiNodeExecutor extends NodeExecutor {
     /**
      * 通知，执行异常
      * 
-     * @throws nothing
-     *             never throws any exception
+     * @throws nothing never throws any exception
      */
     private void notifyFailure(BlockingSession ss) {
         try {
@@ -587,21 +567,19 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     protected static class BinaryErrInfo implements ErrInfo {
-        private String             errMsg;
-        private int                errNo;
-        private ServerConnection   source;
+        private String errMsg;
+        private int errNo;
+        private ServerConnection source;
         private RouteResultsetNode rrn;
-        private MySQLChannel       mc;
+        private MySQLChannel mc;
 
-        public BinaryErrInfo(MySQLChannel mc, BinaryPacket bin, ServerConnection sc,
-                             RouteResultsetNode rrn) {
+        public BinaryErrInfo(MySQLChannel mc, BinaryPacket bin, ServerConnection sc, RouteResultsetNode rrn) {
             this.mc = mc;
             this.source = sc;
             this.rrn = rrn;
             ErrorPacket err = new ErrorPacket();
             err.read(bin);
-            this.errMsg = (err.message == null) ? null : StringUtil.decode(err.message,
-                mc.getCharset());
+            this.errMsg = (err.message == null) ? null : StringUtil.decode(err.message, mc.getCharset());
             this.errNo = err.errno;
         }
 
@@ -625,9 +603,9 @@ public final class MultiNodeExecutor extends NodeExecutor {
     }
 
     protected static class SimpleErrInfo implements ErrInfo {
-        private Exception          e;
-        private int                errNo;
-        private ServerConnection   source;
+        private Exception e;
+        private int errNo;
+        private ServerConnection source;
         private RouteResultsetNode rrn;
 
         public SimpleErrInfo(Exception e, int errNo, ServerConnection sc, RouteResultsetNode rrn) {
